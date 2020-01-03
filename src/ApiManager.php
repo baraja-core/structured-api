@@ -96,25 +96,22 @@ class ApiManager
 
 		if (strpos($route, '/') === false) { // 1. Simple match
 			foreach ($this->namespaceConventions as $classFormat) {
-				if (\class_exists($class = str_replace('*', Helpers::firstUpper($route), $classFormat)) === true) {
+				if (\class_exists($class = str_replace('*', Helpers::formatApiName($route), $classFormat)) === true) {
 					break;
 				}
 			}
 			$action = 'default';
 		} elseif (preg_match('/^([^\/]+)\/([^\/]+)$/', $route, $routeParser)) { // 2. <endpoint>/<action>
 			foreach ($this->namespaceConventions as $classFormat) {
-				if (\class_exists($class = str_replace('*', Helpers::firstUpper($routeParser[1]), $classFormat)) === true) {
+				if (\class_exists($class = str_replace('*', Helpers::formatApiName($routeParser[1]), $classFormat)) === true) {
 					break;
 				}
 			}
-			$action = $routeParser[2];
+			$action = Helpers::formatApiName($routeParser[2]);
 		}
 
 		if ($class === null) {
 			StructuredApiException::canNotRouteException($route, $params);
-		} else {
-			$class = Helpers::formatApiName((string) $class);
-			$action = Helpers::formatApiName((string) $action);
 		}
 
 		if (\class_exists($class) === false) {

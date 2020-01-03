@@ -1,0 +1,10 @@
+parameters:
+	api:
+		namespaceConvention:
+			- '\Baraja\StructuredApi\*Endpoint'
+
+services:
+	apiManager: Baraja\StructuredApi\ApiManager(%api.namespaceConvention%)
+
+extensions:
+	structuredApi: Baraja\StructuredApi\ApiExtension

@@ -1,0 +1,23 @@
+{
+	"name": "baraja-core/structured-api",
+	"description": "Complex library for definition of your structured API endpoint as class with schema.",
+	"homepage": "https://github.com/baraja-core/structured-api",
+	"authors": [
+		{
+			"name": "Jan Barášek",
+			"homepage": "https://baraja.cz"
+		}
+	],
+	"require": {
+		"php": ">=7.1.0",
+		"ext-json": "*",
+		"nette/di": "^3.0",
+		"nette/utils": "^3.0"
+	},
+	"autoload": {
+		"classmap": [
+			"src/"
+		]
+	},
+	"minimum-stability": "stable"
+}

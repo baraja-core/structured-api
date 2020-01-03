@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Baraja\StructuredApi;
+
+
+use Nette\Utils\Json;
+use Nette\Utils\JsonException;
+
+class JsonResponse extends BaseResponse
+{
+
+	/**
+	 * @return string
+	 */
+	public function getContentType(): string
+	{
+		return 'application/json';
+	}
+
+	/**
+	 * @return string
+	 */
+	public function __toString(): string
+	{
+		try {
+			return $this->getJson();
+		} catch (JsonException $e) {
+			return '{}';
+		}
+	}
+
+	/**
+	 * @return mixed[]
+	 */
+	public function getHaystack(): array
+	{
+		return $this->haystack;
+	}
+
+	/**
+	 * @return string
+	 * @throws JsonException
+	 */
+	public function getJson(): string
+	{
+		return Json::encode($this->haystack, Json::PRETTY);
+	}
+
+}

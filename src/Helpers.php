@@ -30,12 +30,12 @@ final class Helpers
 		if (($currentUrl = self::getCurrentUrl()) !== null) {
 			if (preg_match('/^(?:https?:\/\/.+)\/www\/?(.*)$/', $currentUrl, $localUrlParser)) {
 				$return = $localUrlParser[1];
-			} elseif (preg_match('/^(?:https?:\/\/[^\/]+)(.*)$/', $currentUrl, $publicUrlParser)) {
-				$return = $publicUrlParser[2];
+			} elseif (preg_match('/^(?:https?:\/\/[^\/]+)(.*?)$/', $currentUrl, $publicUrlParser)) {
+				$return = $publicUrlParser[1];
 			}
 		}
 
-		return $return !== null ? rtrim($return, '/') : '';
+		return $return !== null ? trim($return, '/') : '';
 	}
 
 	/**

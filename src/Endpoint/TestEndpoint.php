@@ -18,6 +18,7 @@ class TestEndpoint extends BaseEndpoint
 		$this->sendJson([
 			'name' => 'Test API endpoint',
 			'hello' => $hello,
+			'endpoint' => $this->getName(),
 		]);
 	}
 
@@ -26,10 +27,7 @@ class TestEndpoint extends BaseEndpoint
 	 */
 	public function postCreateUser(array $data): void
 	{
-		$this->sendJson([
-			'state' => 'ok',
-			'data' => $data,
-		]);
+		$this->sendOk($data);
 	}
 
 }

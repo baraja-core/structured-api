@@ -94,10 +94,10 @@ abstract class BaseEndpoint
 
 	/**
 	 * @param mixed[] $data
-	 * @param string $message
+	 * @param string|null $message
 	 * @param int $code
 	 */
-	final public function sendOk(array $data = [], string $message, int $code = 200): void
+	final public function sendOk(array $data = [], ?string $message = null, int $code = 200): void
 	{
 		$this->sendJson([
 			'state' => 'ok',
@@ -105,6 +105,24 @@ abstract class BaseEndpoint
 			'code' => $code,
 			'data' => $data,
 		]);
+	}
+
+	/**
+	 * @param mixed[] $haystack
+	 * @return mixed[][]
+	 */
+	final public function formatKeyValueArray(array $haystack): array
+	{
+		$return = [];
+
+		foreach ($haystack as $key => $value) {
+			$return[] = [
+				'key' => $key,
+				'value' => $value,
+			];
+		}
+
+		return $return;
 	}
 
 	/**

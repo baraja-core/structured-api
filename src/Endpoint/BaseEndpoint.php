@@ -24,12 +24,17 @@ abstract class BaseEndpoint
 	/**
 	 * @var callable[]
 	 */
-	protected $onSaveState = [];
+	public $onSaveState = [];
 
 	/**
 	 * @var Container
 	 */
 	protected $container;
+
+	/**
+	 * @var mixed[]
+	 */
+	protected $data;
 
 	/**
 	 * @var bool
@@ -38,10 +43,12 @@ abstract class BaseEndpoint
 
 	/**
 	 * @param Container $container
+	 * @param mixed[] $data
 	 */
-	final public function __construct(Container $container)
+	final public function __construct(Container $container, array $data)
 	{
 		$this->container = $container;
+		$this->data = $data;
 
 		foreach (InjectExtension::getInjectProperties(\get_class($this)) as $property => $service) {
 			$this->{$property} = $container->getByType($service);
@@ -72,6 +79,14 @@ abstract class BaseEndpoint
 	}
 
 	/**
+	 * @return mixed[]
+	 */
+	public function getData(): array
+	{
+		return $this->data;
+	}
+
+	/**
 	 * @param mixed[] $haystack
 	 */
 	final public function sendJson(array $haystack): void
@@ -81,14 +96,14 @@ abstract class BaseEndpoint
 
 	/**
 	 * @param string $message
-	 * @param int $code
+	 * @param int|null $code
 	 */
-	final public function sendError(string $message, int $code = 500): void
+	final public function sendError(string $message, ?int $code = null): void
 	{
 		$this->sendJson([
 			'state' => 'error',
 			'message' => $message,
-			'code' => $code,
+			'code' => $code ?? 500,
 		]);
 	}
 
@@ -108,21 +123,69 @@ abstract class BaseEndpoint
 	}
 
 	/**
+	 * @param string $key
+	 * @param string|null $message
+	 * @param int|null $code
+	 */
+	final public function validateDataKey(string $key, ?string $message = null, ?int $code = null): void
+	{
+		if (isset($this->data[$key]) === false || !$this->data[$key]) {
+			$this->sendError($message ?? 'Key "' . $key . '" is required.', $code);
+		}
+	}
+
+	/**
+	 * @param mixed[] $keys
+	 * @param string|null $message
+	 * @param int|null $code
+	 */
+	final public function validateDataKeys(array $keys, ?string $message = null, ?int $code = null): void
+	{
+		$invalidKeys = [];
+
+		foreach ($keys as $key) {
+			if (isset($this->data[$key]) === false || !$this->data[$key]) {
+				$invalidKeys[] = $key;
+			}
+		}
+
+		if ($invalidKeys !== []) {
+			$this->sendError(
+				$message ?? (\count($invalidKeys) === 1
+					? 'Key "' . $invalidKeys[0] . '" is required.'
+					: 'Keys "' . implode('", "', $invalidKeys) . '" are required.'),
+				$code
+			);
+		}
+	}
+
+	/**
 	 * @param mixed[] $haystack
+	 * @param string $key
+	 * @param string $value
 	 * @return mixed[][]
 	 */
-	final public function formatKeyValueArray(array $haystack): array
+	final public function formatKeyValueArray(array $haystack, string $key = 'key', $value = 'value'): array
 	{
 		$return = [];
 
-		foreach ($haystack as $key => $value) {
+		foreach ($haystack as $_key => $_value) {
 			$return[] = [
-				'key' => $key,
-				'value' => $value,
+				$key => $_key,
+				$value => $_value,
 			];
 		}
 
 		return $return;
+	}
+
+	/**
+	 * @param mixed[] $haystack
+	 * @return mixed[][]
+	 */
+	final public function formatBootstrapSelectArray(array $haystack): array
+	{
+		return $this->formatKeyValueArray($haystack, 'value', 'text');
 	}
 
 	/**
@@ -137,7 +200,7 @@ abstract class BaseEndpoint
 
 	final public function saveState(): void
 	{
-		// TODO: Implement me!
+		$this->onSaveState($this);
 	}
 
 	/**
@@ -199,6 +262,7 @@ abstract class BaseEndpoint
 		static $linkGenerator;
 
 		if ($linkGenerator === null) {
+			/** @var LinkGenerator $linkGenerator */
 			$linkGenerator = $this->container->getByType(LinkGenerator::class);
 		}
 
@@ -206,6 +270,7 @@ abstract class BaseEndpoint
 	}
 
 	/**
+	 * @param string|null $namespace
 	 * @return Cache
 	 */
 	final public function getCache(?string $namespace = null): Cache
@@ -215,6 +280,7 @@ abstract class BaseEndpoint
 		$name = 'api---' . strtolower($namespace ?? $this->getName());
 
 		if ($storage === null) {
+			/** @var IStorage $storage */
 			$storage = $this->container->getByType(IStorage::class);
 		}
 

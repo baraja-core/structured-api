@@ -6,6 +6,7 @@ namespace Baraja\StructuredApi;
 
 
 use Nette\DI\Container;
+use Tracy\Debugger;
 
 class ApiManager
 {
@@ -52,22 +53,31 @@ class ApiManager
 	 */
 	public function run(?string $path = null, ?array $params = [], ?string $method = null): void
 	{
+		$params = array_merge($_GET, $params ?? []);
+
 		if (preg_match('/^api\/v([^\/]+)\/?(.*?)$/', $path = $path ?? Helpers::processPath(), $pathParser)) {
 			if (($version = (int) $pathParser[1]) < 1 || $version > 999 || !preg_match('#^[+-]?\d+$#D', $pathParser[1])) {
 				StructuredApiException::invalidVersion($pathParser[1]);
 			}
 
-			$route = $this->route(
-				preg_replace('/^(.*?)(\?.*|)$/', '$1', $pathParser[2]),
-				$params = array_merge($_GET, $params ?? [])
-			);
+			$route = $this->route((string) preg_replace('/^(.*?)(\?.*|)$/', '$1', $pathParser[2]), $params);
 
-			$response = $this->callActionMethods(
-				$this->createInstance($route['class']),
-				$route['action'],
-				$method ? : $this->getMethod(),
-				$params
-			);
+			try {
+				$response = $this->callActionMethods(
+					$this->createInstance($route['class'], $params, $method = $method ? : $this->getMethod()),
+					$route['action'],
+					$method,
+					$params
+				);
+			} catch (StructuredApiException $e) {
+				throw $e;
+			} catch (\Throwable $e) {
+				$response = new JsonResponse([
+					'state' => 'error',
+					'message' => class_exists(Debugger::class) && Debugger::isEnabled() === true ? $e->getMessage() : null,
+					'code' => $e->getCode(),
+				]);
+			}
 
 			if ($response !== null) {
 				header('Content-Type: ' . $response->getContentType());
@@ -128,11 +138,28 @@ class ApiManager
 	 * Create new API endpoint instance with all injected dependencies.
 	 *
 	 * @param string $class
+	 * @param mixed[] $params
+	 * @param string $method
 	 * @return BaseEndpoint
 	 */
-	private function createInstance(string $class): BaseEndpoint
+	private function createInstance(string $class, array $params, string $method): BaseEndpoint
 	{
-		return new $class($this->container);
+		if ($method === 'POST') {
+			if (\count($_POST) === 1 && preg_match('/^\{.*\}$/', $post = array_keys($_POST)[0]) && ($json = json_decode($post)) instanceof \stdClass) {
+				foreach ($json as $key => $value) {
+					$_POST[$key] = $value;
+				}
+				unset($_POST[$post]);
+			} elseif (($input = (string) file_get_contents('php://input')) !== '' && $json = json_decode($input, true)) {
+				foreach ($json as $key => $value) {
+					$_POST[$key] = $value;
+				}
+			}
+
+			$params = array_merge($_POST, $params);
+		}
+
+		return new $class($this->container, $params);
 	}
 
 	/**
@@ -152,19 +179,8 @@ class ApiManager
 		$response = null;
 
 		if ($method === 'POST' && method_exists($endpoint, $postMethod = 'post' . $action)) {
-			if (\count($_POST) === 1 && preg_match('/^\{.*\}$/', $post = array_keys($_POST)[0]) && ($json = json_decode($post)) instanceof \stdClass) {
-				foreach ($json as $key => $value) {
-					$_POST[$key] = $value;
-				}
-				unset($_POST[$post]);
-			} elseif (($input = (string) file_get_contents('php://input')) !== '' && $json = json_decode($input, true)) {
-				foreach ($json as $key => $value) {
-					$_POST[$key] = $value;
-				}
-			}
-
 			try {
-				$response = $endpoint->$postMethod(array_merge($_POST, $params ?? []));
+				$response = $endpoint->$postMethod(array_merge($endpoint->getData(), $params));
 			} catch (ThrowResponse $e) {
 				$response = $e->getResponse();
 			}

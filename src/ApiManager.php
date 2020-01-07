@@ -72,9 +72,13 @@ class ApiManager
 			} catch (StructuredApiException $e) {
 				throw $e;
 			} catch (\Throwable $e) {
+				if (($isDebugger = class_exists(Debugger::class)) === true) {
+					Debugger::log($e);
+				}
+
 				$response = new JsonResponse([
 					'state' => 'error',
-					'message' => class_exists(Debugger::class) && Debugger::isEnabled() === true ? $e->getMessage() : null,
+					'message' => $isDebugger && Debugger::isEnabled() === true ? $e->getMessage() : null,
 					'code' => $e->getCode(),
 				]);
 			}

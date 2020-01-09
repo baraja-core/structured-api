@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
+use Nette\Http\Request;
+
 final class Helpers
 {
 
@@ -21,21 +23,12 @@ final class Helpers
 	 * Return current API path by current HTTP URL.
 	 * In case of CLI return empty string.
 	 *
+	 * @param Request $httpRequest
 	 * @return string
 	 */
-	public static function processPath(): string
+	public static function processPath(Request $httpRequest): string
 	{
-		static $return;
-
-		if (($currentUrl = self::getCurrentUrl()) !== null) {
-			if (preg_match('/^(?:https?:\/\/.+)\/www\/?(.*)$/', $currentUrl, $localUrlParser)) {
-				$return = $localUrlParser[1];
-			} elseif (preg_match('/^(?:https?:\/\/[^\/]+)(.*?)$/', $currentUrl, $publicUrlParser)) {
-				$return = $publicUrlParser[1];
-			}
-		}
-
-		return $return !== null ? trim($return, '/') : '';
+		return trim(str_replace(rtrim($httpRequest->getUrl()->withoutUserInfo()->getBaseUrl(), '/'), '', (string) self::getCurrentUrl()), '/');
 	}
 
 	/**

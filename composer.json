@@ -12,7 +12,8 @@
 		"php": ">=7.1.0",
 		"ext-json": "*",
 		"nette/di": "^3.0",
-		"nette/utils": "^3.0"
+		"nette/utils": "^3.0",
+		"nette/http": "^3.0"
 	},
 	"autoload": {
 		"classmap": [

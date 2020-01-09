@@ -129,7 +129,7 @@ abstract class BaseEndpoint
 	 */
 	final public function validateDataKey(string $key, ?string $message = null, ?int $code = null): void
 	{
-		if (isset($this->data[$key]) === false || !$this->data[$key]) {
+		if (array_key_exists($key, $this->data) === false) {
 			$this->sendError($message ?? 'Key "' . $key . '" is required.', $code);
 		}
 	}
@@ -144,7 +144,7 @@ abstract class BaseEndpoint
 		$invalidKeys = [];
 
 		foreach ($keys as $key) {
-			if (isset($this->data[$key]) === false || !$this->data[$key]) {
+			if (array_key_exists($key, $this->data) === false) {
 				$invalidKeys[] = $key;
 			}
 		}

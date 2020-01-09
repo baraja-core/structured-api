@@ -46,16 +46,16 @@ class ApiManager
 	/**
 	 * By given inputs or current URL route specific API endpoint and send full HTTP response.
 	 *
-	 * @param string|null $path
+	 * @param string $path
 	 * @param mixed[]|null $params
 	 * @param string|null $method
 	 * @throws StructuredApiException
 	 */
-	public function run(?string $path = null, ?array $params = [], ?string $method = null): void
+	public function run(string $path, ?array $params = [], ?string $method = null): void
 	{
 		$params = array_merge($_GET, $params ?? []);
 
-		if (preg_match('/^api\/v([^\/]+)\/?(.*?)$/', $path = $path ?? Helpers::processPath(), $pathParser)) {
+		if (preg_match('/^api\/v([^\/]+)\/?(.*?)$/', $path, $pathParser)) {
 			if (($version = (int) $pathParser[1]) < 1 || $version > 999 || !preg_match('#^[+-]?\d+$#D', $pathParser[1])) {
 				StructuredApiException::invalidVersion($pathParser[1]);
 			}

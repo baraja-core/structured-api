@@ -60,8 +60,8 @@ abstract class BaseResponse
 			}
 		}
 
-		if (isset($hide[$key]) === true) {
-			if (preg_match('/^\$2[ayb]\$.{56}$/', $value)) { // Allow BCrypt hash only.
+		if (isset($hide[$key]) === true && $value !== null) {
+			if (preg_match('/^\$2[ayb]\$.{56}$/', (string) $value)) { // Allow BCrypt hash only.
 				return false;
 			}
 

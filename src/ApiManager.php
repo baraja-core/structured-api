@@ -108,7 +108,7 @@ class ApiManager
 		$class = null;
 		$action = null;
 
-		if (strpos($route, '/') === false) { // 1. Simple match
+		if (strpos($route = trim($route, '/'), '/') === false) { // 1. Simple match
 			foreach ($this->namespaceConventions as $classFormat) {
 				if (\class_exists($class = str_replace('*', Helpers::formatApiName($route), $classFormat)) === true) {
 					break;

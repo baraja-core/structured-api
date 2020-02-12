@@ -45,6 +45,14 @@ abstract class BaseResponse
 	}
 
 	/**
+	 * @return mixed[]
+	 */
+	public function toArray(): array
+	{
+		return $this->haystack;
+	}
+
+	/**
 	 * @param mixed $key
 	 * @param mixed $value
 	 * @return bool

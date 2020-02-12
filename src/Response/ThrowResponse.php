@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
-class ThrowResponse extends \RuntimeException
+final class ThrowResponse extends \RuntimeException
 {
 
 	/**
@@ -27,7 +27,7 @@ class ThrowResponse extends \RuntimeException
 	 */
 	public function getResponse(): BaseResponse
 	{
-		return $this->response;
+		return ($response = $this->response) instanceof self ? $response->getResponse() : $response;
 	}
 
 }

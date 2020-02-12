@@ -8,7 +8,7 @@ namespace Baraja\StructuredApi;
 use Nette\DI\Container;
 use Tracy\Debugger;
 
-class ApiManager
+final class ApiManager
 {
 
 	/**
@@ -49,9 +49,10 @@ class ApiManager
 	 * @param string $path
 	 * @param mixed[]|null $params
 	 * @param string|null $method
+	 * @param bool $throw
 	 * @throws StructuredApiException
 	 */
-	public function run(string $path, ?array $params = [], ?string $method = null): void
+	public function run(string $path, ?array $params = [], ?string $method = null, bool $throw = false): void
 	{
 		$params = array_merge($_GET, $params ?? []);
 
@@ -84,6 +85,9 @@ class ApiManager
 			}
 
 			if ($response !== null) {
+				if ($throw === true) {
+					throw new ThrowResponse($response);
+				}
 				header('Content-Type: ' . $response->getContentType());
 				echo (string) $response;
 				die;
@@ -93,6 +97,30 @@ class ApiManager
 		}
 
 		StructuredApiException::invalidApiPath($path);
+	}
+
+	/**
+	 * @param string $path
+	 * @param mixed[]|null $params
+	 * @param string|null $method
+	 * @return mixed[]
+	 * @throws StructuredApiException
+	 */
+	public function get(string $path, ?array $params = [], ?string $method = null): array
+	{
+		try {
+			if (preg_match('/^api\/v([^\/]+)\/?(.*?)$/', $path) === 0) {
+				$path = 'api/v1/' . $path;
+			}
+
+			$this->run($path, $params, $method, true);
+		} catch (StructuredApiException $e) {
+			throw $e;
+		} catch (ThrowResponse $e) {
+			return $e->getResponse()->toArray();
+		}
+
+		return [];
 	}
 
 	/**
@@ -108,7 +136,7 @@ class ApiManager
 		$class = null;
 		$action = null;
 
-		if (strpos($route = trim($route, '/'), '/') === false) { // 1. Simple match
+		if (strpos($route, '/') === false) { // 1. Simple match
 			foreach ($this->namespaceConventions as $classFormat) {
 				if (\class_exists($class = str_replace('*', Helpers::formatApiName($route), $classFormat)) === true) {
 					break;

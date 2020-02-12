@@ -23,7 +23,7 @@ abstract class BaseResponse
 	/**
 	 * @param mixed[] $haystack
 	 */
-	public function __construct(array $haystack)
+	final public function __construct(array $haystack)
 	{
 		$this->haystack = $haystack;
 	}
@@ -47,7 +47,15 @@ abstract class BaseResponse
 	/**
 	 * @return mixed[]
 	 */
-	public function toArray(): array
+	final public function toArray(): array
+	{
+		return $this->process($this->haystack);
+	}
+
+	/**
+	 * @return mixed[]
+	 */
+	final public function getArray(): array
 	{
 		return $this->haystack;
 	}
@@ -57,7 +65,7 @@ abstract class BaseResponse
 	 * @param mixed $value
 	 * @return bool
 	 */
-	protected function hideKey($key, $value): bool
+	final protected function hideKey($key, $value): bool
 	{
 		static $hide;
 
@@ -68,7 +76,7 @@ abstract class BaseResponse
 			}
 		}
 
-		if (isset($hide[$key]) === true && $value !== null) {
+		if ($value !== null && isset($hide[$key]) === true) {
 			if (preg_match('/^\$2[ayb]\$.{56}$/', (string) $value)) { // Allow BCrypt hash only.
 				return false;
 			}
@@ -86,6 +94,54 @@ abstract class BaseResponse
 		}
 
 		return false;
+	}
+
+	/**
+	 * Convert common haystack to json compatible format.
+	 *
+	 * @param mixed $haystack
+	 * @return array|string|mixed
+	 */
+	private function process($haystack)
+	{
+		if (\is_array($haystack) === true) {
+			$return = [];
+
+			foreach ($haystack as $key => $value) {
+				$return[$key] = $this->hideKey($key, $value) ? self::$hiddenKeyLabel : $this->process($value);
+			}
+
+			return $return;
+		}
+
+		if (\is_object($haystack) === true) {
+			if (\method_exists($haystack, '__toString') === true) {
+				return (string) $haystack;
+			}
+
+			$return = [];
+
+			try {
+				foreach ((new \ReflectionClass($haystack))->getProperties() as $property) {
+					$property->setAccessible(true);
+
+					if (($key = $property->getName()) && ($key[0] ?? '') === '_') {
+						continue;
+					}
+
+					$value = $property->getValue($haystack);
+					$return[$key] = $this->hideKey($key, $value) ? self::$hiddenKeyLabel : $this->process($value);
+				}
+			} catch (\ReflectionException $e) {
+				foreach ($haystack as $key => $value) {
+					$return[$key] = $this->hideKey($key, $value) ? self::$hiddenKeyLabel : $this->process($value);
+				}
+			}
+
+			return $return;
+		}
+
+		return $haystack;
 	}
 
 }

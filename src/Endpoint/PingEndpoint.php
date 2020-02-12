@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
-class PingEndpoint extends BaseEndpoint
+final class PingEndpoint extends BaseEndpoint
 {
 
 	public function actionDefault(): void

@@ -8,7 +8,7 @@ namespace Baraja\StructuredApi;
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
 
-class JsonResponse extends BaseResponse
+final class JsonResponse extends BaseResponse
 {
 
 	/**
@@ -29,14 +29,6 @@ class JsonResponse extends BaseResponse
 		} catch (JsonException $e) {
 			return '{}';
 		}
-	}
-
-	/**
-	 * @return mixed[]
-	 */
-	public function getHaystack(): array
-	{
-		return $this->haystack;
 	}
 
 	/**

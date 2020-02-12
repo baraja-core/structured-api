@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
-class TestEndpoint extends BaseEndpoint
+final class TestEndpoint extends BaseEndpoint
 {
 
 	/**

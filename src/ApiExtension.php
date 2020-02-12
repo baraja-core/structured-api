@@ -10,7 +10,7 @@ use Nette\DI\CompilerExtension;
 use Nette\PhpGenerator\ClassType;
 use Tracy\Debugger;
 
-class ApiExtension extends CompilerExtension
+final class ApiExtension extends CompilerExtension
 {
 
 	/**

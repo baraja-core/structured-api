@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
-class RuntimeStructuredApiException extends StructuredApiException
+final class RuntimeStructuredApiException extends StructuredApiException
 {
 
 	/**

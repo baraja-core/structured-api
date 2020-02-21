@@ -12,6 +12,7 @@ use Nette\Caching\Cache;
 use Nette\Caching\IStorage;
 use Nette\DI\Container;
 use Nette\DI\Extensions\InjectExtension;
+use Nette\Localization\ITranslator;
 use Nette\Security\IIdentity;
 use Nette\Security\User;
 use Nette\SmartObject;
@@ -270,6 +271,22 @@ abstract class BaseEndpoint
 	}
 
 	/**
+	 * Generate link. If link does not exist return null.
+	 *
+	 * @param string $dest
+	 * @param mixed[] $params
+	 * @return string|null
+	 */
+	final public function linkSafe(string $dest, array $params = []): ?string
+	{
+		try {
+			return $this->link($dest, $params);
+		} catch (InvalidLinkException $e) {
+			return null;
+		}
+	}
+
+	/**
 	 * @param string|null $namespace
 	 * @return Cache
 	 */
@@ -289,6 +306,31 @@ abstract class BaseEndpoint
 		}
 
 		return $cache[$name];
+	}
+
+	/**
+	 * @return ITranslator
+	 */
+	final public function getTranslator(): ITranslator
+	{
+		static $translator;
+
+		if ($translator === null) {
+			/** @var ITranslator $translator */
+			$translator = $this->container->getByType(ITranslator::class);
+		}
+
+		return $translator;
+	}
+
+	/**
+	 * @param string|mixed $message
+	 * @param mixed[]|mixed ...$parameters
+	 * @return string
+	 */
+	final public function translate($message, ...$parameters): string
+	{
+		return $this->getTranslator()->translate($message, $parameters);
 	}
 
 	/**

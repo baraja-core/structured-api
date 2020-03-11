@@ -6,6 +6,7 @@ namespace Baraja\StructuredApi;
 
 
 use Nette\DI\Container;
+use Nette\Utils\Strings;
 use Tracy\Debugger;
 
 final class ApiManager
@@ -176,7 +177,7 @@ final class ApiManager
 	 */
 	private function createInstance(string $class, array $params, string $method): BaseEndpoint
 	{
-		if ($method === 'POST') {
+		if ($method !== 'GET' && $method !== 'DELETE') {
 			if (\count($_POST) === 1 && preg_match('/^\{.*\}$/', $post = array_keys($_POST)[0]) && ($json = json_decode($post)) instanceof \stdClass) {
 				foreach ($json as $key => $value) {
 					$_POST[$key] = $value;
@@ -208,53 +209,50 @@ final class ApiManager
 	{
 		$endpoint->startup();
 		$endpoint->startupCheck();
+		$actionMethod = ($method === 'GET' ? 'action' : strtolower($method)) . Strings::firstUpper($action);
 		$response = null;
 
-		if ($method === 'POST' && method_exists($endpoint, $postMethod = 'post' . $action)) {
+		$args = [];
+		try {
+			foreach (($ref = new \ReflectionMethod($endpoint, $actionMethod))->getParameters() as $parameter) {
+				if (($pName = $parameter->getName()) === 'data') {
+					if ((($type = $parameter->getType()) !== null && $type->getName() !== 'array') || $type === null) {
+						RuntimeStructuredApiException::propertyDataMustBeArray($endpoint, $type === null ? null : $type->getName());
+					}
+
+					$args[$pName] = $params;
+				} elseif (isset($params[$pName]) === true) {
+					if ($params[$pName]) {
+						$args[$pName] = $params[$pName];
+					} elseif (($type = $parameter->getType()) !== null) {
+						$args[$pName] = $this->returnEmptyValue($endpoint, $pName, $type);
+					}
+				} elseif ($parameter->isOptional() === true && $parameter->isDefaultValueAvailable() === true) {
+					try {
+						$args[$pName] = $parameter->getDefaultValue();
+					} catch (\Throwable $e) {
+					}
+				} else {
+					RuntimeStructuredApiException::parameterDoesNotSet(
+						$endpoint,
+						$parameter->getName(),
+						$parameter->getPosition(),
+						$actionMethod
+					);
+				}
+			}
+
 			try {
-				$response = $endpoint->$postMethod(array_merge($endpoint->getData(), $params));
+				$response = $ref->invokeArgs($endpoint, $args);
 			} catch (ThrowResponse $e) {
 				$response = $e->getResponse();
 			}
 
-			if ($response === null) {
+			if ($method !== 'GET' && $response === null) {
 				$response = new JsonResponse(['state' => 'ok']);
 			}
-		}
-
-		if ($method === 'GET' && method_exists($endpoint, $actionMethod = 'action' . $action)) {
-			$args = [];
-			try {
-				foreach (($ref = new \ReflectionMethod($endpoint, $actionMethod))->getParameters() as $parameter) {
-					if (isset($params[$pName = $parameter->getName()]) === true) {
-						if ($params[$pName]) {
-							$args[$pName] = $params[$pName];
-						} elseif (($type = $parameter->getType()) !== null) {
-							$args[$pName] = $this->returnEmptyValue($endpoint, $pName, $type);
-						}
-					} elseif ($parameter->isOptional() === true && $parameter->isDefaultValueAvailable() === true) {
-						try {
-							$args[$pName] = $parameter->getDefaultValue();
-						} catch (\Throwable $e) {
-						}
-					} else {
-						RuntimeStructuredApiException::parameterDoesNotSet(
-							$endpoint,
-							$parameter->getName(),
-							$parameter->getPosition(),
-							$actionMethod
-						);
-					}
-				}
-
-				try {
-					$response = $ref->invokeArgs($endpoint, $args);
-				} catch (ThrowResponse $e) {
-					$response = $e->getResponse();
-				}
-			} catch (\ReflectionException $e) {
-				RuntimeStructuredApiException::reflectionException($e);
-			}
+		} catch (\ReflectionException $e) {
+			RuntimeStructuredApiException::reflectionException($e);
 		}
 
 		$endpoint->saveState();

@@ -69,4 +69,17 @@ final class RuntimeStructuredApiException extends StructuredApiException
 		);
 	}
 
+	/**
+	 * @param BaseEndpoint $endpoint
+	 * @param string|null $type
+	 * @throws RuntimeStructuredApiException
+	 */
+	public static function propertyDataMustBeArray(BaseEndpoint $endpoint, ?string $type): void
+	{
+		throw new self(
+			$endpoint . ': Api parameter "data" must be type of "array". '
+			. ($type === null ? 'No type has been defined. Did you set PHP 7 strict data types?' : 'Type "' . $type . '" given.')
+		);
+	}
+
 }

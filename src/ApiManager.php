@@ -55,7 +55,7 @@ final class ApiManager
 	 */
 	public function run(string $path, ?array $params = [], ?string $method = null, bool $throw = false): void
 	{
-		$params = array_merge($_GET, $params ?? []);
+		$params = array_merge($_GET, $this->getBodyParams($method = $method ? : $this->getMethod()), $params ?? []);
 
 		if (preg_match('/^api\/v([^\/]+)\/?(.*?)$/', $path, $pathParser)) {
 			if (($version = (int) $pathParser[1]) < 1 || $version > 999 || !preg_match('#^[+-]?\d+$#D', $pathParser[1])) {
@@ -66,7 +66,7 @@ final class ApiManager
 
 			try {
 				$response = $this->callActionMethods(
-					$this->createInstance($route['class'], $params, $method = $method ? : $this->getMethod()),
+					$this->createInstance($route['class'], $params),
 					$route['action'],
 					$method,
 					$params
@@ -172,26 +172,10 @@ final class ApiManager
 	 *
 	 * @param string $class
 	 * @param mixed[] $params
-	 * @param string $method
 	 * @return BaseEndpoint
 	 */
-	private function createInstance(string $class, array $params, string $method): BaseEndpoint
+	private function createInstance(string $class, array $params): BaseEndpoint
 	{
-		if ($method !== 'GET' && $method !== 'DELETE') {
-			if (\count($_POST) === 1 && preg_match('/^\{.*\}$/', $post = array_keys($_POST)[0]) && ($json = json_decode($post)) instanceof \stdClass) {
-				foreach ($json as $key => $value) {
-					$_POST[$key] = $value;
-				}
-				unset($_POST[$post]);
-			} elseif (($input = (string) file_get_contents('php://input')) !== '' && $json = json_decode($input, true)) {
-				foreach ($json as $key => $value) {
-					$_POST[$key] = $value;
-				}
-			}
-
-			$params = array_merge($_POST, $params);
-		}
-
 		return new $class($this->container, $params);
 	}
 
@@ -300,6 +284,31 @@ final class ApiManager
 		}
 
 		return $method ? : 'GET';
+	}
+
+	/**
+	 * @param string $method
+	 * @return mixed[]
+	 */
+	private function getBodyParams(string $method): array
+	{
+		if ($method !== 'GET' && $method !== 'DELETE') {
+			$return = [];
+			if (\count($_POST) === 1 && preg_match('/^\{.*\}$/', $post = array_keys($_POST)[0]) && ($json = json_decode($post)) instanceof \stdClass) {
+				foreach ($json as $key => $value) {
+					$return[$key] = $value;
+				}
+				unset($_POST[$post]);
+			} elseif (($input = (string) file_get_contents('php://input')) !== '' && $json = json_decode($input, true)) {
+				foreach ($json as $key => $value) {
+					$return[$key] = $value;
+				}
+			}
+
+			return $return;
+		}
+
+		return [];
 	}
 
 }

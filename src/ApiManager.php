@@ -193,50 +193,52 @@ final class ApiManager
 	{
 		$endpoint->startup();
 		$endpoint->startupCheck();
-		$actionMethod = ($method === 'GET' ? 'action' : strtolower($method)) . Strings::firstUpper($action);
 		$response = null;
-
+		$ref = null;
 		$args = [];
-		try {
-			foreach (($ref = new \ReflectionMethod($endpoint, $actionMethod))->getParameters() as $parameter) {
-				if (($pName = $parameter->getName()) === 'data') {
-					if ((($type = $parameter->getType()) !== null && $type->getName() !== 'array') || $type === null) {
-						RuntimeStructuredApiException::propertyDataMustBeArray($endpoint, $type === null ? null : $type->getName());
-					}
 
-					$args[$pName] = $params;
-				} elseif (isset($params[$pName]) === true) {
-					if ($params[$pName]) {
-						$args[$pName] = $this->fixType($params[$pName], (($type = $parameter->getType()) !== null) ? $type : null);
-					} elseif (($type = $parameter->getType()) !== null) {
-						$args[$pName] = $this->returnEmptyValue($endpoint, $pName, $type);
-					}
-				} elseif ($parameter->isOptional() === true && $parameter->isDefaultValueAvailable() === true) {
-					try {
-						$args[$pName] = $parameter->getDefaultValue();
-					} catch (\Throwable $e) {
-					}
-				} else {
-					RuntimeStructuredApiException::parameterDoesNotSet(
-						$endpoint,
-						$parameter->getName(),
-						$parameter->getPosition(),
-						$actionMethod
-					);
-				}
-			}
-
+		if (($methodName = $this->getActionMethodName($endpoint, $method, $action)) !== null) {
 			try {
-				$response = $ref->invokeArgs($endpoint, $args);
-			} catch (ThrowResponse $e) {
-				$response = $e->getResponse();
-			}
+				foreach (($ref = new \ReflectionMethod($endpoint, $methodName))->getParameters() as $parameter) {
+					if (($pName = $parameter->getName()) === 'data') {
+						if ((($type = $parameter->getType()) !== null && ($typeName = $type->getName()) !== 'array') || $type === null) {
+							RuntimeStructuredApiException::propertyDataMustBeArray($endpoint, $type === null ? null : $typeName ?? '');
+						}
 
-			if ($method !== 'GET' && $response === null) {
-				$response = new JsonResponse(['state' => 'ok']);
+						$args[$pName] = $params;
+					} elseif (isset($params[$pName]) === true) {
+						if ($params[$pName]) {
+							$args[$pName] = $this->fixType($params[$pName], (($type = $parameter->getType()) !== null) ? $type : null);
+						} elseif (($type = $parameter->getType()) !== null) {
+							$args[$pName] = $this->returnEmptyValue($endpoint, $pName, $type);
+						}
+					} elseif ($parameter->isOptional() === true && $parameter->isDefaultValueAvailable() === true) {
+						try {
+							$args[$pName] = $parameter->getDefaultValue();
+						} catch (\Throwable $e) {
+						}
+					} else {
+						RuntimeStructuredApiException::parameterDoesNotSet(
+							$endpoint,
+							$parameter->getName(),
+							$parameter->getPosition(),
+							$methodName ?? ''
+						);
+					}
+				}
+			} catch (\ReflectionException $e) {
+				RuntimeStructuredApiException::reflectionException($e);
 			}
-		} catch (\ReflectionException $e) {
-			RuntimeStructuredApiException::reflectionException($e);
+		}
+
+		try {
+			$response = $ref !== null ? $ref->invokeArgs($endpoint, $args) : null;
+		} catch (ThrowResponse $e) {
+			$response = $e->getResponse();
+		}
+
+		if ($method !== 'GET' && $response === null) {
+			$response = new JsonResponse(['state' => 'ok']);
 		}
 
 		$endpoint->saveState();
@@ -316,6 +318,8 @@ final class ApiManager
 	 *
 	 * 1. If type is nullable, keep original haystack
 	 * 2. Empty value rewrite to null, if null is supported
+	 * 3. Scalar types
+	 * 4. Other -> keep original
 	 *
 	 * @param mixed $haystack
 	 * @param \ReflectionType|null $type
@@ -332,10 +336,42 @@ final class ApiManager
 		}
 
 		if ($type->getName() === 'bool') {
-			return \in_array($haystack, ['1', 'true', 'yes'], true) === true;
+			return \in_array(strtolower((string) $haystack), ['1', 'true', 'yes'], true) === true;
+		}
+
+		if ($type->getName() === 'int') {
+			return (int) $haystack;
+		}
+
+		if ($type->getName() === 'float') {
+			return (float) $haystack;
 		}
 
 		return $haystack;
+	}
+
+	/**
+	 * @param BaseEndpoint $endpoint
+	 * @param string $method
+	 * @param string $action
+	 * @return string|null
+	 */
+	private function getActionMethodName(BaseEndpoint $endpoint, string $method, string $action): ?string
+	{
+		$tryMethods = [];
+		$tryMethods[] = ($method === 'GET' ? 'action' : strtolower($method)) . Strings::firstUpper($action);
+		if ($method === 'PUT') {
+			$tryMethods[] = 'update' . Strings::firstUpper($action);
+		}
+
+		$methodName = null;
+		foreach ($tryMethods as $tryMethod) {
+			if (\method_exists($endpoint, $tryMethod) === true) {
+				return $tryMethod;
+			}
+		}
+
+		return null;
 	}
 
 }

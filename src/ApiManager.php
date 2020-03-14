@@ -207,7 +207,7 @@ final class ApiManager
 					$args[$pName] = $params;
 				} elseif (isset($params[$pName]) === true) {
 					if ($params[$pName]) {
-						$args[$pName] = $params[$pName];
+						$args[$pName] = $this->fixType($params[$pName], (($type = $parameter->getType()) !== null) ? $type : null);
 					} elseif (($type = $parameter->getType()) !== null) {
 						$args[$pName] = $this->returnEmptyValue($endpoint, $pName, $type);
 					}
@@ -309,6 +309,33 @@ final class ApiManager
 		}
 
 		return [];
+	}
+
+	/**
+	 * Rewrite given type to preference type by annotation.
+	 *
+	 * 1. If type is nullable, keep original haystack
+	 * 2. Empty value rewrite to null, if null is supported
+	 *
+	 * @param mixed $haystack
+	 * @param \ReflectionType|null $type
+	 * @return mixed
+	 */
+	private function fixType($haystack, ?\ReflectionType $type)
+	{
+		if ($type === null) {
+			return $haystack;
+		}
+
+		if (!$haystack && $type->allowsNull()) {
+			return null;
+		}
+
+		if ($type->getName() === 'bool') {
+			return \in_array($haystack, ['1', 'true', 'yes'], true) === true;
+		}
+
+		return $haystack;
 	}
 
 }

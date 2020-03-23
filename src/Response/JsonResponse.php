@@ -10,7 +10,6 @@ use Nette\Utils\JsonException;
 
 final class JsonResponse extends BaseResponse
 {
-
 	/**
 	 * @return string
 	 */
@@ -18,6 +17,7 @@ final class JsonResponse extends BaseResponse
 	{
 		return 'application/json';
 	}
+
 
 	/**
 	 * @return string
@@ -31,6 +31,7 @@ final class JsonResponse extends BaseResponse
 		}
 	}
 
+
 	/**
 	 * @return string
 	 * @throws JsonException
@@ -39,5 +40,4 @@ final class JsonResponse extends BaseResponse
 	{
 		return Json::encode($this->toArray(), Json::PRETTY);
 	}
-
 }

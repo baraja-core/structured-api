@@ -7,7 +7,6 @@ namespace Baraja\StructuredApi;
 
 class StructuredApiException extends \Exception
 {
-
 	/**
 	 * @param string $version
 	 * @throws StructuredApiException
@@ -19,6 +18,7 @@ class StructuredApiException extends \Exception
 			. "\n" . 'Version must be integer between 1 and 999.'
 		);
 	}
+
 
 	/**
 	 * @param string $route
@@ -33,6 +33,7 @@ class StructuredApiException extends \Exception
 		);
 	}
 
+
 	/**
 	 * @param string $class
 	 * @throws StructuredApiException
@@ -41,6 +42,7 @@ class StructuredApiException extends \Exception
 	{
 		throw new self('Route class "' . $class . '" does not exist.');
 	}
+
 
 	/**
 	 * @param string $path
@@ -54,6 +56,7 @@ class StructuredApiException extends \Exception
 		);
 	}
 
+
 	/**
 	 * @param string $path
 	 * @throws StructuredApiException
@@ -64,5 +67,4 @@ class StructuredApiException extends \Exception
 			'Api endpoint "' . $path . '" must return some output. None returned.'
 		);
 	}
-
 }

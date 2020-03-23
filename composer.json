@@ -13,11 +13,24 @@
 		"ext-json": "*",
 		"nette/di": "^3.0",
 		"nette/utils": "^3.0",
-		"nette/http": "^3.0"
+		"nette/http": "^3.0",
+		"nette/application": "^3.0",
+		"nette/caching": "^3.0",
+		"nette/security": "^3.0"
+	},
+	"require-dev": {
+		"phpstan/phpstan": "^0.12.18",
+		"tracy/tracy": "^2.7",
+		"phpstan/phpstan-nette": "^0.12.6"
 	},
 	"autoload": {
 		"classmap": [
 			"src/"
+		]
+	},
+	"scripts": {
+		"phpstan": [
+			"vendor/bin/phpstan analyse src -c phpstan.neon --level 7 --no-progress"
 		]
 	},
 	"minimum-stability": "stable"

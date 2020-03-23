@@ -27,7 +27,7 @@ final class ThrowResponse extends \RuntimeException
 	 */
 	public function getResponse(): BaseResponse
 	{
-		return ($response = $this->response) instanceof self ? $response->getResponse() : $response;
+		return $this->response;
 	}
 
 }

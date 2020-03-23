@@ -11,8 +11,10 @@ use Tracy\ILogger;
 abstract class BaseResponse
 {
 
+	/** @var array|string[] */
 	public static $keysToHide = ['password', 'passwd', 'pass', 'pwd', 'creditcard', 'credit card', 'cc', 'pin'];
 
+	/** @var string */
 	public static $hiddenKeyLabel = '*****';
 
 	/**

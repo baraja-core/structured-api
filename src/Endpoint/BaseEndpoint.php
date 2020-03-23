@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
-use Baraja\Doctrine\EntityManager;
 use Nette\Application\LinkGenerator;
 use Nette\Application\UI\InvalidLinkException;
 use Nette\Caching\Cache;
@@ -204,19 +203,6 @@ abstract class BaseEndpoint
 		$this->onSaveState($this);
 	}
 
-	/**
-	 * @return EntityManager
-	 */
-	final public function em(): EntityManager
-	{
-		static $em;
-
-		if ($em === null) {
-			$em = $this->container->getByType(EntityManager::class);
-		}
-
-		return $em;
-	}
 
 	/**
 	 * @return User
@@ -334,7 +320,7 @@ abstract class BaseEndpoint
 	}
 
 	/**
-	 * @return mixed
+	 * @return array<mixed>
 	 */
 	final public function getParameters(): array
 	{

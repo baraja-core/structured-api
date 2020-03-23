@@ -11,6 +11,8 @@
 	"require": {
 		"php": ">=7.1.0",
 		"ext-json": "*",
+		"ext-mbstring": "*",
+		"ext-iconv": "*",
 		"nette/di": "^3.0",
 		"nette/utils": "^3.0",
 		"nette/http": "^3.0",

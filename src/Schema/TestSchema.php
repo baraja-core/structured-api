@@ -11,7 +11,6 @@ use Nette\Schema\Schema;
 
 class TestSchema
 {
-
 	public function actionDefault(): Schema
 	{
 		return new Structure([
@@ -19,5 +18,4 @@ class TestSchema
 			'email' => (new Type('string'))->pattern('^.+@.+$'),
 		]);
 	}
-
 }

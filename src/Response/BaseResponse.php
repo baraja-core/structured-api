@@ -10,17 +10,15 @@ use Tracy\ILogger;
 
 abstract class BaseResponse
 {
-
 	/** @var array|string[] */
 	public static $keysToHide = ['password', 'passwd', 'pass', 'pwd', 'creditcard', 'credit card', 'cc', 'pin'];
 
 	/** @var string */
 	public static $hiddenKeyLabel = '*****';
 
-	/**
-	 * @var mixed[]
-	 */
+	/** @var mixed[] */
 	protected $haystack;
+
 
 	/**
 	 * @param mixed[] $haystack
@@ -30,6 +28,7 @@ abstract class BaseResponse
 		$this->haystack = $haystack;
 	}
 
+
 	/**
 	 * @return string
 	 */
@@ -37,6 +36,7 @@ abstract class BaseResponse
 	{
 		return 'text/plain';
 	}
+
 
 	/**
 	 * @return string
@@ -46,6 +46,7 @@ abstract class BaseResponse
 		return '';
 	}
 
+
 	/**
 	 * @return mixed[]
 	 */
@@ -54,6 +55,7 @@ abstract class BaseResponse
 		return $this->process($this->haystack);
 	}
 
+
 	/**
 	 * @return mixed[]
 	 */
@@ -61,6 +63,7 @@ abstract class BaseResponse
 	{
 		return $this->haystack;
 	}
+
 
 	/**
 	 * @param mixed $key
@@ -97,6 +100,7 @@ abstract class BaseResponse
 
 		return false;
 	}
+
 
 	/**
 	 * Convert common haystack to json compatible format.
@@ -145,5 +149,4 @@ abstract class BaseResponse
 
 		return $haystack;
 	}
-
 }

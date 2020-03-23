@@ -11,10 +11,7 @@ use Tracy\Debugger;
 
 final class ApiManager
 {
-
-	/**
-	 * @var mixed[]
-	 */
+	/** @var mixed[] */
 	private static $emptyTypeMapper = [
 		'string' => '',
 		'bool' => false,
@@ -24,15 +21,12 @@ final class ApiManager
 		'null' => null,
 	];
 
-	/**
-	 * @var string[]
-	 */
+	/** @var string[] */
 	private $namespaceConventions;
 
-	/**
-	 * @var Container
-	 */
+	/** @var Container */
 	private $container;
+
 
 	/**
 	 * @param string[] $namespaceConventions
@@ -43,6 +37,7 @@ final class ApiManager
 		$this->namespaceConventions = $namespaceConventions;
 		$this->container = $container;
 	}
+
 
 	/**
 	 * By given inputs or current URL route specific API endpoint and send full HTTP response.
@@ -55,7 +50,7 @@ final class ApiManager
 	 */
 	public function run(string $path, ?array $params = [], ?string $method = null, bool $throw = false): void
 	{
-		$params = array_merge($_GET, $this->getBodyParams($method = $method ? : $this->getMethod()), $params ?? []);
+		$params = array_merge($_GET, $this->getBodyParams($method = $method ?: $this->getMethod()), $params ?? []);
 
 		if (preg_match('/^api\/v([^\/]+)\/?(.*?)$/', $path, $pathParser)) {
 			if (($version = (int) $pathParser[1]) < 1 || $version > 999 || !preg_match('#^[+-]?\d+$#D', $pathParser[1])) {
@@ -100,6 +95,7 @@ final class ApiManager
 		StructuredApiException::invalidApiPath($path);
 	}
 
+
 	/**
 	 * @param string $path
 	 * @param mixed[]|null $params
@@ -123,6 +119,7 @@ final class ApiManager
 
 		return [];
 	}
+
 
 	/**
 	 * Route user query to class and action.
@@ -167,6 +164,7 @@ final class ApiManager
 		];
 	}
 
+
 	/**
 	 * Create new API endpoint instance with all injected dependencies.
 	 *
@@ -178,6 +176,7 @@ final class ApiManager
 	{
 		return new $class($this->container, $params);
 	}
+
 
 	/**
 	 * Call all endpoint methods in regular order and return response state.
@@ -246,6 +245,7 @@ final class ApiManager
 		return $response;
 	}
 
+
 	/**
 	 * @param BaseEndpoint $endpoint
 	 * @param string $parameter
@@ -272,6 +272,7 @@ final class ApiManager
 		return null;
 	}
 
+
 	/**
 	 * Return current HTTP method.
 	 *
@@ -285,8 +286,9 @@ final class ApiManager
 			$method = $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'];
 		}
 
-		return $method ? : 'GET';
+		return $method ?: 'GET';
 	}
+
 
 	/**
 	 * @param string $method
@@ -312,6 +314,7 @@ final class ApiManager
 
 		return [];
 	}
+
 
 	/**
 	 * Rewrite given type to preference type by annotation.
@@ -350,6 +353,7 @@ final class ApiManager
 		return $haystack;
 	}
 
+
 	/**
 	 * @param BaseEndpoint $endpoint
 	 * @param string $method
@@ -373,5 +377,4 @@ final class ApiManager
 
 		return null;
 	}
-
 }

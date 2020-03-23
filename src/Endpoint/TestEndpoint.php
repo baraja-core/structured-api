@@ -7,7 +7,6 @@ namespace Baraja\StructuredApi;
 
 final class TestEndpoint extends BaseEndpoint
 {
-
 	/**
 	 * This is test API endpoint as demonstration of inner logic.
 	 *
@@ -22,6 +21,7 @@ final class TestEndpoint extends BaseEndpoint
 		]);
 	}
 
+
 	/**
 	 * @param mixed[] $data
 	 */
@@ -29,5 +29,4 @@ final class TestEndpoint extends BaseEndpoint
 	{
 		$this->sendOk($data);
 	}
-
 }

@@ -36,5 +36,4 @@ final class ApiExtension extends CompilerExtension
 			. "\n" . '}'
 		);
 	}
-
 }

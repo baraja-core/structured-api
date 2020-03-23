@@ -7,7 +7,6 @@ namespace Baraja\StructuredApi;
 
 final class RuntimeStructuredApiException extends StructuredApiException
 {
-
 	/**
 	 * @param BaseEndpoint $endpoint
 	 * @param string $parameter
@@ -23,6 +22,7 @@ final class RuntimeStructuredApiException extends StructuredApiException
 		);
 	}
 
+
 	/**
 	 * @param \Throwable $e
 	 * @throws RuntimeStructuredApiException
@@ -32,6 +32,7 @@ final class RuntimeStructuredApiException extends StructuredApiException
 		throw new self($e->getMessage(), $e->getCode(), $e);
 	}
 
+
 	/**
 	 * @param BaseEndpoint $endpoint
 	 * @throws RuntimeStructuredApiException
@@ -40,6 +41,7 @@ final class RuntimeStructuredApiException extends StructuredApiException
 	{
 		throw new self('Method ' . $endpoint . '::startup() or its descendant doesn\'t call parent::startup()."');
 	}
+
 
 	/**
 	 * @param BaseEndpoint $endpoint
@@ -55,6 +57,7 @@ final class RuntimeStructuredApiException extends StructuredApiException
 		);
 	}
 
+
 	/**
 	 * @param BaseEndpoint $endpoint
 	 * @param string $parameter
@@ -69,6 +72,7 @@ final class RuntimeStructuredApiException extends StructuredApiException
 		);
 	}
 
+
 	/**
 	 * @param BaseEndpoint $endpoint
 	 * @param string|null $type
@@ -81,5 +85,4 @@ final class RuntimeStructuredApiException extends StructuredApiException
 			. ($type === null ? 'No type has been defined. Did you set PHP 7 strict data types?' : 'Type "' . $type . '" given.')
 		);
 	}
-
 }

@@ -7,11 +7,9 @@ namespace Baraja\StructuredApi;
 
 final class ThrowResponse extends \RuntimeException
 {
-
-	/**
-	 * @var BaseResponse
-	 */
+	/** @var BaseResponse */
 	private $response;
+
 
 	/**
 	 * @param BaseResponse $response
@@ -22,6 +20,7 @@ final class ThrowResponse extends \RuntimeException
 		$this->response = $response;
 	}
 
+
 	/**
 	 * @return BaseResponse
 	 */
@@ -29,5 +28,4 @@ final class ThrowResponse extends \RuntimeException
 	{
 		return $this->response;
 	}
-
 }

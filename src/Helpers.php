@@ -9,7 +9,6 @@ use Nette\Http\Request;
 
 final class Helpers
 {
-
 	/**
 	 * @throws \Error
 	 */
@@ -31,6 +30,7 @@ final class Helpers
 		return trim(str_replace(rtrim($httpRequest->getUrl()->withoutUserInfo()->getBaseUrl(), '/'), '', (string) self::getCurrentUrl()), '/');
 	}
 
+
 	/**
 	 * Return current absolute URL.
 	 * Return null, if current URL does not exist (for example in CLI mode).
@@ -46,6 +46,7 @@ final class Helpers
 		return (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
 			. '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 	}
+
 
 	/**
 	 * @return string|null
@@ -73,6 +74,7 @@ final class Helpers
 		return $return;
 	}
 
+
 	/**
 	 * @param string $name
 	 * @return string
@@ -83,6 +85,7 @@ final class Helpers
 			return strtoupper($match[1]);
 		}, self::firstUpper($name));
 	}
+
 
 	/**
 	 * Converts first character to lower case.
@@ -98,6 +101,7 @@ final class Helpers
 			);
 	}
 
+
 	/**
 	 * Returns number of characters (not bytes) in UTF-8 string.
 	 * That is the number of Unicode code points which may differ from the number of graphemes.
@@ -109,5 +113,4 @@ final class Helpers
 	{
 		return function_exists('mb_strlen') ? mb_strlen($s, 'UTF-8') : strlen(utf8_decode($s));
 	}
-
 }

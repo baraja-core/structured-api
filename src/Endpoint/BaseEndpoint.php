@@ -18,28 +18,20 @@ use Nette\SmartObject;
 
 abstract class BaseEndpoint
 {
-
 	use SmartObject;
 
-	/**
-	 * @var callable[]
-	 */
+	/**  @var callable[] */
 	public $onSaveState = [];
 
-	/**
-	 * @var Container
-	 */
+	/** @var Container */
 	protected $container;
 
-	/**
-	 * @var mixed[]
-	 */
+	/**  @var mixed[] */
 	protected $data;
 
-	/**
-	 * @var bool
-	 */
+	/** @var bool */
 	private $startupCheck = false;
+
 
 	/**
 	 * @param Container $container
@@ -55,6 +47,7 @@ abstract class BaseEndpoint
 		}
 	}
 
+
 	/**
 	 * @return string
 	 */
@@ -63,10 +56,12 @@ abstract class BaseEndpoint
 		return get_class($this);
 	}
 
+
 	public function startup(): void
 	{
 		$this->startupCheck = true;
 	}
+
 
 	/**
 	 * Get current endpoint name.
@@ -78,6 +73,7 @@ abstract class BaseEndpoint
 		return preg_replace('/^(?:.*\\\\)?([A-Z0-9][a-z0-9]+)Endpoint$/', '$1', get_class($this));
 	}
 
+
 	/**
 	 * @return mixed[]
 	 */
@@ -86,6 +82,7 @@ abstract class BaseEndpoint
 		return $this->data;
 	}
 
+
 	/**
 	 * @param mixed[] $haystack
 	 */
@@ -93,6 +90,7 @@ abstract class BaseEndpoint
 	{
 		throw new ThrowResponse(new JsonResponse($haystack));
 	}
+
 
 	/**
 	 * @param string $message
@@ -106,6 +104,7 @@ abstract class BaseEndpoint
 			'code' => $code ?? 500,
 		]);
 	}
+
 
 	/**
 	 * @param mixed[] $data
@@ -122,6 +121,7 @@ abstract class BaseEndpoint
 		]);
 	}
 
+
 	/**
 	 * @param string $key
 	 * @param string|null $message
@@ -133,6 +133,7 @@ abstract class BaseEndpoint
 			$this->sendError($message ?? 'Key "' . $key . '" is required.', $code);
 		}
 	}
+
 
 	/**
 	 * @param mixed[] $keys
@@ -159,6 +160,7 @@ abstract class BaseEndpoint
 		}
 	}
 
+
 	/**
 	 * @param mixed[] $haystack
 	 * @param string $key
@@ -179,6 +181,7 @@ abstract class BaseEndpoint
 		return $return;
 	}
 
+
 	/**
 	 * @param mixed[] $haystack
 	 * @return mixed[][]
@@ -187,6 +190,7 @@ abstract class BaseEndpoint
 	{
 		return $this->formatKeyValueArray($haystack, 'value', 'text');
 	}
+
 
 	/**
 	 * @throws RuntimeStructuredApiException
@@ -197,6 +201,7 @@ abstract class BaseEndpoint
 			RuntimeStructuredApiException::startupDoesntCallParent($this);
 		}
 	}
+
 
 	final public function saveState(): void
 	{
@@ -218,6 +223,7 @@ abstract class BaseEndpoint
 		return $user;
 	}
 
+
 	/**
 	 * @return bool
 	 */
@@ -230,6 +236,7 @@ abstract class BaseEndpoint
 		}
 	}
 
+
 	/**
 	 * @return IIdentity|null
 	 */
@@ -237,6 +244,7 @@ abstract class BaseEndpoint
 	{
 		return $this->getUser()->getIdentity();
 	}
+
 
 	/**
 	 * @param string $dest
@@ -256,6 +264,7 @@ abstract class BaseEndpoint
 		return $linkGenerator->link(trim($dest, ':'), $params);
 	}
 
+
 	/**
 	 * Generate link. If link does not exist return null.
 	 *
@@ -271,6 +280,7 @@ abstract class BaseEndpoint
 			return null;
 		}
 	}
+
 
 	/**
 	 * @param string|null $namespace
@@ -294,6 +304,7 @@ abstract class BaseEndpoint
 		return $cache[$name];
 	}
 
+
 	/**
 	 * @return ITranslator
 	 */
@@ -309,6 +320,7 @@ abstract class BaseEndpoint
 		return $translator;
 	}
 
+
 	/**
 	 * @param string|mixed $message
 	 * @param mixed[]|mixed ...$parameters
@@ -319,6 +331,7 @@ abstract class BaseEndpoint
 		return $this->getTranslator()->translate($message, $parameters);
 	}
 
+
 	/**
 	 * @return array<mixed>
 	 */
@@ -326,6 +339,7 @@ abstract class BaseEndpoint
 	{
 		return $this->container->getParameters();
 	}
+
 
 	/**
 	 * @param string $key
@@ -336,5 +350,4 @@ abstract class BaseEndpoint
 	{
 		return $this->container->getParameters()[$key] ?? $defaultValue;
 	}
-
 }

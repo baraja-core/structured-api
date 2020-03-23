@@ -7,7 +7,6 @@ namespace Baraja\StructuredApi;
 
 final class PingEndpoint extends BaseEndpoint
 {
-
 	public function actionDefault(): void
 	{
 		$this->sendJson([
@@ -16,6 +15,7 @@ final class PingEndpoint extends BaseEndpoint
 			'datetime' => date('Y-m-d H:i:s'),
 		]);
 	}
+
 
 	/**
 	 * @return string
@@ -30,5 +30,4 @@ final class PingEndpoint extends BaseEndpoint
 
 		return is_string($ip) ? $ip : '127.0.0.1';
 	}
-
 }

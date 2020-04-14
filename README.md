@@ -1,6 +1,8 @@
 Structured REST API in PHP
 ==========================
 
+![Integrity check](https://github.com/baraja-core/structured-api/workflows/Integrity%20check/badge.svg)
+
 Full compatible smart structured API defined by schema.
 
 - Define full type-hint input parameters,

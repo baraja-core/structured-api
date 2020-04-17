@@ -64,7 +64,6 @@ class TestEndpoint extends BaseEndpoint
 			'data' => $data,
 		]);
 	}
-
 }
 ```
 

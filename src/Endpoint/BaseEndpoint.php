@@ -16,7 +16,7 @@ use Nette\Security\IIdentity;
 use Nette\Security\User;
 use Nette\SmartObject;
 
-abstract class BaseEndpoint
+abstract class BaseEndpoint implements Endpoint
 {
 	use SmartObject;
 
@@ -27,7 +27,7 @@ abstract class BaseEndpoint
 	protected $container;
 
 	/**  @var mixed[] */
-	protected $data;
+	protected $data = [];
 
 	/** @var bool */
 	private $startupCheck = false;
@@ -35,12 +35,10 @@ abstract class BaseEndpoint
 
 	/**
 	 * @param Container $container
-	 * @param mixed[] $data
 	 */
-	final public function __construct(Container $container, array $data)
+	final public function __construct(Container $container)
 	{
 		$this->container = $container;
-		$this->data = $data;
 
 		foreach (InjectExtension::getInjectProperties(\get_class($this)) as $property => $service) {
 			$this->{$property} = $container->getByType($service);
@@ -80,6 +78,16 @@ abstract class BaseEndpoint
 	public function getData(): array
 	{
 		return $this->data;
+	}
+
+
+	/**
+	 * @internal
+	 * @param mixed[] $data
+	 */
+	final public function setData(array $data): void
+	{
+		$this->data = $data;
 	}
 
 

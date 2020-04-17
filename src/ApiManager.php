@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
+use Nette\Caching\Cache;
+use Nette\Caching\IStorage;
 use Nette\DI\Container;
 use Nette\Utils\Strings;
 use Tracy\Debugger;
@@ -21,21 +23,24 @@ final class ApiManager
 		'null' => null,
 	];
 
-	/** @var string[] */
-	private $namespaceConventions;
-
 	/** @var Container */
 	private $container;
 
+	/** @var Cache */
+	private $cache;
+
+	/** @var string[] (endpointPath => endpointType) */
+	private $endpoints = [];
+
 
 	/**
-	 * @param string[] $namespaceConventions
 	 * @param Container $container
+	 * @param IStorage $storage
 	 */
-	public function __construct(array $namespaceConventions, Container $container)
+	public function __construct(Container $container, IStorage $storage)
 	{
-		$this->namespaceConventions = $namespaceConventions;
 		$this->container = $container;
+		$this->cache = new Cache($storage, 'structured-api');
 	}
 
 
@@ -122,6 +127,38 @@ final class ApiManager
 
 
 	/**
+	 * @internal for DIC
+	 * @param string[] $endpointServices
+	 */
+	public function setEndpoints(array $endpointServices): void
+	{
+		$hash = implode('|', $endpointServices);
+		if (($cache = $this->cache->load('endpoints')) === null || ($cache['hash'] ?? '') !== $hash) {
+			$endpoints = [];
+			foreach ($endpointServices as $endpointService) {
+				$type = \get_class($this->container->getService($endpointService));
+				$className = (string) preg_replace('/^.*?([^\\\\]+)Endpoint$/', '$1', $type);
+				$endpointPath = Helpers::formatToApiName($className);
+				if (isset($endpoints[$endpointPath]) === true) {
+					throw new \RuntimeException(
+						'Api Manager: Endpoint "' . $endpointPath . '" already exist, '
+						. 'because this endpoint implements service "' . $type . '" and "' . $endpoints[$endpointPath] . '".'
+					);
+				}
+				$endpoints[$endpointPath] = $type;
+			}
+			$this->cache->save('endpoints', [
+				'hash' => $hash,
+				'endpoints' => $endpoints,
+			]);
+		} else {
+			$endpoints = $cache['endpoints'] ?? [];
+		}
+		$this->endpoints = $endpoints;
+	}
+
+
+	/**
 	 * Route user query to class and action.
 	 *
 	 * @param string $route
@@ -135,18 +172,10 @@ final class ApiManager
 		$action = null;
 
 		if (strpos($route = trim($route, '/'), '/') === false) { // 1. Simple match
-			foreach ($this->namespaceConventions as $classFormat) {
-				if (\class_exists($class = str_replace('*', Helpers::formatApiName($route), $classFormat)) === true) {
-					break;
-				}
-			}
+			$class = $this->endpoints[$route] ?? null;
 			$action = 'default';
 		} elseif (preg_match('/^([^\/]+)\/([^\/]+)$/', $route, $routeParser)) { // 2. <endpoint>/<action>
-			foreach ($this->namespaceConventions as $classFormat) {
-				if (\class_exists($class = str_replace('*', Helpers::formatApiName($routeParser[1]), $classFormat)) === true) {
-					break;
-				}
-			}
+			$class = $this->endpoints[$routeParser[1]] ?? null;
 			$action = Helpers::formatApiName($routeParser[2]);
 		}
 
@@ -155,7 +184,7 @@ final class ApiManager
 		}
 
 		if (\class_exists($class) === false) {
-			StructuredApiException::routeClassDoesNotExist((string) $class);
+			StructuredApiException::routeClassDoesNotExist($class);
 		}
 
 		return [
@@ -170,25 +199,29 @@ final class ApiManager
 	 *
 	 * @param string $class
 	 * @param mixed[] $params
-	 * @return BaseEndpoint
+	 * @return Endpoint
 	 */
-	private function createInstance(string $class, array $params): BaseEndpoint
+	private function createInstance(string $class, array $params): Endpoint
 	{
-		return new $class($this->container, $params);
+		/** @var Endpoint $endpoint */
+		$endpoint = new $class($this->container);
+		$endpoint->setData($params);
+
+		return $endpoint;
 	}
 
 
 	/**
 	 * Call all endpoint methods in regular order and return response state.
 	 *
-	 * @param BaseEndpoint $endpoint
+	 * @param Endpoint $endpoint
 	 * @param string $action
 	 * @param string $method
 	 * @param mixed[] $params
 	 * @return BaseResponse|null
 	 * @throws RuntimeStructuredApiException
 	 */
-	private function callActionMethods(BaseEndpoint $endpoint, string $action, string $method, array $params): ?BaseResponse
+	private function callActionMethods(Endpoint $endpoint, string $action, string $method, array $params): ?BaseResponse
 	{
 		$endpoint->startup();
 		$endpoint->startupCheck();
@@ -247,13 +280,13 @@ final class ApiManager
 
 
 	/**
-	 * @param BaseEndpoint $endpoint
+	 * @param Endpoint $endpoint
 	 * @param string $parameter
 	 * @param \ReflectionType $type
 	 * @return mixed|null
 	 * @throws RuntimeStructuredApiException
 	 */
-	private function returnEmptyValue(BaseEndpoint $endpoint, string $parameter, \ReflectionType $type)
+	private function returnEmptyValue(Endpoint $endpoint, string $parameter, \ReflectionType $type)
 	{
 		if ($type->allowsNull() === true) {
 			return null;
@@ -355,12 +388,12 @@ final class ApiManager
 
 
 	/**
-	 * @param BaseEndpoint $endpoint
+	 * @param Endpoint $endpoint
 	 * @param string $method
 	 * @param string $action
 	 * @return string|null
 	 */
-	private function getActionMethodName(BaseEndpoint $endpoint, string $method, string $action): ?string
+	private function getActionMethodName(Endpoint $endpoint, string $method, string $action): ?string
 	{
 		$tryMethods = [];
 		$tryMethods[] = ($method === 'GET' ? 'action' : strtolower($method)) . Strings::firstUpper($action);

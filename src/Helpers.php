@@ -6,6 +6,7 @@ namespace Baraja\StructuredApi;
 
 
 use Nette\Http\Request;
+use Nette\Utils\Strings;
 
 final class Helpers
 {
@@ -83,34 +84,14 @@ final class Helpers
 	{
 		return (string) preg_replace_callback('/-([a-z])/', function (array $match): string {
 			return strtoupper($match[1]);
-		}, self::firstUpper($name));
+		}, Strings::firstUpper($name));
 	}
 
 
-	/**
-	 * Converts first character to lower case.
-	 *
-	 * @param string $s
-	 * @return string
-	 */
-	public static function firstUpper(string $s): string
+	public static function formatToApiName(string $type): string
 	{
-		return strtoupper($s[0] ?? '') . (function_exists('mb_substr')
-				? mb_substr($s, 1, null, 'UTF-8')
-				: iconv_substr($s, 1, self::length($s), 'UTF-8')
-			);
-	}
-
-
-	/**
-	 * Returns number of characters (not bytes) in UTF-8 string.
-	 * That is the number of Unicode code points which may differ from the number of graphemes.
-	 *
-	 * @param string $s
-	 * @return int
-	 */
-	public static function length(string $s): int
-	{
-		return function_exists('mb_strlen') ? mb_strlen($s, 'UTF-8') : strlen(utf8_decode($s));
+		return (string) preg_replace_callback('/([A-Z])/', function (array $match): string {
+			return '-' . strtolower($match[1]);
+		}, Strings::firstLower($type));
 	}
 }

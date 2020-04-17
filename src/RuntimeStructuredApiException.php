@@ -8,13 +8,13 @@ namespace Baraja\StructuredApi;
 final class RuntimeStructuredApiException extends StructuredApiException
 {
 	/**
-	 * @param BaseEndpoint $endpoint
+	 * @param Endpoint $endpoint
 	 * @param string $parameter
 	 * @param int $position
 	 * @param string $method
 	 * @throws RuntimeStructuredApiException
 	 */
-	public static function parameterDoesNotSet(BaseEndpoint $endpoint, string $parameter, int $position, string $method): void
+	public static function parameterDoesNotSet(Endpoint $endpoint, string $parameter, int $position, string $method): void
 	{
 		throw new self(
 			$endpoint . ': Parameter $' . $parameter . ' of method "' . $method . '" '
@@ -34,22 +34,22 @@ final class RuntimeStructuredApiException extends StructuredApiException
 
 
 	/**
-	 * @param BaseEndpoint $endpoint
+	 * @param Endpoint $endpoint
 	 * @throws RuntimeStructuredApiException
 	 */
-	public static function startupDoesntCallParent(BaseEndpoint $endpoint): void
+	public static function startupDoesntCallParent(Endpoint $endpoint): void
 	{
 		throw new self('Method ' . $endpoint . '::startup() or its descendant doesn\'t call parent::startup()."');
 	}
 
 
 	/**
-	 * @param BaseEndpoint $endpoint
+	 * @param Endpoint $endpoint
 	 * @param string $parameter
 	 * @param string $class
 	 * @throws RuntimeStructuredApiException
 	 */
-	public static function parameterMustBeObject(BaseEndpoint $endpoint, string $parameter, string $class): void
+	public static function parameterMustBeObject(Endpoint $endpoint, string $parameter, string $class): void
 	{
 		throw new self(
 			$endpoint . ': Parameter "' . $parameter . '" must be object '
@@ -59,12 +59,12 @@ final class RuntimeStructuredApiException extends StructuredApiException
 
 
 	/**
-	 * @param BaseEndpoint $endpoint
+	 * @param Endpoint $endpoint
 	 * @param string $parameter
 	 * @param string $typeName
 	 * @throws RuntimeStructuredApiException
 	 */
-	public static function canNotCreateEmptyValueByType(BaseEndpoint $endpoint, string $parameter, string $typeName): void
+	public static function canNotCreateEmptyValueByType(Endpoint $endpoint, string $parameter, string $typeName): void
 	{
 		throw new self(
 			$endpoint . ': Can not create default empty value for parameter "' . $parameter . '"'
@@ -74,11 +74,11 @@ final class RuntimeStructuredApiException extends StructuredApiException
 
 
 	/**
-	 * @param BaseEndpoint $endpoint
+	 * @param Endpoint $endpoint
 	 * @param string|null $type
 	 * @throws RuntimeStructuredApiException
 	 */
-	public static function propertyDataMustBeArray(BaseEndpoint $endpoint, ?string $type): void
+	public static function propertyDataMustBeArray(Endpoint $endpoint, ?string $type): void
 	{
 		throw new self(
 			$endpoint . ': Api parameter "data" must be type of "array". '

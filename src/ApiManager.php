@@ -8,6 +8,8 @@ namespace Baraja\StructuredApi;
 use Nette\Caching\Cache;
 use Nette\Caching\IStorage;
 use Nette\DI\Container;
+use Nette\Http\Request;
+use Nette\Http\Response;
 use Nette\Utils\Strings;
 use Tracy\Debugger;
 
@@ -26,6 +28,12 @@ final class ApiManager
 	/** @var Container */
 	private $container;
 
+	/** @var Request */
+	private $request;
+
+	/** @var Response */
+	private $response;
+
 	/** @var Cache */
 	private $cache;
 
@@ -35,11 +43,15 @@ final class ApiManager
 
 	/**
 	 * @param Container $container
+	 * @param Request $request
+	 * @param Response $response
 	 * @param IStorage $storage
 	 */
-	public function __construct(Container $container, IStorage $storage)
+	public function __construct(Container $container, Request $request, Response $response, IStorage $storage)
 	{
 		$this->container = $container;
+		$this->request = $request;
+		$this->response = $response;
 		$this->cache = new Cache($storage, 'structured-api');
 	}
 
@@ -89,8 +101,13 @@ final class ApiManager
 				if ($throw === true) {
 					throw new ThrowResponse($response);
 				}
-				header('Content-Type: ' . $response->getContentType());
-				echo (string) $response;
+				if ($this->response->isSent() === false) {
+					$this->response->setContentType($response->getContentType(), 'UTF-8');
+					(new \Nette\Application\Responses\JsonResponse($response->toArray(), $response->getContentType()))
+						->send($this->request, $this->response);
+				} else {
+					throw new \RuntimeException('API: Response already was sent.');
+				}
 				die;
 			}
 

@@ -13,7 +13,7 @@
 		"ext-json": "*",
 		"ext-mbstring": "*",
 		"ext-iconv": "*",
-		"baraja-core/service-method-invoker": "1.0",
+		"baraja-core/service-method-invoker": "^1.0",
 		"nette/di": "^3.0",
 		"nette/utils": "^3.0",
 		"nette/http": "^3.0",

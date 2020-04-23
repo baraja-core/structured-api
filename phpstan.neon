@@ -1,7 +1,3 @@
 includes:
 	- vendor/phpstan/phpstan-nette/extension.neon
 	- vendor/phpstan/phpstan-nette/rules.neon
-
-parameters:
-	ignoreErrors:
-		- '#Call to an undefined method ReflectionType::getName().#'

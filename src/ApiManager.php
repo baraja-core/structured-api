@@ -221,7 +221,12 @@ final class ApiManager
 	private function createInstance(string $class, array $params): Endpoint
 	{
 		/** @var Endpoint $endpoint */
-		$endpoint = new $class($this->container);
+		$endpoint = $this->container->getByType($class);
+
+		if ($endpoint instanceof BaseEndpoint) {
+			$endpoint->injectContainer($this->container);
+		}
+
 		$endpoint->setData($params);
 
 		return $endpoint;

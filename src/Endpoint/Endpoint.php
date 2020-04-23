@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
-interface Endpoint
+use Baraja\Service;
+
+interface Endpoint extends Service
 {
 	/**
 	 * @param mixed[] $data
@@ -17,6 +19,4 @@ interface Endpoint
 	public function startupCheck(): void;
 
 	public function saveState(): void;
-
-	public function __toString(): string;
 }

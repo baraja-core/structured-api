@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
+use Baraja\RuntimeInvokeException;
+use Baraja\ServiceMethodInvoker;
 use Nette\Caching\Cache;
 use Nette\Caching\IStorage;
 use Nette\DI\Container;
@@ -15,15 +17,6 @@ use Tracy\Debugger;
 
 final class ApiManager
 {
-	/** @var mixed[] */
-	private static $emptyTypeMapper = [
-		'string' => '',
-		'bool' => false,
-		'int' => 0,
-		'float' => 0.0,
-		'array' => [],
-		'null' => null,
-	];
 
 	/** @var Container */
 	private $container;
@@ -77,7 +70,7 @@ final class ApiManager
 			$route = $this->route((string) preg_replace('/^(.*?)(\?.*|)$/', '$1', $pathParser[2]), $params);
 
 			try {
-				$response = $this->callActionMethods(
+				$response = $this->invokeActionMethod(
 					$this->createInstance($route['class'], $params),
 					$route['action'],
 					$method,
@@ -243,52 +236,21 @@ final class ApiManager
 	 * @return BaseResponse|null
 	 * @throws RuntimeStructuredApiException
 	 */
-	private function callActionMethods(Endpoint $endpoint, string $action, string $method, array $params): ?BaseResponse
+	private function invokeActionMethod(Endpoint $endpoint, string $action, string $method, array $params): ?BaseResponse
 	{
 		$endpoint->startup();
 		$endpoint->startupCheck();
 		$response = null;
 		$ref = null;
-		$args = [];
 
 		if (($methodName = $this->getActionMethodName($endpoint, $method, $action)) !== null) {
 			try {
-				foreach (($ref = new \ReflectionMethod($endpoint, $methodName))->getParameters() as $parameter) {
-					if (($pName = $parameter->getName()) === 'data') {
-						if ((($type = $parameter->getType()) !== null && ($typeName = $type->getName()) !== 'array') || $type === null) {
-							RuntimeStructuredApiException::propertyDataMustBeArray($endpoint, $type === null ? null : $typeName ?? '');
-						}
-
-						$args[$pName] = $params;
-					} elseif (isset($params[$pName]) === true) {
-						if ($params[$pName]) {
-							$args[$pName] = $this->fixType($params[$pName], (($type = $parameter->getType()) !== null) ? $type : null);
-						} elseif (($type = $parameter->getType()) !== null) {
-							$args[$pName] = $this->returnEmptyValue($endpoint, $pName, $type);
-						}
-					} elseif ($parameter->isOptional() === true && $parameter->isDefaultValueAvailable() === true) {
-						try {
-							$args[$pName] = $parameter->getDefaultValue();
-						} catch (\Throwable $e) {
-						}
-					} else {
-						RuntimeStructuredApiException::parameterDoesNotSet(
-							$endpoint,
-							$parameter->getName(),
-							$parameter->getPosition(),
-							$methodName ?? ''
-						);
-					}
-				}
-			} catch (\ReflectionException $e) {
-				RuntimeStructuredApiException::reflectionException($e);
+				$response = (new ServiceMethodInvoker)->invoke($endpoint, $methodName, $params, true);
+			} catch (ThrowResponse $e) {
+				$response = $e->getResponse();
+			} catch (RuntimeInvokeException $e) {
+				throw new RuntimeStructuredApiException($e->getMessage(), $e->getCode(), $e);
 			}
-		}
-
-		try {
-			$response = $ref !== null ? $ref->invokeArgs($endpoint, $args) : null;
-		} catch (ThrowResponse $e) {
-			$response = $e->getResponse();
 		}
 
 		if ($method !== 'GET' && $response === null) {
@@ -298,33 +260,6 @@ final class ApiManager
 		$endpoint->saveState();
 
 		return $response;
-	}
-
-
-	/**
-	 * @param Endpoint $endpoint
-	 * @param string $parameter
-	 * @param \ReflectionType $type
-	 * @return mixed|null
-	 * @throws RuntimeStructuredApiException
-	 */
-	private function returnEmptyValue(Endpoint $endpoint, string $parameter, \ReflectionType $type)
-	{
-		if ($type->allowsNull() === true) {
-			return null;
-		}
-
-		if (strpos($name = $type->getName(), '/') !== false || class_exists($name) === true) {
-			RuntimeStructuredApiException::parameterMustBeObject($endpoint, $parameter, $name);
-		}
-
-		if (isset(self::$emptyTypeMapper[$name]) === true) {
-			return self::$emptyTypeMapper[$name];
-		}
-
-		RuntimeStructuredApiException::canNotCreateEmptyValueByType($endpoint, $parameter, $name);
-
-		return null;
 	}
 
 
@@ -368,44 +303,6 @@ final class ApiManager
 		}
 
 		return [];
-	}
-
-
-	/**
-	 * Rewrite given type to preference type by annotation.
-	 *
-	 * 1. If type is nullable, keep original haystack
-	 * 2. Empty value rewrite to null, if null is supported
-	 * 3. Scalar types
-	 * 4. Other -> keep original
-	 *
-	 * @param mixed $haystack
-	 * @param \ReflectionType|null $type
-	 * @return mixed
-	 */
-	private function fixType($haystack, ?\ReflectionType $type)
-	{
-		if ($type === null) {
-			return $haystack;
-		}
-
-		if (!$haystack && $type->allowsNull()) {
-			return null;
-		}
-
-		if ($type->getName() === 'bool') {
-			return \in_array(strtolower((string) $haystack), ['1', 'true', 'yes'], true) === true;
-		}
-
-		if ($type->getName() === 'int') {
-			return (int) $haystack;
-		}
-
-		if ($type->getName() === 'float') {
-			return (float) $haystack;
-		}
-
-		return $haystack;
 	}
 
 

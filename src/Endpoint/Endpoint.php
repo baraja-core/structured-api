@@ -5,12 +5,8 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
-use Nette\DI\Container;
-
 interface Endpoint
 {
-	public function __construct(Container $container);
-
 	/**
 	 * @param mixed[] $data
 	 */

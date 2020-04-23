@@ -34,19 +34,6 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param Container $container
-	 */
-	final public function __construct(Container $container)
-	{
-		$this->container = $container;
-
-		foreach (InjectExtension::getInjectProperties(\get_class($this)) as $property => $service) {
-			$this->{$property} = $container->getByType($service);
-		}
-	}
-
-
-	/**
 	 * @return string
 	 */
 	public function __toString(): string
@@ -82,12 +69,32 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @internal
+	 * @internal only for ApiManager.
 	 * @param mixed[] $data
 	 */
 	final public function setData(array $data): void
 	{
 		$this->data = $data;
+	}
+
+
+	/**
+	 * This method inject container for common use
+	 * and automatically find all comment dependencies in public properties (witch @inject annotation)
+	 * like Nette framework in the Presenter class.
+	 *
+	 * All dependencies will be injected automatically.
+	 *
+	 * @internal only for ApiManager.
+	 * @param Container $container
+	 */
+	final public function injectContainer(Container $container): void
+	{
+		$this->container = $container;
+
+		foreach (InjectExtension::getInjectProperties(\get_class($this)) as $property => $service) {
+			$this->{$property} = $container->getByType($service);
+		}
 	}
 
 

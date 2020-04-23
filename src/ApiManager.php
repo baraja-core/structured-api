@@ -60,7 +60,7 @@ final class ApiManager
 	 */
 	public function run(string $path, ?array $params = [], ?string $method = null, bool $throw = false): void
 	{
-		$params = array_merge($_GET, $this->getBodyParams($method = $method ?: $this->getMethod()), $params ?? []);
+		$params = array_merge($this->safeGetParams($path), $this->getBodyParams($method = $method ?: $this->getMethod()), $params ?? []);
 
 		if (preg_match('/^api\/v([^\/]+)\/?(.*?)$/', $path, $pathParser)) {
 			if (($version = (int) $pathParser[1]) < 1 || $version > 999 || !preg_match('#^[+-]?\d+$#D', $pathParser[1])) {
@@ -165,6 +165,27 @@ final class ApiManager
 			$endpoints = $cache['endpoints'] ?? [];
 		}
 		$this->endpoints = $endpoints;
+	}
+
+
+	/**
+	 * Safe method for get parameters from query. This helper is for CLI mode and broken Ngnix mod rewriting.
+	 *
+	 * @param string $path
+	 * @return mixed[]
+	 */
+	private function safeGetParams(string $path): array
+	{
+		$return = (array) ($_GET ?? []);
+
+		if ($return === [] && ($query = trim(explode('?', $path, 2)[1] ?? '')) !== '') {
+			parse_str($query, $queryParams);
+			foreach ($queryParams as $key => $value) {
+				$return[$key] = $value;
+			}
+		}
+
+		return $return;
 	}
 
 

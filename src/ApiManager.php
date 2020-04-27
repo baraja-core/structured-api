@@ -86,7 +86,7 @@ final class ApiManager
 				$response = new JsonResponse([
 					'state' => 'error',
 					'message' => $isDebugger && Debugger::isEnabled() === true ? $e->getMessage() : null,
-					'code' => $e->getCode(),
+					'code' => ($code = $e->getCode()) === 0 ? 500 : $code,
 				]);
 			}
 

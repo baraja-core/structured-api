@@ -10,6 +10,7 @@ use Baraja\ServiceMethodInvoker;
 use Nette\Caching\Cache;
 use Nette\Caching\IStorage;
 use Nette\DI\Container;
+use Nette\DI\Extensions\InjectExtension;
 use Nette\Http\Request;
 use Nette\Http\Response;
 use Nette\Utils\Strings;
@@ -237,8 +238,8 @@ final class ApiManager
 		/** @var Endpoint $endpoint */
 		$endpoint = $this->container->getByType($class);
 
-		if ($endpoint instanceof BaseEndpoint) {
-			$endpoint->injectContainer($this->container);
+		foreach (InjectExtension::getInjectProperties(\get_class($endpoint)) as $property => $service) {
+			$endpoint->{$property} = $this->container->getByType($service);
 		}
 
 		$endpoint->setData($params);

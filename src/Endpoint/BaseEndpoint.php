@@ -10,7 +10,6 @@ use Nette\Application\UI\InvalidLinkException;
 use Nette\Caching\Cache;
 use Nette\Caching\IStorage;
 use Nette\DI\Container;
-use Nette\DI\Extensions\InjectExtension;
 use Nette\Localization\ITranslator;
 use Nette\Security\IIdentity;
 use Nette\Security\User;
@@ -20,13 +19,16 @@ abstract class BaseEndpoint implements Endpoint
 {
 	use SmartObject;
 
-	/**  @var callable[] */
+	/** @var callable[] */
 	public $onSaveState = [];
 
-	/** @var Container */
-	protected $container;
+	/**
+	 * @var Container
+	 * @inject
+	 */
+	public $container;
 
-	/**  @var mixed[] */
+	/** @var mixed[] */
 	protected $data = [];
 
 	/** @var bool */
@@ -75,26 +77,6 @@ abstract class BaseEndpoint implements Endpoint
 	final public function setData(array $data): void
 	{
 		$this->data = $data;
-	}
-
-
-	/**
-	 * This method inject container for common use
-	 * and automatically find all comment dependencies in public properties (witch @inject annotation)
-	 * like Nette framework in the Presenter class.
-	 *
-	 * All dependencies will be injected automatically.
-	 *
-	 * @internal only for ApiManager.
-	 * @param Container $container
-	 */
-	final public function injectContainer(Container $container): void
-	{
-		$this->container = $container;
-
-		foreach (InjectExtension::getInjectProperties(\get_class($this)) as $property => $service) {
-			$this->{$property} = $container->getByType($service);
-		}
 	}
 
 

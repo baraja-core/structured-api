@@ -339,6 +339,8 @@ final class ApiManager
 		$tryMethods[] = ($method === 'GET' ? 'action' : strtolower($method)) . Strings::firstUpper($action);
 		if ($method === 'PUT') {
 			$tryMethods[] = 'update' . Strings::firstUpper($action);
+		} elseif ($method === 'POST') {
+			$tryMethods[] = 'create' . Strings::firstUpper($action);
 		}
 
 		$methodName = null;

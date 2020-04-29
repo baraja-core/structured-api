@@ -72,7 +72,7 @@ final class ApiManager
 
 			try {
 				$response = $this->invokeActionMethod(
-					$this->createInstance($route['class'], $params),
+					$this->createEndpointInstance($route['class'], $params),
 					$route['action'],
 					$method,
 					$params
@@ -138,6 +138,15 @@ final class ApiManager
 
 
 	/**
+	 * @return string[]
+	 */
+	public function getEndpoints(): array
+	{
+		return $this->endpoints;
+	}
+
+
+	/**
 	 * @internal for DIC
 	 * @param string[] $endpointServices
 	 */
@@ -166,6 +175,29 @@ final class ApiManager
 			$endpoints = $cache['endpoints'] ?? [];
 		}
 		$this->endpoints = $endpoints;
+	}
+
+
+	/**
+	 * Create new API endpoint instance with all injected dependencies.
+	 *
+	 * @internal
+	 * @param string $className
+	 * @param mixed[] $params
+	 * @return Endpoint
+	 */
+	public function createEndpointInstance(string $className, array $params): Endpoint
+	{
+		/** @var Endpoint $endpoint */
+		$endpoint = $this->container->getByType($className);
+
+		foreach (InjectExtension::getInjectProperties(\get_class($endpoint)) as $property => $service) {
+			$endpoint->{$property} = $this->container->getByType($service);
+		}
+
+		$endpoint->setData($params);
+
+		return $endpoint;
 	}
 
 

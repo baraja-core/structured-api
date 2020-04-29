@@ -259,28 +259,6 @@ final class ApiManager
 
 
 	/**
-	 * Create new API endpoint instance with all injected dependencies.
-	 *
-	 * @param string $class
-	 * @param mixed[] $params
-	 * @return Endpoint
-	 */
-	private function createInstance(string $class, array $params): Endpoint
-	{
-		/** @var Endpoint $endpoint */
-		$endpoint = $this->container->getByType($class);
-
-		foreach (InjectExtension::getInjectProperties(\get_class($endpoint)) as $property => $service) {
-			$endpoint->{$property} = $this->container->getByType($service);
-		}
-
-		$endpoint->setData($params);
-
-		return $endpoint;
-	}
-
-
-	/**
 	 * Call all endpoint methods in regular order and return response state.
 	 *
 	 * @param Endpoint $endpoint

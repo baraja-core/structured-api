@@ -87,8 +87,8 @@ final class ApiManager
 				$response = new JsonResponse([
 					'state' => 'error',
 					'message' => $isDebugger && Debugger::isEnabled() === true ? $e->getMessage() : null,
-					'code' => ($code = $e->getCode()) === 0 ? 500 : $code,
-				]);
+					'code' => $code = (($code = $e->getCode()) === 0 ? 500 : $code),
+				], $code);
 			}
 
 			if ($response !== null) {
@@ -96,6 +96,7 @@ final class ApiManager
 					throw new ThrowResponse($response);
 				}
 				if ($this->response->isSent() === false) {
+					$this->response->setCode($response->getHttpCode());
 					$this->response->setContentType($response->getContentType(), 'UTF-8');
 					(new \Nette\Application\Responses\JsonResponse($response->toArray(), $response->getContentType()))
 						->send($this->request, $this->response);

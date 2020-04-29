@@ -19,13 +19,18 @@ abstract class BaseResponse
 	/** @var mixed[] */
 	protected $haystack;
 
+	/** @var int */
+	private $httpCode;
+
 
 	/**
 	 * @param mixed[] $haystack
+	 * @param int $httpCode
 	 */
-	final public function __construct(array $haystack)
+	final public function __construct(array $haystack, int $httpCode = 200)
 	{
 		$this->haystack = $haystack;
+		$this->httpCode = $httpCode;
 	}
 
 
@@ -62,6 +67,15 @@ abstract class BaseResponse
 	final public function getArray(): array
 	{
 		return $this->haystack;
+	}
+
+
+	/**
+	 * @return int
+	 */
+	final public function getHttpCode(): int
+	{
+		return $this->httpCode;
 	}
 
 

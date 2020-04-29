@@ -82,10 +82,11 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * @param mixed[] $haystack
+	 * @param int $httpCode
 	 */
-	final public function sendJson(array $haystack): void
+	final public function sendJson(array $haystack, int $httpCode = 200): void
 	{
-		throw new ThrowResponse(new JsonResponse($haystack));
+		throw new ThrowResponse(new JsonResponse($haystack, $httpCode));
 	}
 
 
@@ -98,8 +99,8 @@ abstract class BaseEndpoint implements Endpoint
 		$this->sendJson([
 			'state' => 'error',
 			'message' => $message,
-			'code' => $code ?? 500,
-		]);
+			'code' => $code = $code ?? 500,
+		], $code);
 	}
 
 
@@ -115,7 +116,7 @@ abstract class BaseEndpoint implements Endpoint
 			'message' => $message,
 			'code' => $code,
 			'data' => $data,
-		]);
+		], $code);
 	}
 
 

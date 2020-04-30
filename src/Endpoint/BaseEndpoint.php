@@ -46,6 +46,14 @@ abstract class BaseEndpoint implements Endpoint
 
 	public function startup(): void
 	{
+		if (PHP_SAPI !== 'cli' && class_exists('\Baraja\Localization\Localization') === true) {
+			/** @var \Nette\Http\Request $httpRequest */
+			$httpRequest = $this->container->getByType(\Nette\Http\Request::class);
+			/** @var \Baraja\Localization\Localization $localization */
+			$localization = $this->container->getByType(\Baraja\Localization\Localization::class);
+			$localization->processHttpRequest($httpRequest);
+		}
+
 		$this->startupCheck = true;
 	}
 

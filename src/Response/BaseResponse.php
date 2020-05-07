@@ -135,6 +135,9 @@ abstract class BaseResponse
 		}
 
 		if (\is_object($haystack) === true) {
+			if ($haystack instanceof \DateTimeInterface) {
+				return $haystack->format('Y-m-d H:i:s');
+			}
 			if (\method_exists($haystack, '__toString') === true) {
 				return (string) $haystack;
 			}

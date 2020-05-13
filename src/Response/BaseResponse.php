@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
+use Nette\Utils\Paginator;
 use Tracy\Debugger;
 use Tracy\ILogger;
 
@@ -137,6 +138,18 @@ abstract class BaseResponse
 		if (\is_object($haystack) === true) {
 			if ($haystack instanceof \DateTimeInterface) {
 				return $haystack->format('Y-m-d H:i:s');
+			}
+			if ($haystack instanceof Paginator) {
+				return [
+					'page' => $haystack->getPage(),
+					'pageCount' => $haystack->getPageCount(),
+					'itemCount' => $haystack->getItemCount(),
+					'itemsPerPage' => $haystack->getItemsPerPage(),
+					'firstPage' => $haystack->getFirstPage(),
+					'lastPage' => $haystack->getLastPage(),
+					'isFirstPage' => $haystack->isFirst(),
+					'isLastPage' => $haystack->isLast(),
+				];
 			}
 			if (\method_exists($haystack, '__toString') === true) {
 				return (string) $haystack;

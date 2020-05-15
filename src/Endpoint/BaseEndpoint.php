@@ -129,6 +129,23 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
+	 * @param mixed[] $items
+	 * @param Paginator|null $paginator
+	 * @param mixed[] $data
+	 */
+	final public function sendItems(array $items, ?Paginator $paginator = null, array $data = []): void
+	{
+		$return = ['items' => $items];
+
+		if ($paginator !== null) {
+			$return['paginator'] = $paginator;
+		}
+
+		$this->sendJson(array_merge($return, $data));
+	}
+
+
+	/**
 	 * @param string $key
 	 * @param string|null $message
 	 * @param int|null $code

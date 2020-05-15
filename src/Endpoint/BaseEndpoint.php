@@ -14,6 +14,7 @@ use Nette\Localization\ITranslator;
 use Nette\Security\IIdentity;
 use Nette\Security\User;
 use Nette\SmartObject;
+use Nette\Utils\Paginator;
 
 abstract class BaseEndpoint implements Endpoint
 {
@@ -30,6 +31,9 @@ abstract class BaseEndpoint implements Endpoint
 
 	/** @var mixed[] */
 	protected $data = [];
+
+	/** @var string[][] */
+	private $messages = [];
 
 	/** @var bool */
 	private $startupCheck = false;
@@ -89,11 +93,21 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
+	 * Send raw data to output.
+	 *
 	 * @param mixed[] $haystack
 	 * @param int $httpCode
 	 */
 	final public function sendJson(array $haystack, int $httpCode = 200): void
 	{
+		if ($this->messages !== []) {
+			if (isset($haystack['flashMessages']) === true) {
+				throw new \RuntimeException('Flash message was already defined in your data. Did you want to use the flashMessage() function?');
+			}
+			$haystack = array_merge($haystack, ['flashMessages' => $this->messages]);
+			$this->messages = []; // Reset for next response
+		}
+
 		throw new ThrowResponse(new JsonResponse($haystack, $httpCode));
 	}
 
@@ -142,6 +156,23 @@ abstract class BaseEndpoint implements Endpoint
 		}
 
 		$this->sendJson(array_merge($return, $data));
+	}
+
+
+	/**
+	 * Add new flash message to internal storage.
+	 * All Flash messages will be returned in `flashMessages` key in all responses.
+	 * Warning: FlashMessage can change the structure of your response data.
+	 *
+	 * @param string $message
+	 * @param string $type
+	 */
+	final public function flashMessage(string $message, string $type = 'info'): void
+	{
+		$this->messages[] = [
+			'message' => $message,
+			'type' => $type,
+		];
 	}
 
 

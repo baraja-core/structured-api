@@ -11,6 +11,7 @@ use Nette\Caching\Cache;
 use Nette\Caching\IStorage;
 use Nette\DI\Container;
 use Nette\Localization\ITranslator;
+use Nette\Security\IAuthorizator;
 use Nette\Security\IIdentity;
 use Nette\Security\User;
 use Nette\SmartObject;
@@ -297,6 +298,15 @@ abstract class BaseEndpoint implements Endpoint
 	final public function getUserEntity(): ?IIdentity
 	{
 		return $this->getUser()->getIdentity();
+	}
+
+
+	/**
+	 * @return IAuthorizator
+	 */
+	final public function getAuthorizator(): IAuthorizator
+	{
+		return $this->getUser()->getAuthorizator();
 	}
 
 

@@ -166,10 +166,13 @@ abstract class BaseEndpoint implements Endpoint
 	 * Warning: FlashMessage can change the structure of your response data.
 	 *
 	 * @param string $message
-	 * @param string $type
+	 * @param string $type of array [success, info, warning, error]
 	 */
 	final public function flashMessage(string $message, string $type = 'info'): void
 	{
+		if (\in_array($type = strtolower($type), $types = ['success', 'info', 'warning', 'error'], true) === false) {
+			throw new \RuntimeException('Flash message type "' . $type . '" must be one of "' . implode('", "', $types) . '".');
+		}
 		$this->messages[] = [
 			'message' => $message,
 			'type' => $type,

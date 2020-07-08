@@ -121,9 +121,10 @@ abstract class BaseResponse
 	 * Convert common haystack to json compatible format.
 	 *
 	 * @param mixed $haystack
+	 * @param string[] $trackedInstanceHashes
 	 * @return array|string|mixed
 	 */
-	private function process($haystack)
+	private function process($haystack, array $trackedInstanceHashes = [])
 	{
 		if (\is_array($haystack) === true) {
 			$return = [];
@@ -156,7 +157,6 @@ abstract class BaseResponse
 			}
 
 			$return = [];
-
 			try {
 				foreach ((new \ReflectionClass($haystack))->getProperties() as $property) {
 					$property->setAccessible(true);
@@ -165,8 +165,16 @@ abstract class BaseResponse
 						continue;
 					}
 
-					$value = $property->getValue($haystack);
-					$return[$key] = $this->hideKey($key, $value) ? self::$hiddenKeyLabel : $this->process($value);
+					if (\is_object($value = $property->getValue($haystack)) === true) {
+						if (isset($trackedInstanceHashes[$objectHash = spl_object_hash($value)]) === true) {
+							throw new \InvalidArgumentException(
+								'Attention: Recursion has been stopped! BaseResponse detected an infinite recursion that was automatically stopped.'
+								. "\n\n" . 'To resolve this issue: Never pass entire recursive entities to the API. If you can, pass the processed field without recursion.'
+							);
+						}
+						$trackedInstanceHashes[$objectHash] = true;
+					}
+					$return[$key] = $this->hideKey($key, $value) ? self::$hiddenKeyLabel : $this->process($value, $trackedInstanceHashes);
 				}
 			} catch (\ReflectionException $e) {
 				foreach ($haystack as $key => $value) {

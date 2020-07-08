@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
+use Baraja\StructuredApi\Entity\ItemsList;
+use Baraja\StructuredApi\Entity\StatusCount;
 use Nette\Utils\Paginator;
 use Tracy\Debugger;
 use Tracy\ILogger;
@@ -128,8 +130,14 @@ abstract class BaseResponse
 	{
 		if (\is_array($haystack) === true) {
 			$return = [];
-
 			foreach ($haystack as $key => $value) {
+				if ($value instanceof ItemsList && $key !== 'items') {
+					throw new \InvalidArgumentException('Convention error: Item list must be in key "items", but "' . $key . '" given.');
+				}
+				if ($value instanceof Paginator && $key !== 'paginator') {
+					throw new \InvalidArgumentException('Convention error: Paginator must be in key "paginator", but "' . $key . '" given.');
+				}
+
 				$return[$key] = $this->hideKey($key, $value) ? self::$hiddenKeyLabel : $this->process($value);
 			}
 
@@ -151,6 +159,16 @@ abstract class BaseResponse
 					'isFirstPage' => $haystack->isFirst(),
 					'isLastPage' => $haystack->isLast(),
 				];
+			}
+			if ($haystack instanceof StatusCount) {
+				return [
+					'key' => $haystack->getKey(),
+					'label' => $haystack->getLabel(),
+					'count' => $haystack->getCount(),
+				];
+			}
+			if ($haystack instanceof ItemsList) {
+				return $haystack->getData();
 			}
 			if (\method_exists($haystack, '__toString') === true) {
 				return (string) $haystack;

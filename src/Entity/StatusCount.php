@@ -1,0 +1,61 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Baraja\StructuredApi\Entity;
+
+
+use Nette\Utils\Strings;
+
+final class StatusCount
+{
+
+	/** @var string */
+	private $key;
+
+	/** @var string */
+	private $label;
+
+	/** @var int */
+	private $count;
+
+
+	/**
+	 * @param string $key
+	 * @param int $count
+	 * @param string $label
+	 */
+	public function __construct(string $key, int $count, ?string $label = null)
+	{
+		$this->key = $key;
+		$this->count = $count;
+		$this->label = $label ?? Strings::firstUpper(str_replace('-', ' ', $key));
+	}
+
+
+	/**
+	 * @return string
+	 */
+	public function getKey(): string
+	{
+		return $this->key;
+	}
+
+
+	/**
+	 * @return string
+	 */
+	public function getLabel(): string
+	{
+		return $this->label;
+	}
+
+
+	/**
+	 * @return int
+	 */
+	public function getCount(): int
+	{
+		return $this->count;
+	}
+}

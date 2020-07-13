@@ -7,6 +7,7 @@ namespace Baraja\StructuredApi;
 
 use Baraja\RuntimeInvokeException;
 use Baraja\ServiceMethodInvoker;
+use Baraja\StructuredApi\Entity\Convention;
 use Nette\Caching\Cache;
 use Nette\Caching\IStorage;
 use Nette\DI\Container;
@@ -31,6 +32,9 @@ final class ApiManager
 	/** @var Cache */
 	private $cache;
 
+	/** @var Convention */
+	private $convention;
+
 	/** @var string[] (endpointPath => endpointType) */
 	private $endpoints = [];
 
@@ -47,6 +51,7 @@ final class ApiManager
 		$this->request = $request;
 		$this->response = $response;
 		$this->cache = new Cache($storage, 'structured-api');
+		$this->convention = new Convention;
 	}
 
 
@@ -84,7 +89,7 @@ final class ApiManager
 					Debugger::log($e);
 				}
 
-				$response = new JsonResponse([
+				$response = new JsonResponse($this->convention, [
 					'state' => 'error',
 					'message' => $isDebugger && Debugger::isEnabled() === true ? $e->getMessage() : null,
 					'code' => $code = (($code = $e->getCode()) === 0 ? 500 : $code),
@@ -135,6 +140,15 @@ final class ApiManager
 		}
 
 		return [];
+	}
+
+
+	/**
+	 * @return Convention
+	 */
+	public function getConvention(): Convention
+	{
+		return $this->convention;
 	}
 
 
@@ -196,6 +210,7 @@ final class ApiManager
 			$endpoint->{$property} = $this->container->getByType($service);
 		}
 
+		$endpoint->setConvention($this->convention);
 		$endpoint->setData($params);
 
 		return $endpoint;
@@ -287,7 +302,7 @@ final class ApiManager
 		}
 
 		if ($method !== 'GET' && $response === null) {
-			$response = new JsonResponse(['state' => 'ok']);
+			$response = new JsonResponse($this->convention, ['state' => 'ok']);
 		}
 
 		$endpoint->saveState();

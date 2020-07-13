@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
+use Baraja\StructuredApi\Entity\Convention;
 use Baraja\StructuredApi\Entity\ItemsList;
 use Baraja\StructuredApi\Entity\StatusCount;
 use Nette\Utils\Paginator;
@@ -13,25 +14,26 @@ use Tracy\ILogger;
 
 abstract class BaseResponse
 {
-	/** @var array|string[] */
-	public static $keysToHide = ['password', 'passwd', 'pass', 'pwd', 'creditcard', 'credit card', 'cc', 'pin'];
-
-	/** @var string */
-	public static $hiddenKeyLabel = '*****';
+	private const HIDDEN_KEY_LABEL = '*****';
 
 	/** @var mixed[] */
 	protected $haystack;
+
+	/** @var Convention */
+	private $convention;
 
 	/** @var int */
 	private $httpCode;
 
 
 	/**
+	 * @param Convention $convention
 	 * @param mixed[] $haystack
 	 * @param int $httpCode
 	 */
-	final public function __construct(array $haystack, int $httpCode = 200)
+	final public function __construct(Convention $convention, array $haystack, int $httpCode = 200)
 	{
+		$this->convention = $convention;
 		$this->haystack = $haystack;
 		$this->httpCode = $httpCode;
 	}
@@ -93,7 +95,7 @@ abstract class BaseResponse
 
 		if ($hide === null) {
 			$hide = [];
-			foreach (self::$keysToHide as $hideKey) {
+			foreach ($this->convention->getKeysToHide() as $hideKey) {
 				$hide[$hideKey] = true;
 			}
 		}
@@ -138,7 +140,7 @@ abstract class BaseResponse
 					throw new \InvalidArgumentException('Convention error: Paginator must be in key "paginator", but "' . $key . '" given.');
 				}
 
-				$return[$key] = $this->hideKey($key, $value) ? self::$hiddenKeyLabel : $this->process($value);
+				$return[$key] = $this->hideKey($key, $value) ? self::HIDDEN_KEY_LABEL : $this->process($value);
 			}
 
 			return $return;
@@ -146,7 +148,7 @@ abstract class BaseResponse
 
 		if (\is_object($haystack) === true) {
 			if ($haystack instanceof \DateTimeInterface) {
-				return $haystack->format('Y-m-d H:i:s');
+				return $haystack->format($this->convention->getDateTimeFormat());
 			}
 			if ($haystack instanceof Paginator) {
 				return [
@@ -170,7 +172,7 @@ abstract class BaseResponse
 			if ($haystack instanceof ItemsList) {
 				return $this->process($haystack->getData(), $trackedInstanceHashes);
 			}
-			if (\method_exists($haystack, '__toString') === true) {
+			if ($this->convention->isRewriteTooStringMethod() && \method_exists($haystack, '__toString') === true) {
 				return (string) $haystack;
 			}
 
@@ -192,11 +194,11 @@ abstract class BaseResponse
 						}
 						$trackedInstanceHashes[$objectHash] = true;
 					}
-					$return[$key] = $this->hideKey($key, $value) ? self::$hiddenKeyLabel : $this->process($value, $trackedInstanceHashes);
+					$return[$key] = $this->hideKey($key, $value) ? self::HIDDEN_KEY_LABEL : $this->process($value, $trackedInstanceHashes);
 				}
 			} catch (\ReflectionException $e) {
 				foreach ($haystack as $key => $value) {
-					$return[$key] = $this->hideKey($key, $value) ? self::$hiddenKeyLabel : $this->process($value);
+					$return[$key] = $this->hideKey($key, $value) ? self::HIDDEN_KEY_LABEL : $this->process($value);
 				}
 			}
 

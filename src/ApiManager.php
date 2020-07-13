@@ -66,7 +66,7 @@ final class ApiManager
 	 */
 	public function run(string $path, ?array $params = [], ?string $method = null, bool $throw = false): void
 	{
-		$params = array_merge($this->safeGetParams($path), $this->getBodyParams($method = $method ?: $this->getMethod()), $params ?? []);
+		$params = array_merge($this->safeGetParams($path), $this->getBodyParams($method = $method ?: $this->getHttpMethod()), $params ?? []);
 
 		if (preg_match('/^api\/v([^\/]+)\/?(.*?)$/', $path, $pathParser)) {
 			if (($version = (int) $pathParser[1]) < 1 || $version > 999 || !preg_match('#^[+-]?\d+$#D', $pathParser[1])) {
@@ -143,9 +143,6 @@ final class ApiManager
 	}
 
 
-	/**
-	 * @return Convention
-	 */
 	public function getConvention(): Convention
 	{
 		return $this->convention;
@@ -311,12 +308,7 @@ final class ApiManager
 	}
 
 
-	/**
-	 * Return current HTTP method.
-	 *
-	 * @return string
-	 */
-	private function getMethod(): string
+	private function getHttpMethod(): string
 	{
 		if (($method = $_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST'
 			&& preg_match('#^[A-Z]+$#D', $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] ?? '')

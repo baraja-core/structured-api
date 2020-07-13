@@ -33,27 +33,18 @@ final class StatusCount
 	}
 
 
-	/**
-	 * @return string
-	 */
 	public function getKey(): string
 	{
 		return $this->key;
 	}
 
 
-	/**
-	 * @return string
-	 */
 	public function getLabel(): string
 	{
 		return $this->label;
 	}
 
 
-	/**
-	 * @return int
-	 */
 	public function getCount(): int
 	{
 		return $this->count;

@@ -11,9 +11,6 @@ final class ThrowResponse extends \RuntimeException
 	private $response;
 
 
-	/**
-	 * @param BaseResponse $response
-	 */
 	public function __construct(BaseResponse $response)
 	{
 		parent::__construct('');
@@ -21,9 +18,6 @@ final class ThrowResponse extends \RuntimeException
 	}
 
 
-	/**
-	 * @return BaseResponse
-	 */
 	public function getResponse(): BaseResponse
 	{
 		return $this->response;

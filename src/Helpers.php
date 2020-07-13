@@ -10,9 +10,7 @@ use Nette\Utils\Strings;
 
 final class Helpers
 {
-	/**
-	 * @throws \Error
-	 */
+	/** @throws \Error */
 	public function __construct()
 	{
 		throw new \Error('Class ' . get_class($this) . ' is static and cannot be instantiated.');
@@ -49,9 +47,6 @@ final class Helpers
 	}
 
 
-	/**
-	 * @return string|null
-	 */
 	public static function getBaseUrl(): ?string
 	{
 		static $return;
@@ -76,10 +71,6 @@ final class Helpers
 	}
 
 
-	/**
-	 * @param string $name
-	 * @return string
-	 */
 	public static function formatApiName(string $name): string
 	{
 		return (string) preg_replace_callback('/-([a-z])/', function (array $match): string {

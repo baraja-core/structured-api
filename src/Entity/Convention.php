@@ -27,18 +27,12 @@ final class Convention
 	private $keysToHide = ['password', 'passwd', 'pass', 'pwd', 'creditcard', 'credit card', 'cc', 'pin'];
 
 
-	/**
-	 * @return string
-	 */
 	public function getDateTimeFormat(): string
 	{
 		return $this->dateTimeFormat;
 	}
 
 
-	/**
-	 * @param string $dateTimeFormat
-	 */
 	public function setDateTimeFormat(string $dateTimeFormat): void
 	{
 		if ($dateTimeFormat === '') {
@@ -49,18 +43,12 @@ final class Convention
 	}
 
 
-	/**
-	 * @return int
-	 */
 	public function getDefaultErrorCode(): int
 	{
 		return $this->defaultErrorCode;
 	}
 
 
-	/**
-	 * @param int $code
-	 */
 	public function setDefaultErrorCode(int $code): void
 	{
 		if ($code < 100 || $code > 999) {
@@ -71,18 +59,12 @@ final class Convention
 	}
 
 
-	/**
-	 * @return int
-	 */
 	public function getDefaultOkCode(): int
 	{
 		return $this->defaultOkCode;
 	}
 
 
-	/**
-	 * @param int $code
-	 */
 	public function setDefaultOkCode(int $code): void
 	{
 		if ($code < 100 || $code > 999) {
@@ -93,18 +75,12 @@ final class Convention
 	}
 
 
-	/**
-	 * @return bool
-	 */
 	public function isRewriteTooStringMethod(): bool
 	{
 		return $this->rewriteTooStringMethod;
 	}
 
 
-	/**
-	 * @param bool $rewriteTooStringMethod
-	 */
 	public function setRewriteTooStringMethod(bool $rewriteTooStringMethod): void
 	{
 		$this->rewriteTooStringMethod = $rewriteTooStringMethod;

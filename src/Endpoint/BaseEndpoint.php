@@ -44,9 +44,6 @@ abstract class BaseEndpoint implements Endpoint
 	private $startupCheck = false;
 
 
-	/**
-	 * @return string
-	 */
 	public function __toString(): string
 	{
 		return get_class($this);
@@ -123,10 +120,6 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
-	/**
-	 * @param string $message
-	 * @param int|null $code
-	 */
 	final public function sendError(string $message, ?int $code = null): void
 	{
 		$this->sendJson([
@@ -190,11 +183,6 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
-	/**
-	 * @param string $key
-	 * @param string|null $message
-	 * @param int|null $code
-	 */
 	final public function validateDataKey(string $key, ?string $message = null, ?int $code = null): void
 	{
 		if (array_key_exists($key, $this->data) === false) {
@@ -277,9 +265,6 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
-	/**
-	 * @return User
-	 */
 	final public function getUser(): User
 	{
 		static $user;
@@ -292,9 +277,6 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
-	/**
-	 * @return bool
-	 */
 	final public function isUserLoggedIn(): bool
 	{
 		try {
@@ -305,18 +287,12 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
-	/**
-	 * @return IIdentity|null
-	 */
 	final public function getUserEntity(): ?IIdentity
 	{
 		return $this->getUser()->getIdentity();
 	}
 
 
-	/**
-	 * @return IAuthorizator
-	 */
 	final public function getAuthorizator(): IAuthorizator
 	{
 		return $this->getUser()->getAuthorizator();
@@ -359,10 +335,6 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
-	/**
-	 * @param string|null $namespace
-	 * @return Cache
-	 */
 	final public function getCache(?string $namespace = null): Cache
 	{
 		static $storage;
@@ -382,9 +354,6 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
-	/**
-	 * @return ITranslator
-	 */
 	final public function getTranslator(): ITranslator
 	{
 		static $translator;
@@ -410,7 +379,7 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @return array<mixed>
+	 * @return mixed[]
 	 */
 	final public function getParameters(): array
 	{

@@ -10,18 +10,12 @@ use Nette\Utils\JsonException;
 
 final class JsonResponse extends BaseResponse
 {
-	/**
-	 * @return string
-	 */
 	public function getContentType(): string
 	{
 		return 'application/json';
 	}
 
 
-	/**
-	 * @return string
-	 */
 	public function __toString(): string
 	{
 		try {

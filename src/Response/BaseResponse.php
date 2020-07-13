@@ -39,18 +39,12 @@ abstract class BaseResponse
 	}
 
 
-	/**
-	 * @return string
-	 */
 	public function getContentType(): string
 	{
 		return 'text/plain';
 	}
 
 
-	/**
-	 * @return string
-	 */
 	public function __toString(): string
 	{
 		return '';
@@ -75,9 +69,6 @@ abstract class BaseResponse
 	}
 
 
-	/**
-	 * @return int
-	 */
 	final public function getHttpCode(): int
 	{
 		return $this->httpCode;

@@ -168,7 +168,7 @@ abstract class BaseResponse
 				];
 			}
 			if ($haystack instanceof ItemsList) {
-				return $haystack->getData();
+				return $this->process($haystack->getData(), $trackedInstanceHashes);
 			}
 			if (\method_exists($haystack, '__toString') === true) {
 				return (string) $haystack;

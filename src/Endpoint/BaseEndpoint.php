@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
+use Baraja\StructuredApi\Entity\Convention;
 use Nette\Application\LinkGenerator;
 use Nette\Application\UI\InvalidLinkException;
 use Nette\Caching\Cache;
@@ -29,6 +30,9 @@ abstract class BaseEndpoint implements Endpoint
 	 * @inject
 	 */
 	public $container;
+
+	/** @var Convention */
+	protected $convention;
 
 	/** @var mixed[] */
 	protected $data = [];
@@ -93,6 +97,12 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
+	final public function setConvention(Convention $convention): void
+	{
+		$this->convention = $convention;
+	}
+
+
 	/**
 	 * Send raw data to output.
 	 *
@@ -109,7 +119,7 @@ abstract class BaseEndpoint implements Endpoint
 			$this->messages = []; // Reset for next response
 		}
 
-		throw new ThrowResponse(new JsonResponse($haystack, $httpCode));
+		throw new ThrowResponse(new JsonResponse($this->convention, $haystack, $httpCode));
 	}
 
 
@@ -122,7 +132,7 @@ abstract class BaseEndpoint implements Endpoint
 		$this->sendJson([
 			'state' => 'error',
 			'message' => $message,
-			'code' => $code = $code ?? 500,
+			'code' => $code = $code ?? $this->convention->getDefaultErrorCode(),
 		], $code);
 	}
 
@@ -130,14 +140,14 @@ abstract class BaseEndpoint implements Endpoint
 	/**
 	 * @param mixed[] $data
 	 * @param string|null $message
-	 * @param int $code
+	 * @param int|null $code
 	 */
-	final public function sendOk(array $data = [], ?string $message = null, int $code = 200): void
+	final public function sendOk(array $data = [], ?string $message = null, ?int $code = null): void
 	{
 		$this->sendJson([
 			'state' => 'ok',
 			'message' => $message,
-			'code' => $code,
+			'code' => $code = $code ?? $this->convention->getDefaultOkCode(),
 			'data' => $data,
 		], $code);
 	}

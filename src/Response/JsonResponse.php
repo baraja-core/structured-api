@@ -7,6 +7,8 @@ namespace Baraja\StructuredApi;
 
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
+use Tracy\Debugger;
+use Tracy\ILogger;
 
 final class JsonResponse extends BaseResponse
 {
@@ -21,6 +23,10 @@ final class JsonResponse extends BaseResponse
 		try {
 			return $this->getJson();
 		} catch (JsonException $e) {
+			if (class_exists('\Tracy\Debugger') === true) {
+				Debugger::log($e, ILogger::CRITICAL);
+			}
+
 			return '{}';
 		}
 	}

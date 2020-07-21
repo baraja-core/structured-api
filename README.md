@@ -10,8 +10,8 @@ Full compatible smart structured API defined by schema.
 - Full compatible with Nette framework,
 - Inject dependencies by `@inject` annotation in public property.
 
-How to install
---------------
+📦 Installation & Basic Usage
+-----------------------------
 
 This package can be installed using [PackageRegistrator](https://github.com/baraja-core/package-manager) which is also part of the Baraja [Sandbox](https://github.com/baraja-core/sandbox). If you are not using it, you have to install the package manually following this guide.
 
@@ -20,11 +20,11 @@ A model configuration can be found in the `common.neon` file inside the root of 
 To manually install the package call Composer and execute the following command:
 
 ```shell
-composer require baraja-core/structured-api
+$ composer require baraja-core/structured-api
 ```
 
-API endpoint
-------------
+🛠️ API endpoint
+---------------
 
 API endpoint is simple class with action methods and dependencies. For best comfort please use your custom BaseEndpoint with declaring all required dependencies.
 
@@ -35,10 +35,10 @@ Simple example:
 
 declare(strict_types=1);
 
-namespace Baraja\StructuredApi;
+namespace App\Model;
 
 
-class TestEndpoint extends BaseEndpoint
+final class MyAwesomeEndpoint extends BaseEndpoint
 {
 
 	/**
@@ -70,3 +70,17 @@ class TestEndpoint extends BaseEndpoint
 Method `actionDefault` is used for request in format `/api/v1/test` with query parameter `?hello=...`.
 
 Method `postCreateUser` will be called by POST request with all data.
+
+🗺️ Project endpoint documentation
+---------------------------------
+
+When developing a real application, you will often need to pass work between the backend and the frontend.
+
+To describe all endpoints, the package offers an optional extension that generates documentation automatically based on real code scanning.
+
+Try the [Structured API Documentation](https://github.com/baraja-core/structured-api-doc).
+
+📄 License
+-----------
+
+`baraja-core/structured-api` is licensed under the MIT license. See the [LICENSE](https://github.com/baraja-core/structured-api/blob/master/LICENSE) file for more details.

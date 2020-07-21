@@ -218,7 +218,7 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param mixed[] $haystack
+	 * @param mixed[] $haystack (key => scalar)
 	 * @param string $key
 	 * @param string $value
 	 * @return mixed[][]
@@ -226,8 +226,11 @@ abstract class BaseEndpoint implements Endpoint
 	final public function formatKeyValueArray(array $haystack, string $key = 'key', $value = 'value'): array
 	{
 		$return = [];
-
 		foreach ($haystack as $_key => $_value) {
+			if (\is_scalar($_value) === false && $_value !== null) {
+				throw new \InvalidArgumentException('Format key value must be scalar, but "' . gettype($_value) . '" given.');
+			}
+
 			$return[] = [
 				$key => $_key,
 				$value => $_value,
@@ -239,7 +242,7 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param mixed[] $haystack
+	 * @param mixed[] $haystack (key => scalar)
 	 * @return mixed[][]
 	 */
 	final public function formatBootstrapSelectArray(array $haystack): array

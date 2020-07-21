@@ -16,7 +16,7 @@ final class ItemsListItem
 
 
 	/**
-	 * @param int|string $id
+	 * @param int|string|mixed $id
 	 * @param mixed[] $data
 	 */
 	public function __construct($id, array $data = [])

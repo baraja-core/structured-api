@@ -41,35 +41,176 @@ namespace App\Model;
 final class MyAwesomeEndpoint extends BaseEndpoint
 {
 
-	/**
-	 * This is test API endpoint as demonstration of inner logic.
-	 *
-	 * @param string $hello some user-defined parameter.
-	 */
-	public function actionDefault(string $hello = 'world'): void
-	{
-		$this->sendJson([
-			'name' => 'Test API endpoint',
-			'hello' => $hello,
-		]);
-	}
+   /**
+    * This is test API endpoint as demonstration of inner logic.
+    *
+    * @param string $hello some user-defined parameter.
+    */
+   public function actionDefault(string $hello = 'world'): void
+   {
+      $this->sendJson([
+         'name' => 'Test API endpoint',
+         'hello' => $hello,
+      ]);
+   }
 
-	/**
-	 * @param mixed[] $data
-	 */
-	public function postCreateUser(array $data): void
-	{
-		$this->sendJson([
-			'state' => 'ok',
-			'data' => $data,
-		]);
-	}
+   /**
+    * @param mixed[] $data
+    */
+   public function postCreateUser(array $data): void
+   {
+      $this->sendJson([
+         'state' => 'ok',
+         'data' => $data,
+      ]);
+   }
 }
 ```
 
 Method `actionDefault` is used for request in format `/api/v1/test` with query parameter `?hello=...`.
 
 Method `postCreateUser` will be called by POST request with all data.
+
+📝 Endpoint registration
+------------------------
+
+If you use the Nette Framework, all endpoints will be registered automatically. This provides an extension for DIC.
+
+To register automatically, simply inherit `BaseEndpoint` or implement the `Baraja\StructuredApi\Endpoint` interface.
+
+🌐 HTTP methods
+---------------
+
+The library supports all HTTP methods for the REST API. The selection of the HTTP method is solved by the method name.
+
+You can specify the HTTP method at the beginning of the method name, or use an alias:
+
+```php
+final class MyAwesomeEndpoint extends BaseEndpoint
+{
+   public function getDefault(): void
+   {
+      // this logic will be called as GET.
+   }
+
+   public function actionDefault(): void
+   {
+      // this logic will be called as GET too,
+      // because `action` prefix is alias for GET.
+   }
+
+   public function postDetail(string $id, string $name, ?string $description = null): void
+   {
+      // this logic will be called as POST.
+   }
+}
+```
+
+List of aliases (aliases are optional):
+
+- `action` as `GET`
+- `update` as `PUT`
+- `create` as `POST`
+
+💾 Obtaining raw data
+---------------------
+
+For processing complex data structures, it may be useful to obtain the data in its original raw form.
+
+The library reserves the key variable `array $ data`, which always contains the original input values from the user, regardless of validation.
+
+For example:
+
+```php
+final class OrderEndpoint extends BaseEndpoint
+{
+   public function postProcessOrder(array $data): void
+   {
+      // variable $data constains all raw data from user.
+   }
+}
+```
+
+✅ Validation
+-------------
+
+In the runtime, when calling methods, the passed arguments against the method definition and data types are validated. This ensures that the endpoint is never called with incorrect data.
+
+The library guarantees that you will always get the data in the type you request. If you need to define the type more complicated, you can use a comment annotation.
+
+Combined example:
+
+```php
+final class ArticleEndpoint extends BaseEndpoint
+{
+
+   /**
+    * @param string|null $locale in format "cs" or "en"
+    * @param int $page real page number for filtering, 1 => first page ... "n" page
+    * @param int $limit in interval <0, 500)
+    * @param string|null $status matching constant self::STATUS_* (null, all, published, trash)
+    * @param string|null $query smart search query
+    * @param string|null $filterFrom find all articles from this date
+    * @param string|null $filterTo find all articles to this date
+    * @param string|null $sort sort by supported field
+    * @param string|null $orderBy direction by `ASC` or `DESC`
+    */
+   public function actionDefault(?string $locale = null, int $page = 1, int $limit = 32, ?string $status = null, ?string $query = null, ?string $filterFrom = null, ?string $filterTo = null, ?string $sort = null, ?string $orderBy = null): void
+   {
+   }
+}
+```
+
+The library takes full advantage of PHP 7 and always checks data types. If the data is passed in the wrong type (for example, a boolean cannot be passed by the GET method), it performs an automatic conversion or throws an error.
+
+If the argument contains a default value, it is **automatically marked as optional**. If the user does not pass a value, the default is used. All mandatory arguments **must always be passed**, if not, your logic will not be called at all.
+
+🙋 Smart response
+-----------------
+
+The library contains a number of built-in methods for elegant handling of all important return states.
+
+For example, if we want to get the detail of an article by ID and return its detail from the database, the use is completely intuitive:
+
+```php
+final class ArticleEndpoint extends BaseEndpoint
+{
+   public function actionDetail(string $id): void
+   {
+      // your logic for fetch data from database
+
+      // your response
+      $this->sendJson([
+         'id' => $id,
+         'title' => 'My awesome article',
+         'content' => '...',
+      ]);
+   }
+}
+```
+
+Each method always returns a type of `void` and the output logic is solved via methods. The reason is that it is often necessary to pass a number of parameters and one output is not enough.
+
+> **Warning:** If you do not pass any output, endpoint processing will fail.
+
+When processing actions, it is a good idea to return success or error information:
+
+```php
+final class ArticleEndpoint extends BaseEndpoint
+{
+   public function createDetail(string $title, string $content, ?string $perex = null): void
+   {
+      try {
+         // creating in database...
+         $this->sendOk([
+            'id' => 123,
+         ]);
+      } catch (\Exception $e) {
+         $this->sendError('Can not create article because ...');
+      }
+   }
+}
+```
 
 🔒 Permissions
 --------------

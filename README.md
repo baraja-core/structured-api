@@ -71,6 +71,56 @@ Method `actionDefault` is used for request in format `/api/v1/test` with query p
 
 Method `postCreateUser` will be called by POST request with all data.
 
+🔒 Permissions
+--------------
+
+> 🚩**Warning:** If you do not set the rights at all, by default all endpoints are private and you must log in to call them! 👮
+
+All API requests are validated at runtime. If you want to allow all users access to your endpoints, please add the `@public` annotation to main class doc comment.
+
+For example (this endpoint will be public):
+
+```php
+/**
+ * @public
+ */
+final class ProductEndpoint extends BaseEndpoint
+{
+}
+```
+
+To restrict rights, define an `@role` annotation over a class or method.
+
+For example (only administrators and moderators can call this endpoint):
+
+```php
+/**
+ * @role admin, moderator
+ */
+final class ArticleEndpoint extends BaseEndpoint
+{
+}
+```
+
+Rights settings can also be combined. For example, in a public endpoint, restrict rights to a specific method only:
+
+```php
+/**
+ * @public
+ */
+final class SitemapEndpoint extends BaseEndpoint
+{
+
+   /**
+    * @role admin
+    */
+   public function actionClearCache(): void
+   {
+      // your secured implementation
+   }
+}
+```
+
 🗺️ Project endpoint documentation
 ---------------------------------
 

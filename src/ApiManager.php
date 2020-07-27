@@ -14,6 +14,7 @@ use Nette\DI\Container;
 use Nette\DI\Extensions\InjectExtension;
 use Nette\Http\Request;
 use Nette\Http\Response;
+use Nette\Security\User;
 use Nette\Utils\Strings;
 use Tracy\Debugger;
 
@@ -29,6 +30,9 @@ final class ApiManager
 	/** @var Response */
 	private $response;
 
+	/** @var User */
+	private $user;
+
 	/** @var Cache */
 	private $cache;
 
@@ -39,17 +43,12 @@ final class ApiManager
 	private $endpoints = [];
 
 
-	/**
-	 * @param Container $container
-	 * @param Request $request
-	 * @param Response $response
-	 * @param IStorage $storage
-	 */
-	public function __construct(Container $container, Request $request, Response $response, IStorage $storage)
+	public function __construct(Container $container, Request $request, Response $response, User $user, IStorage $storage)
 	{
 		$this->container = $container;
 		$this->request = $request;
 		$this->response = $response;
+		$this->user = $user;
 		$this->cache = new Cache($storage, 'structured-api');
 		$this->convention = new Convention;
 	}
@@ -283,12 +282,28 @@ final class ApiManager
 	 */
 	private function invokeActionMethod(Endpoint $endpoint, string $action, string $method, array $params): ?BaseResponse
 	{
+		$methodName = $this->getActionMethodName($endpoint, $method, $action);
+
+		try {
+			if ($this->checkPermission($endpoint, $methodName) === false) { // Forbidden or permission denied
+				return new JsonResponse($this->convention, [
+					'state' => 'error',
+					'message' => 'You do not have permission to perform this action.',
+				], 403);
+			}
+		} catch (\InvalidArgumentException $e) { // Unauthorized or internal error
+			return new JsonResponse($this->convention, [
+				'state' => 'error',
+				'message' => $e->getMessage(),
+			], 401);
+		}
+
 		$endpoint->startup();
 		$endpoint->startupCheck();
-		$response = null;
 		$ref = null;
+		$response = null;
 
-		if (($methodName = $this->getActionMethodName($endpoint, $method, $action)) !== null) {
+		if ($methodName !== null) {
 			try {
 				$response = (new ServiceMethodInvoker)->invoke($endpoint, $methodName, $params, true);
 			} catch (ThrowResponse $e) {
@@ -346,12 +361,6 @@ final class ApiManager
 	}
 
 
-	/**
-	 * @param Endpoint $endpoint
-	 * @param string $method
-	 * @param string $action
-	 * @return string|null
-	 */
 	private function getActionMethodName(Endpoint $endpoint, string $method, string $action): ?string
 	{
 		$tryMethods = [];
@@ -370,5 +379,45 @@ final class ApiManager
 		}
 
 		return null;
+	}
+
+
+	private function checkPermission(Endpoint $endpoint, string $methodName): bool
+	{
+		try {
+			$docComment = trim((string) (new \ReflectionClass($endpoint))->getDocComment());
+			$public = (bool) preg_match('/@public(?:$|\s|\n)/', $docComment);
+			if (($docComment === '' || $public === false) && $this->user->isLoggedIn() === false) {
+				throw new \InvalidArgumentException('This API endpoint is private. You must log in to use.');
+			}
+			foreach (Helpers::parseRolesFromComment($docComment) as $role) {
+				if ($this->user->isInRole($role) === true) {
+					return true;
+				}
+			}
+		} catch (\ReflectionException $e) {
+			throw new \InvalidArgumentException('Endpoint "' . \get_class($endpoint) . '" can not be reflected: ' . $e->getMessage(), $e->getCode(), $e);
+		}
+
+		try {
+			$ref = new \ReflectionMethod($endpoint, $methodName);
+		} catch (\ReflectionException $e) {
+			throw new \InvalidArgumentException('Method "' . $methodName . '" can not be reflected: ' . $e->getMessage(), $e->getCode(), $e);
+		}
+
+		if (($roles = Helpers::parseRolesFromComment((string) $ref->getDocComment())) !== []) { // roles as required, user must be logged in
+			foreach ($roles as $role) {
+				if ($this->user->isInRole($role) === true) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+		if (($public ?? false) === false && $this->user->isLoggedIn() === true) { // private endpoint, but user is logged in
+			return true;
+		}
+
+		return $public ?? false;
 	}
 }

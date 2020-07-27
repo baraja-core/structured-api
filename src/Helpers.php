@@ -85,4 +85,20 @@ final class Helpers
 			return '-' . strtolower($match[1]);
 		}, Strings::firstLower($type));
 	}
+
+
+	/**
+	 * @param string $comment
+	 * @return string[]
+	 */
+	public static function parseRolesFromComment(string $comment): array
+	{
+		if (preg_match('/@role\s+([^\n]+)/', $comment, $roleParser)) {
+			return array_map(static function (string $role): string {
+				return strtolower(trim($role));
+			}, explode(',', trim($roleParser[1])));
+		}
+
+		return [];
+	}
 }

@@ -20,11 +20,6 @@ final class StatusCount
 	private $count;
 
 
-	/**
-	 * @param string $key
-	 * @param int $count
-	 * @param string $label
-	 */
 	public function __construct(string $key, int $count, ?string $label = null)
 	{
 		$this->key = $key;

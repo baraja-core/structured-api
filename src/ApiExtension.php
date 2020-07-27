@@ -21,9 +21,6 @@ final class ApiExtension extends CompilerExtension
 	}
 
 
-	/**
-	 * @param ClassType $class
-	 */
 	public function afterCompile(ClassType $class): void
 	{
 		/** @var ServiceDefinition $application */

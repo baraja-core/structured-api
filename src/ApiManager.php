@@ -282,7 +282,12 @@ final class ApiManager
 	 */
 	private function invokeActionMethod(Endpoint $endpoint, string $action, string $method, array $params): ?BaseResponse
 	{
-		$methodName = $this->getActionMethodName($endpoint, $method, $action);
+		if (($methodName = $this->getActionMethodName($endpoint, $method, $action)) === null) {
+			return new JsonResponse($this->convention, [
+				'state' => 'error',
+				'message' => 'Method for action "' . $action . '" and HTTP method "' . $method . '" is not implemented.',
+			], 404);
+		}
 
 		try {
 			if ($this->checkPermission($endpoint, $methodName) === false) { // Forbidden or permission denied
@@ -303,14 +308,12 @@ final class ApiManager
 		$ref = null;
 		$response = null;
 
-		if ($methodName !== null) {
-			try {
-				$response = (new ServiceMethodInvoker)->invoke($endpoint, $methodName, $params, true);
-			} catch (ThrowResponse $e) {
-				$response = $e->getResponse();
-			} catch (RuntimeInvokeException $e) {
-				throw new RuntimeStructuredApiException($e->getMessage(), $e->getCode(), $e);
-			}
+		try {
+			$response = (new ServiceMethodInvoker)->invoke($endpoint, $methodName, $params, true);
+		} catch (ThrowResponse $e) {
+			$response = $e->getResponse();
+		} catch (RuntimeInvokeException $e) {
+			throw new RuntimeStructuredApiException($e->getMessage(), $e->getCode(), $e);
 		}
 
 		if ($method !== 'GET' && $response === null) {

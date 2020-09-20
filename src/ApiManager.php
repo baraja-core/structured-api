@@ -65,6 +65,7 @@ final class ApiManager
 	 */
 	public function run(string $path, ?array $params = [], ?string $method = null, bool $throw = false): void
 	{
+		$this->checkFirewall();
 		$params = array_merge($this->safeGetParams($path), $this->getBodyParams($method = $method ?: $this->getHttpMethod()), $params ?? []);
 
 		if (preg_match('/^api\/v([^\/]+)\/?(.*?)$/', $path, $pathParser)) {
@@ -422,5 +423,20 @@ final class ApiManager
 		}
 
 		return $public ?? false;
+	}
+
+
+	private function checkFirewall(): void
+	{
+		$match = strpos($userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '', 'CloudFlare-AlwaysOnline') !== false;
+
+		if ($match === true) {
+			header('HTTP/1.0 403 Forbidden');
+			echo '<title>Access denied | API endpoint</title>';
+			echo '<h1>Access denied</h1>';
+			echo '<p>API endpoint crawling is disabled for robots.</p>';
+			echo '<p><b>Information for developers:</b> Endpoint API indexing is disabled for privacy reasons. At the same time, robots can crawl a disproportionate amount of data, copying your valuable data.';
+			die;
+		}
 	}
 }

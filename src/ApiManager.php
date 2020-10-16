@@ -8,8 +8,6 @@ namespace Baraja\StructuredApi;
 use Baraja\RuntimeInvokeException;
 use Baraja\ServiceMethodInvoker;
 use Baraja\StructuredApi\Entity\Convention;
-use Nette\Caching\Cache;
-use Nette\Caching\IStorage;
 use Nette\DI\Container;
 use Nette\DI\Extensions\InjectExtension;
 use Nette\Http\Request;
@@ -33,9 +31,6 @@ final class ApiManager
 	/** @var User */
 	private $user;
 
-	/** @var Cache */
-	private $cache;
-
 	/** @var Convention */
 	private $convention;
 
@@ -43,13 +38,16 @@ final class ApiManager
 	private $endpoints = [];
 
 
-	public function __construct(Container $container, Request $request, Response $response, User $user, IStorage $storage)
+	/**
+	 * @param string[] $endpoints
+	 */
+	public function __construct(array $endpoints, Container $container, Request $request, Response $response, User $user)
 	{
+		$this->endpoints = $endpoints;
 		$this->container = $container;
 		$this->request = $request;
 		$this->response = $response;
 		$this->user = $user;
-		$this->cache = new Cache($storage, 'structured-api');
 		$this->convention = new Convention;
 	}
 
@@ -155,38 +153,6 @@ final class ApiManager
 	public function getEndpoints(): array
 	{
 		return $this->endpoints;
-	}
-
-
-	/**
-	 * @internal for DIC
-	 * @param string[] $endpointServices
-	 */
-	public function setEndpoints(array $endpointServices): void
-	{
-		$hash = implode('|', $endpointServices);
-		if (($cache = $this->cache->load('endpoints')) === null || ($cache['hash'] ?? '') !== $hash) {
-			$endpoints = [];
-			foreach ($endpointServices as $endpointService) {
-				$type = \get_class($this->container->getService($endpointService));
-				$className = (string) preg_replace('/^.*?([^\\\\]+)Endpoint$/', '$1', $type);
-				$endpointPath = Helpers::formatToApiName($className);
-				if (isset($endpoints[$endpointPath]) === true) {
-					throw new \RuntimeException(
-						'Api Manager: Endpoint "' . $endpointPath . '" already exist, '
-						. 'because this endpoint implements service "' . $type . '" and "' . $endpoints[$endpointPath] . '".'
-					);
-				}
-				$endpoints[$endpointPath] = $type;
-			}
-			$this->cache->save('endpoints', [
-				'hash' => $hash,
-				'endpoints' => $endpoints,
-			]);
-		} else {
-			$endpoints = $cache['endpoints'] ?? [];
-		}
-		$this->endpoints = $endpoints;
 	}
 
 

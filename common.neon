@@ -1,12 +1,2 @@
-services:
-	apiManager: Baraja\StructuredApi\ApiManager
-
 extensions:
 	structuredApi: Baraja\StructuredApi\ApiExtension
-
-search:
-	structuredApi:
-		in: %appDir%/..
-		files: ['*Endpoint.php']
-		implements: Baraja\StructuredApi\Endpoint
-		tags: ['structured-api-endpoint']

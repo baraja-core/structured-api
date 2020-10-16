@@ -7,7 +7,9 @@ namespace Baraja\StructuredApi;
 
 use Nette\Application\Application;
 use Nette\DI\CompilerExtension;
+use Nette\DI\ContainerBuilder;
 use Nette\DI\Definitions\ServiceDefinition;
+use Nette\Loaders\RobotLoader;
 use Nette\PhpGenerator\ClassType;
 use Tracy\Debugger;
 
@@ -15,9 +17,12 @@ final class ApiExtension extends CompilerExtension
 {
 	public function beforeCompile(): void
 	{
-		/** @var ServiceDefinition $apiManager */
-		$apiManager = $this->getContainerBuilder()->getDefinitionByType(ApiManager::class);
-		$apiManager->addSetup('?->setEndpoints(array_keys($this->findByTag(?)))', ['@self', 'structured-api-endpoint']);
+		$builder = $this->getContainerBuilder();
+		$endpoints = $this->createEndpointServices($builder);
+
+		$builder->addDefinition($this->prefix('apiManager'))
+			->setFactory(ApiManager::class)
+			->setArgument('endpoints', $endpoints);
 	}
 
 
@@ -50,5 +55,46 @@ final class ApiExtension extends CompilerExtension
 			. '})();' . "\n",
 			[$application->getName()]
 		);
+	}
+
+
+	/**
+	 * @return string[] (name => type)
+	 */
+	private function createEndpointServices(ContainerBuilder $builder): array
+	{
+		$robot = new RobotLoader;
+		$robot->addDirectory($rootDir = dirname(__DIR__, 4));
+		$robot->setTempDirectory($rootDir . '/temp/cache/baraja.structuredApi');
+		$robot->acceptFiles = ['*Endpoint.php'];
+		$robot->reportParseErrors(false);
+		$robot->refresh();
+
+		$return = [];
+		foreach (array_unique(array_keys($robot->getIndexedClasses())) as $class) {
+			if (!class_exists($class) && !interface_exists($class) && !trait_exists($class)) {
+				throw new \RuntimeException('Class "' . $class . '" was found, but it cannot be loaded by autoloading.' . "\n" . 'More information: https://php.baraja.cz/autoloading-trid');
+			}
+			try {
+				$rc = new \ReflectionClass($class);
+			} catch (\ReflectionException $e) {
+				throw new \RuntimeException('Service "' . $class . '" is broken: ' . $e->getMessage(), $e->getCode(), $e);
+			}
+			if ($rc->isInstantiable() && $rc->implementsInterface(Endpoint::class)) {
+				$builder->addDefinition($this->prefix('endpoint') . '.' . str_replace('\\', '.', $class))
+					->setFactory($class)
+					->addTag('structured-api-endpoint');
+
+				if (isset($return[$name = Helpers::formatToApiName((string) preg_replace('/^.*?([^\\\\]+)Endpoint$/', '$1', $class))]) === true) {
+					throw new \RuntimeException(
+						'Api Manager: Endpoint "' . $name . '" already exist, '
+						. 'because this endpoint implements service "' . $class . '" and "' . $return[$name] . '".'
+					);
+				}
+				$return[$name] = $class;
+			}
+		}
+
+		return $return;
 	}
 }

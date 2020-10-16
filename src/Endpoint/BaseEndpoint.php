@@ -240,13 +240,10 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
-	/**
-	 * @throws RuntimeStructuredApiException
-	 */
 	final public function startupCheck(): void
 	{
 		if ($this->startupCheck === false) {
-			RuntimeStructuredApiException::startupDoesntCallParent($this);
+			throw new \LogicException('Method ' . \get_class($this) . '::startup() or its descendant doesn\'t call parent::startup()."');
 		}
 	}
 

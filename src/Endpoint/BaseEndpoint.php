@@ -212,7 +212,7 @@ abstract class BaseEndpoint implements Endpoint
 	 * @param mixed[] $haystack (key => scalar)
 	 * @return mixed[][]
 	 */
-	final public function formatKeyValueArray(array $haystack, string $key = 'key', $value = 'value'): array
+	final public function formatKeyValueArray(array $haystack, string $key = 'key', string $value = 'value'): array
 	{
 		$return = [];
 		foreach ($haystack as $_key => $_value) {

@@ -13,7 +13,6 @@ interface BulkAction
 	public function getBulkActionsList(): array;
 
 	/**
-	 * @param string $action
 	 * @param string[] $ids
 	 */
 	public function postProcessBulkAction(string $action, array $ids): void;

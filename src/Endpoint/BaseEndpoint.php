@@ -66,8 +66,6 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * Get current endpoint name.
-	 *
-	 * @return string
 	 */
 	final public function getName(): string
 	{
@@ -104,7 +102,6 @@ abstract class BaseEndpoint implements Endpoint
 	 * Send raw data to output.
 	 *
 	 * @param mixed[] $haystack
-	 * @param int $httpCode
 	 */
 	final public function sendJson(array $haystack, int $httpCode = 200): void
 	{
@@ -132,8 +129,6 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * @param mixed[] $data
-	 * @param string|null $message
-	 * @param int|null $code
 	 */
 	final public function sendOk(array $data = [], ?string $message = null, ?int $code = null): void
 	{
@@ -148,7 +143,6 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * @param mixed[] $items
-	 * @param Paginator|null $paginator
 	 * @param mixed[] $data
 	 */
 	final public function sendItems(array $items, ?Paginator $paginator = null, array $data = []): void
@@ -168,7 +162,6 @@ abstract class BaseEndpoint implements Endpoint
 	 * All Flash messages will be returned in `flashMessages` key in all responses.
 	 * Warning: FlashMessage can change the structure of your response data.
 	 *
-	 * @param string $message
 	 * @param string $type of array [success, info, warning, error]
 	 */
 	final public function flashMessage(string $message, string $type = 'info'): void
@@ -193,8 +186,6 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * @param mixed[] $keys
-	 * @param string|null $message
-	 * @param int|null $code
 	 */
 	final public function validateDataKeys(array $keys, ?string $message = null, ?int $code = null): void
 	{
@@ -219,8 +210,6 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * @param mixed[] $haystack (key => scalar)
-	 * @param string $key
-	 * @param string $value
 	 * @return mixed[][]
 	 */
 	final public function formatKeyValueArray(array $haystack, string $key = 'key', $value = 'value'): array
@@ -303,7 +292,6 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param string $dest
 	 * @param mixed[] $params
 	 * @return string
 	 * @throws InvalidLinkException
@@ -324,7 +312,6 @@ abstract class BaseEndpoint implements Endpoint
 	/**
 	 * Generate link. If link does not exist return null.
 	 *
-	 * @param string $dest
 	 * @param mixed[] $params
 	 * @return string|null
 	 */

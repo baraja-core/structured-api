@@ -27,9 +27,7 @@ abstract class BaseResponse
 
 
 	/**
-	 * @param Convention $convention
 	 * @param mixed[] $haystack
-	 * @param int $httpCode
 	 */
 	final public function __construct(Convention $convention, array $haystack, int $httpCode = 200)
 	{
@@ -90,12 +88,10 @@ abstract class BaseResponse
 				$hide[$hideKey] = true;
 			}
 		}
-
 		if ($value !== null && isset($hide[$key]) === true) {
 			if (preg_match('/^\$2[ayb]\$.{56}$/', (string) $value)) { // Allow BCrypt hash only.
 				return false;
 			}
-
 			if (\class_exists(Debugger::class) === true) {
 				Debugger::log(
 					new RuntimeStructuredApiException(
@@ -171,11 +167,9 @@ abstract class BaseResponse
 			try {
 				foreach ((new \ReflectionClass($haystack))->getProperties() as $property) {
 					$property->setAccessible(true);
-
 					if (($key = $property->getName()) && ($key[0] ?? '') === '_') {
 						continue;
 					}
-
 					if (\is_object($value = $property->getValue($haystack)) === true) {
 						if (isset($trackedInstanceHashes[$objectHash = spl_object_hash($value)]) === true) {
 							throw new \InvalidArgumentException(

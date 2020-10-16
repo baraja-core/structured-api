@@ -55,10 +55,7 @@ final class ApiManager
 	/**
 	 * By given inputs or current URL route specific API endpoint and send full HTTP response.
 	 *
-	 * @param string $path
 	 * @param mixed[]|null $params
-	 * @param string|null $method
-	 * @param bool $throw
 	 * @throws StructuredApiException
 	 */
 	public function run(string $path, ?array $params = [], ?string $method = null, bool $throw = false): void
@@ -117,9 +114,7 @@ final class ApiManager
 
 
 	/**
-	 * @param string $path
 	 * @param mixed[]|null $params
-	 * @param string|null $method
 	 * @return mixed[]
 	 * @throws StructuredApiException
 	 */
@@ -160,7 +155,6 @@ final class ApiManager
 	 * Create new API endpoint instance with all injected dependencies.
 	 *
 	 * @internal
-	 * @param string $className
 	 * @param mixed[] $params
 	 * @return Endpoint
 	 */
@@ -183,7 +177,6 @@ final class ApiManager
 	/**
 	 * Safe method for get parameters from query. This helper is for CLI mode and broken Ngnix mod rewriting.
 	 *
-	 * @param string $path
 	 * @return mixed[]
 	 */
 	private function safeGetParams(string $path): array
@@ -204,7 +197,6 @@ final class ApiManager
 	/**
 	 * Route user query to class and action.
 	 *
-	 * @param string $route
 	 * @param mixed[] $params
 	 * @return string[]
 	 * @throws StructuredApiException
@@ -213,7 +205,6 @@ final class ApiManager
 	{
 		$class = null;
 		$action = null;
-
 		if (strpos($route = trim($route, '/'), '/') === false) { // 1. Simple match
 			$class = $this->endpoints[$route] ?? null;
 			$action = 'default';
@@ -221,11 +212,9 @@ final class ApiManager
 			$class = $this->endpoints[$routeParser[1]] ?? null;
 			$action = Helpers::formatApiName($routeParser[2]);
 		}
-
 		if ($class === null) {
 			StructuredApiException::canNotRouteException($route, $params);
 		}
-
 		if (\class_exists($class) === false) {
 			StructuredApiException::routeClassDoesNotExist($class);
 		}
@@ -240,9 +229,6 @@ final class ApiManager
 	/**
 	 * Call all endpoint methods in regular order and return response state.
 	 *
-	 * @param Endpoint $endpoint
-	 * @param string $action
-	 * @param string $method
 	 * @param mixed[] $params
 	 * @return BaseResponse|null
 	 * @throws RuntimeStructuredApiException
@@ -255,7 +241,6 @@ final class ApiManager
 				'message' => 'Method for action "' . $action . '" and HTTP method "' . $method . '" is not implemented.',
 			], 404);
 		}
-
 		try {
 			if ($this->checkPermission($endpoint, $methodName) === false) { // Forbidden or permission denied
 				return new JsonResponse($this->convention, [
@@ -282,7 +267,6 @@ final class ApiManager
 		} catch (RuntimeInvokeException $e) {
 			throw new RuntimeStructuredApiException($e->getMessage(), $e->getCode(), $e);
 		}
-
 		if ($method !== 'GET' && $response === null) {
 			$response = new JsonResponse($this->convention, ['state' => 'ok']);
 		}
@@ -306,7 +290,6 @@ final class ApiManager
 
 
 	/**
-	 * @param string $method
 	 * @return mixed[]
 	 */
 	private function getBodyParams(string $method): array
@@ -368,13 +351,11 @@ final class ApiManager
 		} catch (\ReflectionException $e) {
 			throw new \InvalidArgumentException('Endpoint "' . \get_class($endpoint) . '" can not be reflected: ' . $e->getMessage(), $e->getCode(), $e);
 		}
-
 		try {
 			$ref = new \ReflectionMethod($endpoint, $methodName);
 		} catch (\ReflectionException $e) {
 			throw new \InvalidArgumentException('Method "' . $methodName . '" can not be reflected: ' . $e->getMessage(), $e->getCode(), $e);
 		}
-
 		if (($roles = Helpers::parseRolesFromComment((string) $ref->getDocComment())) !== []) { // roles as required, user must be logged in
 			foreach ($roles as $role) {
 				if ($this->user->isInRole($role) === true) {

@@ -7,6 +7,9 @@ namespace Baraja\StructuredApi;
 
 use Nette\Utils\DateTime;
 
+/**
+ * @public
+ */
 final class PingEndpoint extends BaseEndpoint
 {
 	public function actionDefault(): void

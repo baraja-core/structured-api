@@ -10,6 +10,7 @@ use Nette\Utils\Strings;
 
 final class Helpers
 {
+
 	/** @throws \Error */
 	public function __construct()
 	{
@@ -20,9 +21,6 @@ final class Helpers
 	/**
 	 * Return current API path by current HTTP URL.
 	 * In case of CLI return empty string.
-	 *
-	 * @param Request $httpRequest
-	 * @return string
 	 */
 	public static function processPath(Request $httpRequest): string
 	{
@@ -33,8 +31,6 @@ final class Helpers
 	/**
 	 * Return current absolute URL.
 	 * Return null, if current URL does not exist (for example in CLI mode).
-	 *
-	 * @return string|null
 	 */
 	public static function getCurrentUrl(): ?string
 	{
@@ -54,7 +50,6 @@ final class Helpers
 		if ($return !== null) {
 			return $return;
 		}
-
 		if (($currentUrl = self::getCurrentUrl()) !== null) {
 			if (preg_match('/^(https?:\/\/.+)\/www\//', $currentUrl, $localUrlParser)) {
 				$return = $localUrlParser[0];
@@ -62,7 +57,6 @@ final class Helpers
 				$return = $publicUrlParser[1];
 			}
 		}
-
 		if ($return !== null) {
 			$return = rtrim($return, '/');
 		}
@@ -88,7 +82,6 @@ final class Helpers
 
 
 	/**
-	 * @param string $comment
 	 * @return string[]
 	 */
 	public static function parseRolesFromComment(string $comment): array

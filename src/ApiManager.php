@@ -63,12 +63,8 @@ final class ApiManager
 		$this->checkFirewall();
 		$params = array_merge($this->safeGetParams($path), $this->getBodyParams($method = $method ?: $this->getHttpMethod()), $params ?? []);
 
-		if (preg_match('/^api\/v([^\/]+)\/?(.*?)$/', $path, $pathParser)) {
-			if (($version = (int) $pathParser[1]) < 1 || $version > 999 || !preg_match('#^[+-]?\d+$#D', $pathParser[1])) {
-				StructuredApiException::invalidVersion($pathParser[1]);
-			}
-
-			$route = $this->route((string) preg_replace('/^(.*?)(\?.*|)$/', '$1', $pathParser[2]), $params);
+		if (preg_match('/^api\/v(?<v>\d{1,3}(?:\.\d{1,3})?)\/(?<path>.*?)$/', $path, $pathParser)) {
+			$route = $this->route((string) preg_replace('/^(.*?)(\?.*|)$/', '$1', $pathParser['path']), $pathParser['v'], $params);
 
 			try {
 				$response = $this->invokeActionMethod(
@@ -108,8 +104,6 @@ final class ApiManager
 
 			StructuredApiException::apiEndpointMustReturnSomeData($path);
 		}
-
-		StructuredApiException::invalidApiPath($path);
 	}
 
 
@@ -198,10 +192,11 @@ final class ApiManager
 	 * Route user query to class and action.
 	 *
 	 * @param mixed[] $params
+	 * @param string $version in format /\d{1,3}(?:\.\d{1,3})?/
 	 * @return string[]
 	 * @throws StructuredApiException
 	 */
-	private function route(string $route, array $params): array
+	private function route(string $route, string $version, array $params): array
 	{
 		$class = null;
 		$action = null;

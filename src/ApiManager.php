@@ -9,7 +9,6 @@ use Baraja\RuntimeInvokeException;
 use Baraja\ServiceMethodInvoker;
 use Baraja\StructuredApi\Entity\Convention;
 use Nette\DI\Container;
-use Nette\DI\Extensions\InjectExtension;
 use Nette\Http\Request;
 use Nette\Http\Response;
 use Nette\Security\User;
@@ -68,7 +67,7 @@ final class ApiManager
 
 			try {
 				$response = $this->invokeActionMethod(
-					$this->createEndpointInstance($route['class'], $params),
+					$this->getEndpointService($route['class'], $params),
 					$route['action'],
 					$method,
 					$params
@@ -152,15 +151,10 @@ final class ApiManager
 	 * @param mixed[] $params
 	 * @return Endpoint
 	 */
-	public function createEndpointInstance(string $className, array $params): Endpoint
+	public function getEndpointService(string $className, array $params): Endpoint
 	{
 		/** @var Endpoint $endpoint */
 		$endpoint = $this->container->getByType($className);
-
-		foreach (InjectExtension::getInjectProperties(\get_class($endpoint)) as $property => $service) {
-			$endpoint->{$property} = $this->container->getByType($service);
-		}
-
 		$endpoint->setConvention($this->convention);
 		$endpoint->setData($params);
 

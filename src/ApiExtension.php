@@ -7,8 +7,10 @@ namespace Baraja\StructuredApi;
 
 use Nette\Application\Application;
 use Nette\DI\CompilerExtension;
+use Nette\DI\Container;
 use Nette\DI\ContainerBuilder;
 use Nette\DI\Definitions\ServiceDefinition;
+use Nette\DI\Extensions\InjectExtension;
 use Nette\Loaders\RobotLoader;
 use Nette\PhpGenerator\ClassType;
 use Tracy\Debugger;
@@ -81,10 +83,17 @@ final class ApiExtension extends CompilerExtension
 				throw new \RuntimeException('Service "' . $class . '" is broken: ' . $e->getMessage(), $e->getCode(), $e);
 			}
 			if ($rc->isInstantiable() && $rc->implementsInterface(Endpoint::class)) {
-				$builder->addDefinition($this->prefix('endpoint') . '.' . str_replace('\\', '.', $class))
+				$endpoint = $builder->addDefinition($this->prefix('endpoint') . '.' . str_replace('\\', '.', $class))
 					->setFactory($class)
 					->addTag('structured-api-endpoint');
 
+				foreach (InjectExtension::getInjectProperties($class) as $property => $service) {
+					if ($service === Container::class) {
+						$endpoint->addSetup('?->? = $this', ['@self', $property]);
+					} else {
+						$endpoint->addSetup('?->? = $this->getByType(?)', ['@self', $property, $service]);
+					}
+				}
 				if (isset($return[$name = Helpers::formatToApiName((string) preg_replace('/^.*?([^\\\\]+)Endpoint$/', '$1', $class))]) === true) {
 					throw new \RuntimeException(
 						'Api Manager: Endpoint "' . $name . '" already exist, '

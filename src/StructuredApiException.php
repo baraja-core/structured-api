@@ -8,7 +8,6 @@ namespace Baraja\StructuredApi;
 class StructuredApiException extends \Exception
 {
 	/**
-	 * @param string $version
 	 * @throws StructuredApiException
 	 */
 	public static function invalidVersion(string $version): void
@@ -21,7 +20,6 @@ class StructuredApiException extends \Exception
 
 
 	/**
-	 * @param string $route
 	 * @param mixed[] $params
 	 * @throws StructuredApiException
 	 */
@@ -35,7 +33,6 @@ class StructuredApiException extends \Exception
 
 
 	/**
-	 * @param string $class
 	 * @throws StructuredApiException
 	 */
 	public static function routeClassDoesNotExist(string $class): void
@@ -45,7 +42,6 @@ class StructuredApiException extends \Exception
 
 
 	/**
-	 * @param string $path
 	 * @throws StructuredApiException
 	 */
 	public static function invalidApiPath(string $path): void
@@ -58,7 +54,6 @@ class StructuredApiException extends \Exception
 
 
 	/**
-	 * @param string $path
 	 * @throws StructuredApiException
 	 */
 	public static function apiEndpointMustReturnSomeData(string $path): void

@@ -23,25 +23,19 @@ abstract class BaseEndpoint implements Endpoint
 	use SmartObject;
 
 	/** @var callable[] */
-	public $onSaveState = [];
+	public array $onSaveState = [];
 
-	/**
-	 * @var Container
-	 * @inject
-	 */
-	public $container;
+	protected Container $container;
 
-	/** @var Convention */
-	protected $convention;
+	protected Convention $convention;
 
 	/** @var mixed[] */
-	protected $data = [];
+	protected array $data = [];
 
 	/** @var string[][] */
-	private $messages = [];
+	private array $messages = [];
 
-	/** @var bool */
-	private $startupCheck = false;
+	private bool $startupCheck = false;
 
 
 	public function __toString(): string
@@ -83,8 +77,8 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @internal only for ApiManager.
 	 * @param mixed[] $data
+	 * @internal only for ApiManager.
 	 */
 	final public function setData(array $data): void
 	{
@@ -375,12 +369,17 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param string $key
 	 * @param mixed|null $defaultValue
 	 * @return mixed|null
 	 */
 	final public function getParameter(string $key, $defaultValue = null)
 	{
 		return $this->container->getParameters()[$key] ?? $defaultValue;
+	}
+
+
+	final public function injectContainer(Container $container): void
+	{
+		$this->container = $container;
 	}
 }

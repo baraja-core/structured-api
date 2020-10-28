@@ -9,15 +9,11 @@ use Nette\Utils\Strings;
 
 final class StatusCount
 {
+	private string $key;
 
-	/** @var string */
-	private $key;
+	private string $label;
 
-	/** @var string */
-	private $label;
-
-	/** @var int */
-	private $count;
+	private int $count;
 
 
 	public function __construct(string $key, int $count, ?string $label = null)

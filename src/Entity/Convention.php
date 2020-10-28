@@ -10,21 +10,16 @@ namespace Baraja\StructuredApi\Entity;
  */
 final class Convention
 {
+	private string $dateTimeFormat = 'Y-m-d H:i:s';
 
-	/** @var string */
-	private $dateTimeFormat = 'Y-m-d H:i:s';
+	private int $defaultErrorCode = 500;
 
-	/** @var int */
-	private $defaultErrorCode = 500;
+	private int $defaultOkCode = 200;
 
-	/** @var int */
-	private $defaultOkCode = 200;
-
-	/** @var bool */
-	private $rewriteTooStringMethod = true;
+	private bool $rewriteTooStringMethod = true;
 
 	/** @var string[] */
-	private $keysToHide = ['password', 'passwd', 'pass', 'pwd', 'creditcard', 'credit card', 'cc', 'pin'];
+	private array $keysToHide = ['password', 'passwd', 'pass', 'pwd', 'creditcard', 'credit card', 'cc', 'pin'];
 
 
 	public function getDateTimeFormat(): string

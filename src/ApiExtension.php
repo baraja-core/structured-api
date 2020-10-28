@@ -85,7 +85,8 @@ final class ApiExtension extends CompilerExtension
 			if ($rc->isInstantiable() && $rc->implementsInterface(Endpoint::class)) {
 				$endpoint = $builder->addDefinition($this->prefix('endpoint') . '.' . str_replace('\\', '.', $class))
 					->setFactory($class)
-					->addTag('structured-api-endpoint');
+					->addTag('structured-api-endpoint')
+					->addSetup('?->injectContainer($this)', ['@self']);
 
 				foreach (InjectExtension::getInjectProperties($class) as $property => $service) {
 					if ($service === Container::class) {

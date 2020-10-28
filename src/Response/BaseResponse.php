@@ -17,13 +17,11 @@ abstract class BaseResponse
 	private const HIDDEN_KEY_LABEL = '*****';
 
 	/** @var mixed[] */
-	protected $haystack;
+	protected array $haystack;
 
-	/** @var Convention */
-	private $convention;
+	private Convention $convention;
 
-	/** @var int */
-	private $httpCode;
+	private int $httpCode;
 
 
 	/**

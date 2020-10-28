@@ -12,7 +12,7 @@ final class ItemsListItem
 	private $id;
 
 	/** @var mixed[] */
-	private $data;
+	private array $data;
 
 
 	/**

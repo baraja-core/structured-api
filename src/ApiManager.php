@@ -17,24 +17,18 @@ use Tracy\Debugger;
 
 final class ApiManager
 {
+	private Container $container;
 
-	/** @var Container */
-	private $container;
+	private Request $request;
 
-	/** @var Request */
-	private $request;
+	private Response $response;
 
-	/** @var Response */
-	private $response;
+	private User $user;
 
-	/** @var User */
-	private $user;
-
-	/** @var Convention */
-	private $convention;
+	private Convention $convention;
 
 	/** @var string[] (endpointPath => endpointType) */
-	private $endpoints = [];
+	private array $endpoints = [];
 
 
 	/**

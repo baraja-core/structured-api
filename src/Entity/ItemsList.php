@@ -9,7 +9,7 @@ final class ItemsList
 {
 
 	/** @var ItemsListItem[] */
-	private $items;
+	private array $items;
 
 
 	/**

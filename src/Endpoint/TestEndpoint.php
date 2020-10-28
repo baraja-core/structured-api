@@ -10,6 +10,7 @@ namespace Baraja\StructuredApi;
  */
 final class TestEndpoint extends BaseEndpoint
 {
+
 	/**
 	 * This is test API endpoint as demonstration of inner logic.
 	 *
@@ -25,11 +26,14 @@ final class TestEndpoint extends BaseEndpoint
 	}
 
 
-	/**
-	 * @param mixed[] $data
-	 */
-	public function postCreateUser(array $data): void
+	public function postCreateUser(string $username, string $password): void
 	{
-		$this->sendOk($data);
+		if (strlen($password) < 8) {
+			$this->sendError('Password must be at least 8 characters long.');
+		}
+
+		$this->sendOk([
+			'username' => $username,
+		]);
 	}
 }

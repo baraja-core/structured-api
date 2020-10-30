@@ -76,7 +76,7 @@ final class ApiManager
 				$response = new JsonResponse($this->convention, [
 					'state' => 'error',
 					'message' => $isDebugger && Debugger::isEnabled() === true ? $e->getMessage() : null,
-					'code' => $code = (($code = $e->getCode()) === 0 ? 500 : $code),
+					'code' => $code = (($code = (int) $e->getCode()) === 0 ? 500 : $code),
 				], $code);
 			}
 
@@ -248,7 +248,7 @@ final class ApiManager
 		} catch (ThrowResponse $e) {
 			$response = $e->getResponse();
 		} catch (RuntimeInvokeException $e) {
-			throw new RuntimeStructuredApiException($e->getMessage(), $e->getCode(), $e);
+			throw new RuntimeStructuredApiException($e->getMessage(), (int) $e->getCode(), $e);
 		}
 		if ($method !== 'GET' && $response === null) {
 			$response = new JsonResponse($this->convention, ['state' => 'ok']);

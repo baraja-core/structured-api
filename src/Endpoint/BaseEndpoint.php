@@ -68,6 +68,12 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
+	 * Get raw data.
+	 * This method obtains an array of all user-passed values.
+	 * Individual values may not correspond to the input validation.
+	 * This method is suitable for processing large amounts of data that
+	 * do not have a predetermined structure that we are able to describe as an object.
+	 *
 	 * @return mixed[]
 	 */
 	public function getData(): array

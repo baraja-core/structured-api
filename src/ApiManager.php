@@ -245,6 +245,14 @@ final class ApiManager
 
 		try {
 			$response = (new ServiceMethodInvoker)->invoke($endpoint, $methodName, $params, true);
+		} catch (\InvalidArgumentException $e) {
+			if (preg_match('/^UserException:\s+(.+)$/', $e->getMessage(), $eMessageParser)) {
+				return new JsonResponse($this->convention, [
+					'state' => 'error',
+					'message' => $eMessageParser[1] ?? $e->getMessage(),
+				], $this->convention->getDefaultErrorCode());
+			}
+			throw $e;
 		} catch (ThrowResponse $e) {
 			$response = $e->getResponse();
 		} catch (RuntimeInvokeException $e) {

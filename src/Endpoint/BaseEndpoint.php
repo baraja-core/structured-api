@@ -99,7 +99,11 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * Send raw data to output.
+	 * This method returns an array of data exactly as you pass it and converts it to a valid json.
+	 *
+	 * Note: The formatting and type of data is purely managed by the user.
+	 *       If you want to send status data, it is recommended to use the sendOk() and sendError() methods.
+	 *       This method should be used for sending data in a user-defined structure only.
 	 *
 	 * @param mixed[] $haystack
 	 */

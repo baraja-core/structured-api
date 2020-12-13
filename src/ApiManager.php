@@ -221,7 +221,7 @@ final class ApiManager
 	 *
 	 * @param mixed[] $params
 	 * @return BaseResponse|null
-	 * @throws RuntimeStructuredApiException
+	 * @throws StructuredApiException
 	 */
 	private function invokeActionMethod(Endpoint $endpoint, string $action, string $method, array $params): ?BaseResponse
 	{
@@ -263,7 +263,7 @@ final class ApiManager
 		} catch (ThrowResponse $e) {
 			$response = $e->getResponse();
 		} catch (RuntimeInvokeException $e) {
-			throw new RuntimeStructuredApiException($e->getMessage(), (int) $e->getCode(), $e);
+			throw new StructuredApiException($e->getMessage(), (int) $e->getCode(), $e);
 		}
 		if ($method !== 'GET' && $response === null) {
 			$response = new JsonResponse($this->convention, ['state' => 'ok']);

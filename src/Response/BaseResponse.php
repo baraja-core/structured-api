@@ -92,7 +92,7 @@ abstract class BaseResponse
 			}
 			if (\class_exists(Debugger::class) === true) {
 				Debugger::log(
-					new RuntimeStructuredApiException(
+					new \RuntimeException(
 						'Security warning: User password may have been compromised! Key "' . $key . '" given.'
 						. "\n" . 'The Baraja API prevented passwords being passed through the API in a readable form.'
 					), ILogger::CRITICAL

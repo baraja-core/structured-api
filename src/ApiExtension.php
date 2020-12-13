@@ -36,7 +36,10 @@ final class ApiExtension extends CompilerExtension
 		/** @var ServiceDefinition $apiManager */
 		$apiManager = $this->getContainerBuilder()->getDefinitionByType(ApiManager::class);
 
-		$skipError = (bool) ($this->config['skipError'] ?? false);
+		/** @var mixed[] $config */
+		$config = $this->getConfig();
+
+		$skipError = (bool) ($config['skipError'] ?? false);
 		$body = '$this->getService(\'' . $apiManager->getName() . '\')->run($basePath);';
 
 		$class->getMethod('initialize')->addBody(

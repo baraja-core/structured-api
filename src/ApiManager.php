@@ -144,7 +144,6 @@ final class ApiManager
 	 * Create new API endpoint instance with all injected dependencies.
 	 *
 	 * @param mixed[] $params
-	 * @return Endpoint
 	 * @internal
 	 */
 	public function getEndpointService(string $className, array $params): Endpoint
@@ -220,7 +219,6 @@ final class ApiManager
 	 * Call all endpoint methods in regular order and return response state.
 	 *
 	 * @param mixed[] $params
-	 * @return BaseResponse|null
 	 * @throws StructuredApiException
 	 */
 	private function invokeActionMethod(Endpoint $endpoint, string $action, string $method, array $params): ?BaseResponse

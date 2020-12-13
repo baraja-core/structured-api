@@ -23,7 +23,6 @@ final class ItemsList
 
 	/**
 	 * @param ItemsListItem[] $items
-	 * @return self
 	 */
 	public static function from(array $items): self
 	{

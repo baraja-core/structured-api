@@ -298,7 +298,6 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * @param mixed[] $params
-	 * @return string
 	 * @throws InvalidLinkException
 	 */
 	final public function link(string $dest, array $params = []): string
@@ -318,7 +317,6 @@ abstract class BaseEndpoint implements Endpoint
 	 * Generate link. If link does not exist return null.
 	 *
 	 * @param mixed[] $params
-	 * @return string|null
 	 */
 	final public function linkSafe(string $dest, array $params = []): ?string
 	{
@@ -365,7 +363,6 @@ abstract class BaseEndpoint implements Endpoint
 	/**
 	 * @param string|mixed $message
 	 * @param mixed[]|mixed ...$parameters
-	 * @return string
 	 */
 	final public function translate($message, ...$parameters): string
 	{

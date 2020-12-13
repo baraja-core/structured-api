@@ -74,7 +74,6 @@ abstract class BaseResponse
 	/**
 	 * @param mixed $key
 	 * @param mixed $value
-	 * @return bool
 	 */
 	final protected function hideKey($key, $value): bool
 	{

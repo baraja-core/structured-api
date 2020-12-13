@@ -20,24 +20,21 @@ final class JsonResponse extends BaseResponse
 
 	public function __toString(): string
 	{
+		return $this->getJson();
+	}
+
+
+	public function getJson(): string
+	{
 		try {
-			return $this->getJson();
+			return Json::encode($this->toArray(), Json::PRETTY);
 		} catch (JsonException $e) {
+			trigger_error($e->getMessage());
 			if (class_exists('\Tracy\Debugger') === true) {
 				Debugger::log($e, ILogger::CRITICAL);
 			}
 
 			return '{}';
 		}
-	}
-
-
-	/**
-	 * @return string
-	 * @throws JsonException
-	 */
-	public function getJson(): string
-	{
-		return Json::encode($this->toArray(), Json::PRETTY);
 	}
 }

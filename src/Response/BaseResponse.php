@@ -108,10 +108,11 @@ abstract class BaseResponse
 	/**
 	 * Convert common haystack to json compatible format.
 	 *
+	 * @param mixed $haystack
 	 * @param bool[] $trackedInstanceHashes (key => true)
 	 * @return array|string|mixed
 	 */
-	private function process(iterable $haystack, array $trackedInstanceHashes = [])
+	private function process($haystack, array $trackedInstanceHashes = [])
 	{
 		if (\is_array($haystack) === true) {
 			$return = [];
@@ -128,63 +129,62 @@ abstract class BaseResponse
 
 			return $return;
 		}
-		if (\is_object($haystack) === true) {
-			if ($haystack instanceof \DateTimeInterface) {
-				return $haystack->format($this->convention->getDateTimeFormat());
-			}
-			if ($haystack instanceof Paginator) {
-				return [
-					'page' => $haystack->getPage(),
-					'pageCount' => $haystack->getPageCount(),
-					'itemCount' => $haystack->getItemCount(),
-					'itemsPerPage' => $haystack->getItemsPerPage(),
-					'firstPage' => $haystack->getFirstPage(),
-					'lastPage' => $haystack->getLastPage(),
-					'isFirstPage' => $haystack->isFirst(),
-					'isLastPage' => $haystack->isLast(),
-				];
-			}
-			if ($haystack instanceof StatusCount) {
-				return [
-					'key' => $haystack->getKey(),
-					'label' => $haystack->getLabel(),
-					'count' => $haystack->getCount(),
-				];
-			}
-			if ($haystack instanceof ItemsList) {
-				return $this->process($haystack->getData(), $trackedInstanceHashes);
-			}
-			if ($this->convention->isRewriteTooStringMethod() && \method_exists($haystack, '__toString') === true) {
-				return (string) $haystack;
-			}
-
-			$return = [];
-			try {
-				foreach ((new \ReflectionClass($haystack))->getProperties() as $property) {
-					$property->setAccessible(true);
-					if (($key = $property->getName()) && ($key[0] ?? '') === '_') {
-						continue;
-					}
-					if (\is_object($value = $property->getValue($haystack)) === true) {
-						if (isset($trackedInstanceHashes[$objectHash = spl_object_hash($value)]) === true) {
-							throw new \InvalidArgumentException(
-								'Attention: Recursion has been stopped! BaseResponse detected an infinite recursion that was automatically stopped.'
-								. "\n\n" . 'To resolve this issue: Never pass entire recursive entities to the API. If you can, pass the processed field without recursion.'
-							);
-						}
-						$trackedInstanceHashes[$objectHash] = true;
-					}
-					$return[$key] = $this->hideKey($key, $value) ? self::HIDDEN_KEY_LABEL : $this->process($value, $trackedInstanceHashes);
-				}
-			} catch (\ReflectionException $e) {
-				foreach ($haystack as $key => $value) {
-					$return[$key] = $this->hideKey($key, $value) ? self::HIDDEN_KEY_LABEL : $this->process($value);
-				}
-			}
-
-			return $return;
+		if (\is_object($haystack) === false) {
+			return $haystack;
+		}
+		if ($haystack instanceof \DateTimeInterface) {
+			return $haystack->format($this->convention->getDateTimeFormat());
+		}
+		if ($haystack instanceof Paginator) {
+			return [
+				'page' => $haystack->getPage(),
+				'pageCount' => $haystack->getPageCount(),
+				'itemCount' => $haystack->getItemCount(),
+				'itemsPerPage' => $haystack->getItemsPerPage(),
+				'firstPage' => $haystack->getFirstPage(),
+				'lastPage' => $haystack->getLastPage(),
+				'isFirstPage' => $haystack->isFirst(),
+				'isLastPage' => $haystack->isLast(),
+			];
+		}
+		if ($haystack instanceof StatusCount) {
+			return [
+				'key' => $haystack->getKey(),
+				'label' => $haystack->getLabel(),
+				'count' => $haystack->getCount(),
+			];
+		}
+		if ($haystack instanceof ItemsList) {
+			return $this->process($haystack->getData(), $trackedInstanceHashes);
+		}
+		if ($this->convention->isRewriteTooStringMethod() && \method_exists($haystack, '__toString') === true) {
+			return (string) $haystack;
 		}
 
-		return $haystack;
+		$return = [];
+		try {
+			foreach ((new \ReflectionClass($haystack))->getProperties() as $property) {
+				$property->setAccessible(true);
+				if (($key = $property->getName()) && ($key[0] ?? '') === '_') {
+					continue;
+				}
+				if (\is_object($value = $property->getValue($haystack)) === true) {
+					if (isset($trackedInstanceHashes[$objectHash = spl_object_hash($value)]) === true) {
+						throw new \InvalidArgumentException(
+							'Attention: Recursion has been stopped! BaseResponse detected an infinite recursion that was automatically stopped.'
+							. "\n\n" . 'To resolve this issue: Never pass entire recursive entities to the API. If you can, pass the processed field without recursion.'
+						);
+					}
+					$trackedInstanceHashes[$objectHash] = true;
+				}
+				$return[$key] = $this->hideKey($key, $value) ? self::HIDDEN_KEY_LABEL : $this->process($value, $trackedInstanceHashes);
+			}
+		} catch (\ReflectionException $e) {
+			foreach ($haystack as $key => $value) {
+				$return[$key] = $this->hideKey($key, $value) ? self::HIDDEN_KEY_LABEL : $this->process($value);
+			}
+		}
+
+		return $return;
 	}
 }

@@ -180,8 +180,12 @@ abstract class BaseResponse
 				$return[$key] = $this->hideKey($key, $value) ? self::HIDDEN_KEY_LABEL : $this->process($value, $trackedInstanceHashes);
 			}
 		} catch (\ReflectionException $e) {
-			foreach ($haystack as $key => $value) {
-				$return[$key] = $this->hideKey($key, $value) ? self::HIDDEN_KEY_LABEL : $this->process($value);
+			if (\is_iterable($haystack)) {
+				foreach ($haystack as $key => $value) {
+					$return[$key] = $this->hideKey($key, $value) ? self::HIDDEN_KEY_LABEL : $this->process($value);
+				}
+			} else {
+				throw new \RuntimeException('Can not hydrate input to array: ' . $e->getMessage(), $e->getCode(), $e);
 			}
 		}
 

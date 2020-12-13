@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
-use Nette\Utils\DateTime;
+use DateTime;
 
 /**
  * @public
@@ -17,7 +17,7 @@ final class PingEndpoint extends BaseEndpoint
 		$this->sendJson([
 			'result' => 'PONG',
 			'ip' => $this->getIp(),
-			'datetime' => DateTime::from('now'),
+			'datetime' => new DateTime('now'),
 		]);
 	}
 

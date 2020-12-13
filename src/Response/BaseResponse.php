@@ -109,11 +109,10 @@ abstract class BaseResponse
 	/**
 	 * Convert common haystack to json compatible format.
 	 *
-	 * @param mixed $haystack
-	 * @param string[] $trackedInstanceHashes
+	 * @param bool[] $trackedInstanceHashes (key => true)
 	 * @return array|string|mixed
 	 */
-	private function process($haystack, array $trackedInstanceHashes = [])
+	private function process(iterable $haystack, array $trackedInstanceHashes = [])
 	{
 		if (\is_array($haystack) === true) {
 			$return = [];
@@ -130,7 +129,6 @@ abstract class BaseResponse
 
 			return $return;
 		}
-
 		if (\is_object($haystack) === true) {
 			if ($haystack instanceof \DateTimeInterface) {
 				return $haystack->format($this->convention->getDateTimeFormat());

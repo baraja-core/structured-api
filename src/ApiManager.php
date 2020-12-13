@@ -46,7 +46,9 @@ final class ApiManager
 
 
 	/**
-	 * By given inputs or current URL route specific API endpoint and send full HTTP response.
+	 * Based on the URL address or manual input, the corresponding endpoint is called,
+	 * which returns the data as a complete HTTP response.
+	 * The invalid path will be ignored because it may be handled by another application layer or other route.
 	 *
 	 * @param mixed[]|null $params
 	 * @throws StructuredApiException
@@ -95,7 +97,7 @@ final class ApiManager
 				die;
 			}
 
-			StructuredApiException::apiEndpointMustReturnSomeData($path);
+			throw new StructuredApiException('Api endpoint "' . $path . '" must return some output. None returned.');
 		}
 	}
 
@@ -141,9 +143,9 @@ final class ApiManager
 	/**
 	 * Create new API endpoint instance with all injected dependencies.
 	 *
-	 * @internal
 	 * @param mixed[] $params
 	 * @return Endpoint
+	 * @internal
 	 */
 	public function getEndpointService(string $className, array $params): Endpoint
 	{
@@ -182,7 +184,6 @@ final class ApiManager
 	 * @param mixed[] $params
 	 * @param string $version in format /\d{1,3}(?:\.\d{1,3})?/
 	 * @return string[]
-	 * @throws StructuredApiException
 	 */
 	private function route(string $route, string $version, array $params): array
 	{
@@ -195,11 +196,17 @@ final class ApiManager
 			$class = $this->endpoints[$routeParser[1]] ?? null;
 			$action = Helpers::formatApiName($routeParser[2]);
 		}
+		if ($action === null) {
+			throw new \LogicException('Action can not be empty.');
+		}
 		if ($class === null) {
-			StructuredApiException::canNotRouteException($route, $params);
+			throw new \InvalidArgumentException(
+				'Can not route "' . $route . '"'
+				. ($params !== [] ? ' with parameters: ' . "\n" . json_encode($params) : '.')
+			);
 		}
 		if (\class_exists($class) === false) {
-			StructuredApiException::routeClassDoesNotExist($class);
+			throw new \InvalidArgumentException('Route class "' . $class . '" does not exist.');
 		}
 
 		return [

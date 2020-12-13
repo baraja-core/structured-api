@@ -63,7 +63,7 @@ abstract class BaseEndpoint implements Endpoint
 	 */
 	final public function getName(): string
 	{
-		return preg_replace('/^(?:.*\\\\)?([A-Z0-9][a-z0-9]+)Endpoint$/', '$1', get_class($this));
+		return (string) preg_replace('/^(?:.*\\\\)?([A-Z0-9][a-z0-9]+)Endpoint$/', '$1', get_class($this));
 	}
 
 
@@ -127,7 +127,7 @@ abstract class BaseEndpoint implements Endpoint
 			'state' => 'error',
 			'message' => $message,
 			'code' => $code = $code ?? $this->convention->getDefaultErrorCode(),
-		], $code);
+		], (int) $code);
 	}
 
 
@@ -141,7 +141,7 @@ abstract class BaseEndpoint implements Endpoint
 			'message' => $message,
 			'code' => $code = $code ?? $this->convention->getDefaultOkCode(),
 			'data' => $data,
-		], $code);
+		], (int) $code);
 	}
 
 
@@ -288,7 +288,11 @@ abstract class BaseEndpoint implements Endpoint
 
 	final public function getAuthorizator(): IAuthorizator
 	{
-		return $this->getUser()->getAuthorizator();
+		if (($authorizator = $this->getUser()->getAuthorizatorIfExists()) === null) {
+			throw new \RuntimeException('Authorizator has not been set.');
+		}
+
+		return $authorizator;
 	}
 
 

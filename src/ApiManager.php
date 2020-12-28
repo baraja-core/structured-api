@@ -8,11 +8,12 @@ namespace Baraja\StructuredApi;
 use Baraja\RuntimeInvokeException;
 use Baraja\ServiceMethodInvoker;
 use Baraja\StructuredApi\Entity\Convention;
+use Baraja\StructuredApi\Middleware\MatchExtension;
+use Baraja\StructuredApi\Middleware\PermissionExtension;
 use Nette\DI\Container;
 use Nette\Http\Request;
-use Nette\Http\Response;
+use Nette\Http\Response as HttpResponse;
 use Nette\Security\User;
-use Nette\Utils\Strings;
 use Tracy\Debugger;
 
 final class ApiManager
@@ -21,27 +22,28 @@ final class ApiManager
 
 	private Request $request;
 
-	private Response $response;
-
-	private User $user;
+	private HttpResponse $response;
 
 	private Convention $convention;
 
 	/** @var string[] (endpointPath => endpointType) */
-	private array $endpoints = [];
+	private array $endpoints;
+
+	/** @var MatchExtension[] */
+	private array $matchExtensions = [];
 
 
 	/**
 	 * @param string[] $endpoints
 	 */
-	public function __construct(array $endpoints, Container $container, Request $request, Response $response, User $user)
+	public function __construct(array $endpoints, Container $container, Request $request, HttpResponse $response, User $user)
 	{
 		$this->endpoints = $endpoints;
 		$this->container = $container;
 		$this->request = $request;
 		$this->response = $response;
-		$this->user = $user;
 		$this->convention = new Convention;
+		$this->matchExtensions[] = new PermissionExtension($user, $this->convention);
 	}
 
 
@@ -56,18 +58,14 @@ final class ApiManager
 	public function run(string $path, ?array $params = [], ?string $method = null, bool $throw = false): void
 	{
 		$this->checkFirewall();
-		$params = array_merge($this->safeGetParams($path), $this->getBodyParams($method = $method ?: $this->getHttpMethod()), $params ?? []);
+		$params = array_merge($this->safeGetParams($path), $this->getBodyParams($method = $method ?: Helpers::httpMethod()), $params ?? []);
 
 		if (preg_match('/^api\/v(?<v>\d{1,3}(?:\.\d{1,3})?)\/(?<path>.*?)$/', $path, $pathParser)) {
 			$route = $this->route((string) preg_replace('/^(.*?)(\?.*|)$/', '$1', $pathParser['path']), $pathParser['v'], $params);
 
 			try {
-				$response = $this->invokeActionMethod(
-					$this->getEndpointService($route['class'], $params),
-					$route['action'],
-					$method,
-					$params
-				);
+				$endpoint = $this->getEndpointService($route['class'], $params);
+				$response = $this->process($endpoint, $params, $route['action'], $method);
 			} catch (StructuredApiException $e) {
 				throw $e;
 			} catch (\Throwable $e) {
@@ -157,6 +155,40 @@ final class ApiManager
 	}
 
 
+	public function addMatchExtension(MatchExtension $extension): void
+	{
+		$this->matchExtensions[] = $extension;
+	}
+
+
+	/**
+	 * @param mixed[] $params
+	 * @throws StructuredApiException
+	 */
+	private function process(Endpoint $endpoint, array $params, string $action, string $method): ?Response
+	{
+		if (($methodName = Helpers::resolveMethodName($endpoint, $method, $action)) === null) {
+			return new JsonResponse($this->convention, [
+				'state' => 'error',
+				'message' => 'Method for action "' . $action . '" and HTTP method "' . $method . '" is not implemented.',
+			], 404);
+		}
+		foreach ($this->matchExtensions as $extension) {
+			if (($extensionResponse = $extension->beforeProcess($endpoint, $params, $action, $method)) !== null) {
+				return $extensionResponse;
+			}
+		}
+		$response = $this->invokeActionMethod($endpoint, $methodName, $method, $params);
+		foreach ($this->matchExtensions as $extension) {
+			if (($extensionResponse = $extension->afterProcess($endpoint, $params, $response)) !== null) {
+				return $extensionResponse;
+			}
+		}
+
+		return $response;
+	}
+
+
 	/**
 	 * Safe method for get parameters from query. This helper is for CLI mode and broken Ngnix mod rewriting.
 	 *
@@ -221,28 +253,8 @@ final class ApiManager
 	 * @param mixed[] $params
 	 * @throws StructuredApiException
 	 */
-	private function invokeActionMethod(Endpoint $endpoint, string $action, string $method, array $params): ?BaseResponse
+	private function invokeActionMethod(Endpoint $endpoint, string $methodName, string $method, array $params): ?Response
 	{
-		if (($methodName = $this->getActionMethodName($endpoint, $method, $action)) === null) {
-			return new JsonResponse($this->convention, [
-				'state' => 'error',
-				'message' => 'Method for action "' . $action . '" and HTTP method "' . $method . '" is not implemented.',
-			], 404);
-		}
-		try {
-			if ($this->checkPermission($endpoint, $methodName) === false) { // Forbidden or permission denied
-				return new JsonResponse($this->convention, [
-					'state' => 'error',
-					'message' => 'You do not have permission to perform this action.',
-				], 403);
-			}
-		} catch (\InvalidArgumentException $e) { // Unauthorized or internal error
-			return new JsonResponse($this->convention, [
-				'state' => 'error',
-				'message' => $e->getMessage(),
-			], 401);
-		}
-
 		$endpoint->startup();
 		$endpoint->startupCheck();
 		$ref = null;
@@ -273,25 +285,13 @@ final class ApiManager
 	}
 
 
-	private function getHttpMethod(): string
-	{
-		if (($method = $_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST'
-			&& preg_match('#^[A-Z]+$#D', $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] ?? '')
-		) {
-			$method = $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'];
-		}
-
-		return $method ?: 'GET';
-	}
-
-
 	/**
 	 * @return mixed[]
 	 */
 	private function getBodyParams(string $method): array
 	{
 		if ($method !== 'GET' && $method !== 'DELETE') {
-			$return = array_merge((array) $this->request->getPost(), $this->request->getFiles());
+			$return = (array) $this->request->getPost();
 			if (\count($_POST) === 1 && preg_match('/^\{.*\}$/', $post = array_keys($_POST)[0]) && is_array($json = json_decode($post, true)) === true) {
 				foreach ($json as $key => $value) {
 					$return[$key] = $value;
@@ -307,65 +307,6 @@ final class ApiManager
 		}
 
 		return [];
-	}
-
-
-	private function getActionMethodName(Endpoint $endpoint, string $method, string $action): ?string
-	{
-		$tryMethods = [];
-		$tryMethods[] = ($method === 'GET' ? 'action' : strtolower($method)) . Strings::firstUpper($action);
-		if ($method === 'PUT') {
-			$tryMethods[] = 'update' . Strings::firstUpper($action);
-		} elseif ($method === 'POST') {
-			$tryMethods[] = 'create' . Strings::firstUpper($action);
-		}
-
-		$methodName = null;
-		foreach ($tryMethods as $tryMethod) {
-			if (\method_exists($endpoint, $tryMethod) === true) {
-				return $tryMethod;
-			}
-		}
-
-		return null;
-	}
-
-
-	private function checkPermission(Endpoint $endpoint, string $methodName): bool
-	{
-		try {
-			$docComment = trim((string) (new \ReflectionClass($endpoint))->getDocComment());
-			$public = (bool) preg_match('/@public(?:$|\s|\n)/', $docComment);
-			if (($docComment === '' || $public === false) && $this->user->isLoggedIn() === false) {
-				throw new \InvalidArgumentException('This API endpoint is private. You must log in to use.');
-			}
-			foreach (Helpers::parseRolesFromComment($docComment) as $role) {
-				if ($this->user->isInRole($role) === true) {
-					return true;
-				}
-			}
-		} catch (\ReflectionException $e) {
-			throw new \InvalidArgumentException('Endpoint "' . \get_class($endpoint) . '" can not be reflected: ' . $e->getMessage(), $e->getCode(), $e);
-		}
-		try {
-			$ref = new \ReflectionMethod($endpoint, $methodName);
-		} catch (\ReflectionException $e) {
-			throw new \InvalidArgumentException('Method "' . $methodName . '" can not be reflected: ' . $e->getMessage(), $e->getCode(), $e);
-		}
-		if (($roles = Helpers::parseRolesFromComment((string) $ref->getDocComment())) !== []) { // roles as required, user must be logged in
-			foreach ($roles as $role) {
-				if ($this->user->isInRole($role) === true) {
-					return true;
-				}
-			}
-
-			return false;
-		}
-		if (($public ?? false) === false && $this->user->isLoggedIn() === true) { // private endpoint, but user is logged in
-			return true;
-		}
-
-		return $public ?? false;
 	}
 
 

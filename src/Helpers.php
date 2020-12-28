@@ -81,6 +81,39 @@ final class Helpers
 	}
 
 
+	public static function resolveMethodName(Endpoint $endpoint, string $method, string $action): ?string
+	{
+		$tryMethods = [];
+		$tryMethods[] = ($method === 'GET' ? 'action' : strtolower($method)) . Strings::firstUpper($action);
+		if ($method === 'PUT') {
+			$tryMethods[] = 'update' . Strings::firstUpper($action);
+		} elseif ($method === 'POST') {
+			$tryMethods[] = 'create' . Strings::firstUpper($action);
+		}
+
+		$methodName = null;
+		foreach ($tryMethods as $tryMethod) {
+			if (\method_exists($endpoint, $tryMethod) === true) {
+				return $tryMethod;
+			}
+		}
+
+		return null;
+	}
+
+
+	public static function httpMethod(): string
+	{
+		if (($method = $_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST'
+			&& preg_match('#^[A-Z]+$#D', $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] ?? '')
+		) {
+			$method = $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'];
+		}
+
+		return $method ?: 'GET';
+	}
+
+
 	/**
 	 * @return string[]
 	 */

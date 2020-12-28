@@ -291,7 +291,7 @@ final class ApiManager
 	private function getBodyParams(string $method): array
 	{
 		if ($method !== 'GET' && $method !== 'DELETE') {
-			$return = (array) $this->request->getPost();
+			$return = array_merge((array) $this->request->getPost(), $this->request->getFiles());
 			if (\count($_POST) === 1 && preg_match('/^\{.*\}$/', $post = array_keys($_POST)[0]) && is_array($json = json_decode($post, true)) === true) {
 				foreach ($json as $key => $value) {
 					$return[$key] = $value;

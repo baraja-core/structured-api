@@ -12,7 +12,7 @@ use Nette\Utils\Paginator;
 use Tracy\Debugger;
 use Tracy\ILogger;
 
-abstract class BaseResponse
+abstract class BaseResponse implements Response
 {
 	private const HIDDEN_KEY_LABEL = '*****';
 

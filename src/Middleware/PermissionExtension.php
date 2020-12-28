@@ -75,7 +75,10 @@ final class PermissionExtension implements MatchExtension
 			throw new \InvalidArgumentException('Endpoint "' . \get_class($endpoint) . '" can not be reflected: ' . $e->getMessage(), $e->getCode(), $e);
 		}
 		try {
-			$ref = new \ReflectionMethod($endpoint, Helpers::resolveMethodName($endpoint, $method, $action));
+			if (($methodName = Helpers::resolveMethodName($endpoint, $method, $action)) === null) {
+				throw new \InvalidArgumentException('Method for action "' . $action . '" and HTTP method "' . $method . '" is not implemented.');
+			}
+			$ref = new \ReflectionMethod($endpoint, $methodName);
 		} catch (\ReflectionException $e) {
 			throw new \InvalidArgumentException('Method "' . $action . '" can not be reflected: ' . $e->getMessage(), $e->getCode(), $e);
 		}

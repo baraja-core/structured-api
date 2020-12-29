@@ -21,6 +21,8 @@ final class Convention
 	/** @var string[] */
 	private array $keysToHide = ['password', 'passwd', 'pass', 'pwd', 'creditcard', 'credit card', 'cc', 'pin'];
 
+	private bool $ignoreDefaultPermission = false;
+
 
 	public function getDateTimeFormat(): string
 	{
@@ -97,5 +99,17 @@ final class Convention
 	public function setKeysToHide(array $keysToHide): void
 	{
 		$this->keysToHide = $keysToHide;
+	}
+
+
+	public function isIgnoreDefaultPermission(): bool
+	{
+		return $this->ignoreDefaultPermission;
+	}
+
+
+	public function setIgnoreDefaultPermission(bool $ignoreDefaultPermission): void
+	{
+		$this->ignoreDefaultPermission = $ignoreDefaultPermission;
 	}
 }

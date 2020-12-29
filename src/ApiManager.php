@@ -9,11 +9,9 @@ use Baraja\RuntimeInvokeException;
 use Baraja\ServiceMethodInvoker;
 use Baraja\StructuredApi\Entity\Convention;
 use Baraja\StructuredApi\Middleware\MatchExtension;
-use Baraja\StructuredApi\Middleware\PermissionExtension;
 use Nette\DI\Container;
 use Nette\Http\Request;
 use Nette\Http\Response as HttpResponse;
-use Nette\Security\User;
 use Tracy\Debugger;
 
 final class ApiManager
@@ -36,14 +34,13 @@ final class ApiManager
 	/**
 	 * @param string[] $endpoints
 	 */
-	public function __construct(array $endpoints, Container $container, Request $request, HttpResponse $response, User $user)
+	public function __construct(array $endpoints, Container $container, Request $request, HttpResponse $response, Convention $convention)
 	{
 		$this->endpoints = $endpoints;
 		$this->container = $container;
 		$this->request = $request;
 		$this->response = $response;
-		$this->convention = new Convention;
-		$this->matchExtensions[] = new PermissionExtension($user, $this->convention);
+		$this->convention = $convention;
 	}
 
 

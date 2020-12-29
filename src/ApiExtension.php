@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
+use Baraja\StructuredApi\Entity\Convention;
+use Baraja\StructuredApi\Middleware\PermissionExtension;
 use Nette\Application\Application;
 use Nette\DI\CompilerExtension;
 use Nette\DI\Container;
@@ -22,9 +24,17 @@ final class ApiExtension extends CompilerExtension
 		$builder = $this->getContainerBuilder();
 		$endpoints = $this->createEndpointServices($builder);
 
+		$builder->addDefinition($this->prefix('convention'))
+			->setFactory(Convention::class);
+
+		$builder->addDefinition($this->prefix('permissionExtension'))
+			->setFactory(PermissionExtension::class)
+			->setAutowired(PermissionExtension::class);
+
 		$builder->addDefinition($this->prefix('apiManager'))
 			->setFactory(ApiManager::class)
-			->setArgument('endpoints', $endpoints);
+			->setArgument('endpoints', $endpoints)
+			->addSetup('?->addMatchExtension(?)', ['@self', '@' . PermissionExtension::class]);
 	}
 
 

@@ -31,6 +31,9 @@ final class PermissionExtension implements MatchExtension
 	 */
 	public function beforeProcess(Endpoint $endpoint, array $params, string $action, string $method): ?Response
 	{
+		if ($this->convention->isIgnoreDefaultPermission() === true) {
+			return null;
+		}
 		try {
 			if ($this->checkPermission($endpoint, $method, $action) === false) { // Forbidden or permission denied
 				return new JsonResponse($this->convention, [

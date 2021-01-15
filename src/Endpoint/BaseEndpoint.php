@@ -9,10 +9,10 @@ use Baraja\StructuredApi\Entity\Convention;
 use Nette\Application\LinkGenerator;
 use Nette\Application\UI\InvalidLinkException;
 use Nette\Caching\Cache;
-use Nette\Caching\IStorage;
+use Nette\Caching\Storage;
 use Nette\DI\Container;
-use Nette\Localization\ITranslator;
-use Nette\Security\IAuthorizator;
+use Nette\Localization\Translator;
+use Nette\Security\Authorizator;
 use Nette\Security\IIdentity;
 use Nette\Security\User;
 use Nette\SmartObject;
@@ -286,7 +286,7 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
-	final public function getAuthorizator(): IAuthorizator
+	final public function getAuthorizator(): Authorizator
 	{
 		if (($authorizator = $this->getUser()->getAuthorizatorIfExists()) === null) {
 			throw new \RuntimeException('Authorizator has not been set.');
@@ -335,8 +335,8 @@ abstract class BaseEndpoint implements Endpoint
 		$name = 'api---' . strtolower($namespace ?? $this->getName());
 
 		if ($storage === null) {
-			/** @var IStorage $storage */
-			$storage = $this->container->getByType(IStorage::class);
+			/** @var Storage $storage */
+			$storage = $this->container->getByType(Storage::class);
 		}
 
 		if (isset($cache[$name]) === false) {
@@ -347,13 +347,13 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
-	final public function getTranslator(): ITranslator
+	final public function getTranslator(): Translator
 	{
 		static $translator;
 
 		if ($translator === null) {
-			/** @var ITranslator $translator */
-			$translator = $this->container->getByType(ITranslator::class);
+			/** @var Translator $translator */
+			$translator = $this->container->getByType(Translator::class);
 		}
 
 		return $translator;

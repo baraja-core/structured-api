@@ -15,19 +15,19 @@
 		"ext-iconv": "*",
 		"baraja-core/service-method-invoker": "^1.0",
 		"nette/di": "^3.0",
-		"nette/utils": "^3.0",
-		"nette/http": "^3.0",
-		"nette/application": "^3.0",
-		"nette/robot-loader": "^3.0",
-		"nette/caching": "^3.0",
-		"nette/security": "^3.0"
+		"nette/utils": "^3.2",
+		"nette/http": "^3.1",
+		"nette/application": "^3.1",
+		"nette/robot-loader": "^3.3",
+		"nette/caching": "^3.1",
+		"nette/security": "^3.1"
 	},
 	"require-dev": {
 		"phpstan/phpstan": "^0.12.18",
-		"tracy/tracy": "^2.7",
+		"tracy/tracy": "^2.8",
 		"phpstan/phpstan-nette": "^0.12.6",
 		"symplify/easy-coding-standard": "^7.2",
-		"baraja-core/localization": "^1.0"
+		"baraja-core/localization": "^1.2"
 	},
 	"autoload": {
 		"classmap": [

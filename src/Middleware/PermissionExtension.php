@@ -94,7 +94,10 @@ final class PermissionExtension implements MatchExtension
 
 			return false;
 		}
-		if (($public ?? false) === false && $this->user->isLoggedIn() === true) { // private endpoint, but user is logged in
+		if (
+			($public ?? false) === false
+			&& $this->user->isLoggedIn() === true
+		) { // private endpoint, but user is logged in
 			return true;
 		}
 

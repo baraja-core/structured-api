@@ -10,7 +10,6 @@ namespace Baraja\StructuredApi;
  */
 final class TestEndpoint extends BaseEndpoint
 {
-
 	/**
 	 * This is test API endpoint as demonstration of inner logic.
 	 *

@@ -40,7 +40,7 @@ abstract class BaseEndpoint implements Endpoint
 
 	public function __toString(): string
 	{
-		return get_class($this);
+		return static::class;
 	}
 
 
@@ -63,7 +63,7 @@ abstract class BaseEndpoint implements Endpoint
 	 */
 	final public function getName(): string
 	{
-		return (string) preg_replace('/^(?:.*\\\\)?([A-Z0-9][a-z0-9]+)Endpoint$/', '$1', get_class($this));
+		return (string) preg_replace('/^(?:.*\\\\)?([A-Z0-9][a-z0-9]+)Endpoint$/', '$1', static::class);
 	}
 
 
@@ -126,7 +126,7 @@ abstract class BaseEndpoint implements Endpoint
 		$this->sendJson([
 			'state' => 'error',
 			'message' => $message,
-			'code' => $code = $code ?? $this->convention->getDefaultErrorCode(),
+			'code' => $code ??= $this->convention->getDefaultErrorCode(),
 		], (int) $code);
 	}
 
@@ -139,7 +139,7 @@ abstract class BaseEndpoint implements Endpoint
 		$this->sendJson([
 			'state' => 'ok',
 			'message' => $message,
-			'code' => $code = $code ?? $this->convention->getDefaultOkCode(),
+			'code' => $code ??= $this->convention->getDefaultOkCode(),
 			'data' => $data,
 		], (int) $code);
 	}
@@ -206,7 +206,7 @@ abstract class BaseEndpoint implements Endpoint
 				$message ?? (\count($invalidKeys) === 1
 					? 'Key "' . $invalidKeys[0] . '" is required.'
 					: 'Keys "' . implode('", "', $invalidKeys) . '" are required.'),
-				$code
+				$code,
 			);
 		}
 	}
@@ -247,7 +247,7 @@ abstract class BaseEndpoint implements Endpoint
 	final public function startupCheck(): void
 	{
 		if ($this->startupCheck === false) {
-			throw new \LogicException('Method ' . \get_class($this) . '::startup() or its descendant doesn\'t call parent::startup()."');
+			throw new \LogicException('Method ' . static::class . '::startup() or its descendant doesn\'t call parent::startup()."');
 		}
 	}
 

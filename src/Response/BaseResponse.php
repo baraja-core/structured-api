@@ -93,8 +93,9 @@ abstract class BaseResponse implements Response
 				Debugger::log(
 					new \RuntimeException(
 						'Security warning: User password may have been compromised! Key "' . $key . '" given.'
-						. "\n" . 'The Baraja API prevented passwords being passed through the API in a readable form.'
-					), ILogger::CRITICAL
+						. "\n" . 'The Baraja API prevented passwords being passed through the API in a readable form.',
+					),
+					ILogger::CRITICAL,
 				);
 			}
 
@@ -124,7 +125,9 @@ abstract class BaseResponse implements Response
 					throw new \InvalidArgumentException('Convention error: Paginator must be in key "paginator", but "' . $key . '" given.');
 				}
 
-				$return[$key] = $this->hideKey($key, $value) ? self::HIDDEN_KEY_LABEL : $this->process($value);
+				$return[$key] = $this->hideKey($key, $value)
+					? self::HIDDEN_KEY_LABEL
+					: $this->process($value);
 			}
 
 			return $return;
@@ -172,17 +175,21 @@ abstract class BaseResponse implements Response
 					if (isset($trackedInstanceHashes[$objectHash = spl_object_hash($value)]) === true) {
 						throw new \InvalidArgumentException(
 							'Attention: Recursion has been stopped! BaseResponse detected an infinite recursion that was automatically stopped.'
-							. "\n\n" . 'To resolve this issue: Never pass entire recursive entities to the API. If you can, pass the processed field without recursion.'
+							. "\n\n" . 'To resolve this issue: Never pass entire recursive entities to the API. If you can, pass the processed field without recursion.',
 						);
 					}
 					$trackedInstanceHashes[$objectHash] = true;
 				}
-				$return[$key] = $this->hideKey($key, $value) ? self::HIDDEN_KEY_LABEL : $this->process($value, $trackedInstanceHashes);
+				$return[$key] = $this->hideKey($key, $value)
+					? self::HIDDEN_KEY_LABEL
+					: $this->process($value, $trackedInstanceHashes);
 			}
 		} catch (\ReflectionException $e) {
 			if (\is_iterable($haystack)) {
 				foreach ($haystack as $key => $value) {
-					$return[$key] = $this->hideKey($key, $value) ? self::HIDDEN_KEY_LABEL : $this->process($value);
+					$return[$key] = $this->hideKey($key, $value)
+						? self::HIDDEN_KEY_LABEL
+						: $this->process($value);
 				}
 			} else {
 				throw new \RuntimeException('Can not hydrate input to array: ' . $e->getMessage(), $e->getCode(), $e);

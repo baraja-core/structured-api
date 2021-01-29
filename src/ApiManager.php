@@ -34,8 +34,13 @@ final class ApiManager
 	/**
 	 * @param string[] $endpoints
 	 */
-	public function __construct(array $endpoints, Container $container, Request $request, HttpResponse $response, Convention $convention)
-	{
+	public function __construct(
+		array $endpoints,
+		Container $container,
+		Request $request,
+		HttpResponse $response,
+		Convention $convention
+	) {
 		$this->endpoints = $endpoints;
 		$this->container = $container;
 		$this->request = $request;
@@ -230,7 +235,7 @@ final class ApiManager
 		if ($class === null) {
 			throw new \InvalidArgumentException(
 				'Can not route "' . $route . '"'
-				. ($params !== [] ? ' with parameters: ' . "\n" . json_encode($params) : '.')
+				. ($params !== [] ? ' with parameters: ' . "\n" . json_encode($params) : '.'),
 			);
 		}
 		if (\class_exists($class) === false) {
@@ -250,8 +255,12 @@ final class ApiManager
 	 * @param mixed[] $params
 	 * @throws StructuredApiException
 	 */
-	private function invokeActionMethod(Endpoint $endpoint, string $methodName, string $method, array $params): ?Response
-	{
+	private function invokeActionMethod(
+		Endpoint $endpoint,
+		string $methodName,
+		string $method,
+		array $params
+	): ?Response {
 		$endpoint->startup();
 		$endpoint->startupCheck();
 		$ref = null;
@@ -289,12 +298,19 @@ final class ApiManager
 	{
 		if ($method !== 'GET' && $method !== 'DELETE') {
 			$return = array_merge((array) $this->request->getPost(), $this->request->getFiles());
-			if (\count($_POST) === 1 && preg_match('/^\{.*\}$/', $post = array_keys($_POST)[0]) && is_array($json = json_decode($post, true)) === true) {
+			if (
+				\count($_POST) === 1
+				&& preg_match('/^\{.*\}$/', $post = array_keys($_POST)[0])
+				&& is_array($json = json_decode($post, true)) === true
+			) {
 				foreach ($json as $key => $value) {
 					$return[$key] = $value;
 				}
 				unset($_POST[$post]);
-			} elseif (($input = (string) file_get_contents('php://input')) !== '' && $json = json_decode($input, true)) {
+			} elseif (
+				($input = (string) file_get_contents('php://input')) !== ''
+				&& $json = json_decode($input, true)
+			) {
 				foreach ($json as $key => $value) {
 					$return[$key] = $value;
 				}

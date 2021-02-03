@@ -225,7 +225,7 @@ abstract class BaseEndpoint implements Endpoint
 			}
 
 			$return[] = [
-				$key => $_key,
+				$key => $_key === '' ? null : $_key,
 				$value => $_value,
 			];
 		}

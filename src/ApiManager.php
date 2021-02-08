@@ -63,41 +63,36 @@ final class ApiManager
 		$params = array_merge($this->safeGetParams($path), $this->getBodyParams($method = $method ?: Helpers::httpMethod()), $params ?? []);
 
 		if (preg_match('/^api\/v(?<v>\d{1,3}(?:\.\d{1,3})?)\/(?<path>.*?)$/', $path, $pathParser)) {
-			$route = $this->route((string) preg_replace('/^(.*?)(\?.*|)$/', '$1', $pathParser['path']), $pathParser['v'], $params);
-
 			try {
-				$endpoint = $this->getEndpointService($route['class'], $params);
-				$response = $this->process($endpoint, $params, $route['action'], $method);
-			} catch (StructuredApiException $e) {
-				throw $e;
-			} catch (\Throwable $e) {
-				if (($isDebugger = class_exists(Debugger::class)) === true) {
-					Debugger::log($e);
-				}
+				$route = $this->route((string) preg_replace('/^(.*?)(\?.*|)$/', '$1', $pathParser['path']), $pathParser['v'], $params);
+				$response = null;
+				try {
+					$endpoint = $this->getEndpointService($route['class'], $params);
+					$response = $this->process($endpoint, $params, $route['action'], $method);
+				} catch (StructuredApiException $e) {
+					throw $e;
+				} catch (\Throwable $e) {
+					if (($isDebugger = class_exists(Debugger::class)) === true) {
+						Debugger::log($e);
+					}
 
+					$response = new JsonResponse($this->convention, [
+						'state' => 'error',
+						'message' => $isDebugger && Debugger::isEnabled() === true ? $e->getMessage() : null,
+						'code' => $code = (($code = (int) $e->getCode()) === 0 ? 500 : $code),
+					], $code);
+				}
+				if ($response === null) {
+					throw new BadRequestException('Api endpoint "' . $path . '" must return some output. None returned.');
+				}
+			} catch (BadRequestException $e) {
 				$response = new JsonResponse($this->convention, [
 					'state' => 'error',
-					'message' => $isDebugger && Debugger::isEnabled() === true ? $e->getMessage() : null,
-					'code' => $code = (($code = (int) $e->getCode()) === 0 ? 500 : $code),
-				], $code);
+					'message' => $e->getMessage(),
+					'code' => $e->getHttpCode(),
+				], $e->getHttpCode());
 			}
-
-			if ($response !== null) {
-				if ($throw === true) {
-					throw new ThrowResponse($response);
-				}
-				if ($this->response->isSent() === false) {
-					$this->response->setCode($response->getHttpCode());
-					$this->response->setContentType($response->getContentType(), 'UTF-8');
-					(new \Nette\Application\Responses\JsonResponse($response->toArray(), $response->getContentType()))
-						->send($this->request, $this->response);
-				} else {
-					throw new \RuntimeException('API: Response already was sent.');
-				}
-				die;
-			}
-
-			throw new StructuredApiException('Api endpoint "' . $path . '" must return some output. None returned.');
+			$this->processResponse($response, $throw);
 		}
 	}
 
@@ -160,6 +155,23 @@ final class ApiManager
 	public function addMatchExtension(MatchExtension $extension): void
 	{
 		$this->matchExtensions[] = $extension;
+	}
+
+
+	private function processResponse(BaseResponse $response, bool $throw): void
+	{
+		if ($throw === true) {
+			throw new ThrowResponse($response);
+		}
+		if ($this->response->isSent() === false) {
+			$this->response->setCode($response->getHttpCode());
+			$this->response->setContentType($response->getContentType(), 'UTF-8');
+			(new \Nette\Application\Responses\JsonResponse($response->toArray(), $response->getContentType()))
+				->send($this->request, $this->response);
+		} else {
+			throw new \RuntimeException('API: Response already was sent.');
+		}
+		die;
 	}
 
 
@@ -230,16 +242,16 @@ final class ApiManager
 			$action = Helpers::formatApiName($routeParser[2]);
 		}
 		if ($action === null) {
-			throw new \LogicException('Action can not be empty.');
+			throw new BadRequestException('Action can not be empty.');
 		}
 		if ($class === null) {
-			throw new \InvalidArgumentException(
-				'Can not route "' . $route . '"'
-				. ($params !== [] ? ' with parameters: ' . "\n" . json_encode($params) : '.'),
+			throw new BadRequestException(
+				'Can not route "' . $route . '", because endpoint does not exist.'
+				. ($params !== [] ? "\n" . 'Given params:' . "\n" . json_encode($params) : ''),
 			);
 		}
 		if (\class_exists($class) === false) {
-			throw new \InvalidArgumentException('Route class "' . $class . '" does not exist.');
+			throw new BadRequestException('Route class "' . $class . '" does not exist.');
 		}
 
 		return [

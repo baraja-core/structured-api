@@ -158,7 +158,7 @@ final class ApiManager
 	}
 
 
-	private function processResponse(BaseResponse $response, bool $throw): void
+	private function processResponse(Response $response, bool $throw): void
 	{
 		if ($throw === true) {
 			throw new ThrowResponse($response);

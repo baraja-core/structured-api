@@ -361,10 +361,9 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param string|mixed $message
 	 * @param mixed[]|mixed ...$parameters
 	 */
-	final public function translate($message, ...$parameters): string
+	final public function translate(mixed $message, ...$parameters): string
 	{
 		return $this->getTranslator()->translate($message, $parameters);
 	}
@@ -379,11 +378,7 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
-	/**
-	 * @param mixed|null $defaultValue
-	 * @return mixed|null
-	 */
-	final public function getParameter(string $key, $defaultValue = null)
+	final public function getParameter(string $key, mixed $defaultValue = null): mixed
 	{
 		return $this->container->getParameters()[$key] ?? $defaultValue;
 	}

@@ -71,11 +71,7 @@ abstract class BaseResponse implements Response
 	}
 
 
-	/**
-	 * @param mixed $key
-	 * @param mixed $value
-	 */
-	final protected function hideKey($key, $value): bool
+	final protected function hideKey(mixed $key, mixed $value): bool
 	{
 		static $hide;
 
@@ -109,11 +105,9 @@ abstract class BaseResponse implements Response
 	/**
 	 * Convert common haystack to json compatible format.
 	 *
-	 * @param mixed $haystack
 	 * @param bool[] $trackedInstanceHashes (key => true)
-	 * @return array|string|mixed
 	 */
-	private function process($haystack, array $trackedInstanceHashes = [])
+	private function process(mixed $haystack, array $trackedInstanceHashes = []): mixed
 	{
 		if (\is_array($haystack) === true) {
 			$return = [];

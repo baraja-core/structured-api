@@ -7,7 +7,6 @@ namespace Baraja\StructuredApi\Entity;
 
 final class ItemsListItem
 {
-
 	private int|string $id;
 
 	/** @var mixed[] */

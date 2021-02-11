@@ -8,32 +8,23 @@ namespace Baraja\StructuredApi\Entity;
 final class ItemsListItem
 {
 
-	/** @var int|string */
-	private $id;
+	private int|string $id;
 
 	/** @var mixed[] */
 	private array $data;
 
 
 	/**
-	 * @param int|string|mixed $id
 	 * @param mixed[] $data
 	 */
-	public function __construct($id, array $data = [])
+	public function __construct(int|string $id, array $data = [])
 	{
-		if (\is_int($id) === false && \is_string($id) === false) {
-			throw new \InvalidArgumentException('Identifier must be integer or string, but "' . \gettype($id) . '" given.');
-		}
-
 		$this->id = $id;
 		$this->data = $data;
 	}
 
 
-	/**
-	 * @return int|string
-	 */
-	public function getId()
+	public function getId(): int|string
 	{
 		return $this->id;
 	}

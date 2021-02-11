@@ -91,7 +91,10 @@ final class ApiExtension extends CompilerExtension
 		$return = [];
 		foreach (array_unique(array_keys($robot->getIndexedClasses())) as $class) {
 			if (!class_exists($class) && !interface_exists($class) && !trait_exists($class)) {
-				throw new \RuntimeException('Class "' . $class . '" was found, but it cannot be loaded by autoloading.' . "\n" . 'More information: https://php.baraja.cz/autoloading-trid');
+				throw new \RuntimeException(
+					'Class "' . $class . '" was found, but it cannot be loaded by autoloading.' . "\n"
+					. 'More information: https://php.baraja.cz/autoloading-trid',
+				);
 			}
 			try {
 				$rc = new \ReflectionClass($class);

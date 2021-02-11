@@ -14,7 +14,7 @@ final class Helpers
 	/** @throws \Error */
 	public function __construct()
 	{
-		throw new \Error('Class ' . static::class . ' is static and cannot be instantiated.');
+		throw new \Error('Class ' . self::class . ' is static and cannot be instantiated.');
 	}
 
 
@@ -30,13 +30,13 @@ final class Helpers
 
 	public static function formatApiName(string $name): string
 	{
-		return (string) preg_replace_callback('/-([a-z])/', fn (array $match): string => strtoupper($match[1]), Strings::firstUpper($name));
+		return (string) preg_replace_callback('/-([a-z])/', static fn (array $match): string => strtoupper($match[1]), Strings::firstUpper($name));
 	}
 
 
 	public static function formatToApiName(string $type): string
 	{
-		return (string) preg_replace_callback('/([A-Z])/', fn (array $match): string => '-' . strtolower($match[1]), Strings::firstLower($type));
+		return (string) preg_replace_callback('/([A-Z])/', static fn (array $match): string => '-' . strtolower($match[1]), Strings::firstLower($type));
 	}
 
 
@@ -50,7 +50,6 @@ final class Helpers
 			$tryMethods[] = 'create' . Strings::firstUpper($action);
 		}
 
-		$methodName = null;
 		foreach ($tryMethods as $tryMethod) {
 			if (\method_exists($endpoint, $tryMethod) === true) {
 				return $tryMethod;

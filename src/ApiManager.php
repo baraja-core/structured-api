@@ -275,7 +275,6 @@ final class ApiManager
 	): ?Response {
 		$endpoint->startup();
 		$endpoint->startupCheck();
-		$ref = null;
 		$response = null;
 
 		try {
@@ -337,9 +336,7 @@ final class ApiManager
 
 	private function checkFirewall(): void
 	{
-		$match = strpos($userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '', 'CloudFlare-AlwaysOnline') !== false;
-
-		if ($match === true) {
+		if (str_contains($userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '', 'CloudFlare-AlwaysOnline') === true) {
 			header('HTTP/1.0 403 Forbidden');
 			echo '<title>Access denied | API endpoint</title>';
 			echo '<h1>Access denied</h1>';

@@ -27,11 +27,11 @@ abstract class BaseResponse implements Response
 	/**
 	 * @param mixed[] $haystack
 	 */
-	final public function __construct(Convention $convention, array $haystack, int $httpCode = 200)
+	final public function __construct(Convention $convention, array $haystack, int|string $httpCode = 200)
 	{
 		$this->convention = $convention;
 		$this->haystack = $haystack;
-		$this->httpCode = $httpCode;
+		$this->httpCode = (int) $httpCode;
 	}
 
 

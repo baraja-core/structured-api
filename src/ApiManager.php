@@ -13,6 +13,7 @@ use Nette\DI\Container;
 use Nette\Http\Request;
 use Nette\Http\Response as HttpResponse;
 use Tracy\Debugger;
+use Tracy\ILogger;
 
 final class ApiManager
 {
@@ -164,7 +165,15 @@ final class ApiManager
 			throw new ThrowResponse($response);
 		}
 		if ($this->response->isSent() === false) {
-			$this->response->setCode($response->getHttpCode());
+			if (($httpCode = $response->getHttpCode()) < 100) {
+				$httpCode = 100;
+			} elseif ($httpCode > 599) {
+				if (class_exists('\Tracy\Debugger') === true) {
+					Debugger::log(new \LogicException('Bad HTTP response "' . $httpCode . '".'), ILogger::CRITICAL);
+				}
+				$httpCode = 500;
+			}
+			$this->response->setCode($httpCode);
 			$this->response->setContentType($response->getContentType(), 'UTF-8');
 			(new \Nette\Application\Responses\JsonResponse($response->toArray(), $response->getContentType()))
 				->send($this->request, $this->response);

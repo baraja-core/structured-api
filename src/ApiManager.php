@@ -17,13 +17,6 @@ use Tracy\ILogger;
 
 final class ApiManager
 {
-	private Container $container;
-
-	private Request $request;
-
-	private HttpResponse $response;
-
-	private Convention $convention;
 
 	/** @var string[] (endpointPath => endpointType) */
 	private array $endpoints;
@@ -37,16 +30,12 @@ final class ApiManager
 	 */
 	public function __construct(
 		array $endpoints,
-		Container $container,
-		Request $request,
-		HttpResponse $response,
-		Convention $convention
+		private Container $container,
+		private Request $request,
+		private HttpResponse $response,
+		private Convention $convention
 	) {
 		$this->endpoints = $endpoints;
-		$this->container = $container;
-		$this->request = $request;
-		$this->response = $response;
-		$this->convention = $convention;
 	}
 
 
@@ -243,7 +232,7 @@ final class ApiManager
 	{
 		$class = null;
 		$action = null;
-		if (strpos($route = trim($route, '/'), '/') === false) { // 1. Simple match
+		if (!str_contains($route = trim($route, '/'), '/')) { // 1. Simple match
 			$class = $this->endpoints[$route] ?? null;
 			$action = 'default';
 		} elseif (preg_match('/^([^\/]+)\/([^\/]+)$/', $route, $routeParser)) { // 2. <endpoint>/<action>

@@ -14,15 +14,10 @@ use Nette\Security\User;
 
 final class PermissionExtension implements MatchExtension
 {
-	private User $user;
-
-	private Convention $convention;
-
-
-	public function __construct(User $user, Convention $convention)
-	{
-		$this->user = $user;
-		$this->convention = $convention;
+	public function __construct(
+		private User $user,
+		private Convention $convention
+	) {
 	}
 
 

@@ -322,7 +322,7 @@ abstract class BaseEndpoint implements Endpoint
 	{
 		try {
 			return $this->link($dest, $params);
-		} catch (InvalidLinkException $e) {
+		} catch (InvalidLinkException) {
 			return null;
 		}
 	}

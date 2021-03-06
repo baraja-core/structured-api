@@ -19,17 +19,20 @@ abstract class BaseResponse implements Response
 	/** @var mixed[] */
 	protected array $haystack;
 
-	private Convention $convention;
-
 	private int $httpCode;
 
 
 	/**
 	 * @param mixed[] $haystack
 	 */
-	final public function __construct(Convention $convention, array $haystack, int|string $httpCode = 200)
-	{
-		$this->convention = $convention;
+	final public function __construct(
+		private Convention $convention,
+		array $haystack,
+		int|string $httpCode = 200
+	) {
+		if (is_string($httpCode) && !preg_match('#^[+-]?\d*[.]?\d+$#D', $httpCode)) {
+			$httpCode = 500;
+		}
 		$this->haystack = $haystack;
 		$this->httpCode = (int) $httpCode;
 	}

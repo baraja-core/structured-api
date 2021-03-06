@@ -7,8 +7,6 @@ namespace Baraja\StructuredApi\Entity;
 
 final class ItemsListItem
 {
-	private int|string $id;
-
 	/** @var mixed[] */
 	private array $data;
 
@@ -16,9 +14,10 @@ final class ItemsListItem
 	/**
 	 * @param mixed[] $data
 	 */
-	public function __construct(int|string $id, array $data = [])
-	{
-		$this->id = $id;
+	public function __construct(
+		private int|string $id,
+		array $data = []
+	) {
 		$this->data = $data;
 	}
 

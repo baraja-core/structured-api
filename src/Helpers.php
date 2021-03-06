@@ -30,13 +30,13 @@ final class Helpers
 
 	public static function formatApiName(string $name): string
 	{
-		return (string) preg_replace_callback('/-([a-z])/', static fn (array $match): string => strtoupper($match[1]), Strings::firstUpper($name));
+		return (string) preg_replace_callback('/-([a-z])/', static fn(array $match): string => strtoupper($match[1]), Strings::firstUpper($name));
 	}
 
 
 	public static function formatToApiName(string $type): string
 	{
-		return (string) preg_replace_callback('/([A-Z])/', static fn (array $match): string => '-' . strtolower($match[1]), Strings::firstLower($type));
+		return (string) preg_replace_callback('/([A-Z])/', static fn(array $match): string => '-' . strtolower($match[1]), Strings::firstLower($type));
 	}
 
 
@@ -78,7 +78,7 @@ final class Helpers
 	public static function parseRolesFromComment(string $comment): array
 	{
 		if (preg_match('/@role\s+([^\n]+)/', $comment, $roleParser)) {
-			return array_map(static fn (string $role): string => strtolower(trim($role)), explode(',', trim($roleParser[1])));
+			return array_map(static fn(string $role): string => strtolower(trim($role)), explode(',', trim($roleParser[1])));
 		}
 
 		return [];

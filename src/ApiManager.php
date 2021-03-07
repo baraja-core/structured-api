@@ -12,6 +12,7 @@ use Baraja\StructuredApi\Middleware\MatchExtension;
 use Nette\DI\Container;
 use Nette\Http\Request;
 use Nette\Http\Response as HttpResponse;
+use Nette\Utils\Strings;
 use Tracy\Debugger;
 use Tracy\ILogger;
 

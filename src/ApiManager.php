@@ -7,6 +7,7 @@ namespace Baraja\StructuredApi;
 
 use Baraja\RuntimeInvokeException;
 use Baraja\ServiceMethodInvoker;
+use Baraja\ServiceMethodInvoker\ProjectEntityRepository;
 use Baraja\StructuredApi\Entity\Convention;
 use Baraja\StructuredApi\Middleware\MatchExtension;
 use Nette\DI\Container;
@@ -34,7 +35,8 @@ final class ApiManager
 		private Container $container,
 		private Request $request,
 		private HttpResponse $response,
-		private Convention $convention
+		private Convention $convention,
+		private ?ProjectEntityRepository $projectEntityRepository = null
 	) {
 		$this->endpoints = $endpoints;
 	}
@@ -283,7 +285,8 @@ final class ApiManager
 		$response = null;
 
 		try {
-			$response = (new ServiceMethodInvoker)->invoke($endpoint, $methodName, $params, true);
+			$response = (new ServiceMethodInvoker($this->projectEntityRepository))
+				->invoke($endpoint, $methodName, $params, true);
 		} catch (\InvalidArgumentException $e) {
 			return $this->rewriteInvalidArgumentException($e) ?? throw $e;
 		} catch (ThrowResponse $e) {

@@ -163,10 +163,14 @@ final class ApiManager
 				}
 				$httpCode = 500;
 			}
-			$this->response->setCode($httpCode);
-			$this->response->setContentType($response->getContentType(), 'UTF-8');
-			(new \Nette\Application\Responses\JsonResponse($response->toArray(), $response->getContentType()))
-				->send($this->request, $this->response);
+			if ($response instanceof RedirectResponse) {
+				$this->response->redirect($response->getUrl(), $response->getHttpCode());
+			} else {
+				$this->response->setCode($httpCode);
+				$this->response->setContentType($response->getContentType(), 'UTF-8');
+				(new \Nette\Application\Responses\JsonResponse($response->toArray(), $response->getContentType()))
+					->send($this->request, $this->response);
+			}
 		} else {
 			throw new \RuntimeException('API: Response already was sent.');
 		}

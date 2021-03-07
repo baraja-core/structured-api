@@ -278,13 +278,7 @@ final class ApiManager
 		try {
 			$response = (new ServiceMethodInvoker)->invoke($endpoint, $methodName, $params, true);
 		} catch (\InvalidArgumentException $e) {
-			if (preg_match('/^UserException:\s+(.+)$/', $e->getMessage(), $eMessageParser)) {
-				return new JsonResponse($this->convention, [
-					'state' => 'error',
-					'message' => $eMessageParser[1] ?? $e->getMessage(),
-				], $this->convention->getDefaultErrorCode());
-			}
-			throw $e;
+			return $this->rewriteInvalidArgumentException($e) ?? throw $e;
 		} catch (ThrowResponse $e) {
 			$response = $e->getResponse();
 		} catch (RuntimeInvokeException $e) {
@@ -342,5 +336,32 @@ final class ApiManager
 			echo '<p><b>Information for developers:</b> Endpoint API indexing is disabled for privacy reasons. At the same time, robots can crawl a disproportionate amount of data, copying your valuable data.';
 			die;
 		}
+	}
+
+
+	private function rewriteInvalidArgumentException(\InvalidArgumentException $e): ?Response
+	{
+		$message = null;
+		if (preg_match('/^UserException:\s+(.+)$/', $e->getMessage(), $eMessageParser)) {
+			$message = $eMessageParser[1] ?? $e->getMessage();
+		} elseif (isset($e->getTrace()[0]['class']) && str_ends_with((string) $e->getTrace()[0]['class'], '\Assert')) {
+			for ($i = 0; $i <= 3; $i++) {
+				if (
+					isset($e->getTrace()[$i])
+					&& preg_match('/^set([A-Za-z0-9]+)$/', $e->getTrace()[$i]['function'] ?? '', $functionParser)
+				) {
+					$message = Strings::firstUpper($functionParser[1]) . ': ' . $e->getMessage();
+					break;
+				}
+			}
+		}
+		if ($message !== null) {
+			return new JsonResponse($this->convention, [
+				'state' => 'error',
+				'message' => $message,
+			], $this->convention->getDefaultErrorCode());
+		}
+
+		return null;
 	}
 }

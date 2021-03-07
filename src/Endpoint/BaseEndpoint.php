@@ -17,6 +17,7 @@ use Nette\Security\IIdentity;
 use Nette\Security\User;
 use Nette\SmartObject;
 use Nette\Utils\Paginator;
+use Nette\Utils\Validators;
 
 abstract class BaseEndpoint implements Endpoint
 {
@@ -325,6 +326,24 @@ abstract class BaseEndpoint implements Endpoint
 		} catch (InvalidLinkException) {
 			return null;
 		}
+	}
+
+
+	/**
+	 * @param mixed[] $params
+	 */
+	final public function redirect(string $dest, array $params = [], int $httpCode = 301): void
+	{
+		$this->redirectUrl((string) $this->linkSafe($dest, $params), $httpCode);
+	}
+
+
+	final public function redirectUrl(string $url, int $httpCode = 301): void
+	{
+		if (Validators::isUrl($url) === false) {
+			throw new \InvalidArgumentException('Haystack "' . $url . '" is not valid URL for redirect.');
+		}
+		throw new ThrowResponse(new RedirectResponse($this->convention, ['url' => $url], $httpCode));
 	}
 
 

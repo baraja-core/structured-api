@@ -163,10 +163,12 @@ final class ApiManager
 				}
 				$httpCode = 500;
 			}
+			$this->response->setCode($httpCode);
 			if ($response instanceof RedirectResponse) {
-				$this->response->redirect($response->getUrl(), $response->getHttpCode());
+				$this->response->setHeader('Location', $response->getUrl());
+				(new \Nette\Application\Responses\JsonResponse(['location' => $response->getUrl()]))
+					->send($this->request, $this->response);
 			} else {
-				$this->response->setCode($httpCode);
 				$this->response->setContentType($response->getContentType(), 'UTF-8');
 				(new \Nette\Application\Responses\JsonResponse($response->toArray(), $response->getContentType()))
 					->send($this->request, $this->response);

@@ -310,7 +310,7 @@ abstract class BaseEndpoint implements Endpoint
 			$linkGenerator = $this->container->getByType(LinkGenerator::class);
 		}
 
-		return $linkGenerator->link(trim($dest, ':'), $params);
+		return $linkGenerator->link(ltrim($dest, ':'), $params);
 	}
 
 

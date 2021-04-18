@@ -20,7 +20,7 @@ use Tracy\ILogger;
 final class ApiManager
 {
 
-	/** @var string[] (endpointPath => endpointType) */
+	/** @var array<string, string> (endpointPath => endpointType) */
 	private array $endpoints;
 
 	/** @var MatchExtension[] */
@@ -28,7 +28,7 @@ final class ApiManager
 
 
 	/**
-	 * @param string[] $endpoints
+	 * @param array<string, string> $endpoints
 	 */
 	public function __construct(
 		array $endpoints,
@@ -47,7 +47,7 @@ final class ApiManager
 	 * which returns the data as a complete HTTP response.
 	 * The invalid path will be ignored because it may be handled by another application layer or other route.
 	 *
-	 * @param mixed[]|null $params
+	 * @param array<string, mixed>|null $params
 	 * @throws StructuredApiException
 	 */
 	public function run(string $path, ?array $params = [], ?string $method = null, bool $throw = false): void
@@ -91,7 +91,7 @@ final class ApiManager
 
 
 	/**
-	 * @param mixed[]|null $params
+	 * @param array<string, mixed>|null $params
 	 * @return mixed[]
 	 * @throws StructuredApiException
 	 */
@@ -120,7 +120,7 @@ final class ApiManager
 
 
 	/**
-	 * @return string[]
+	 * @return array<string, string>
 	 */
 	public function getEndpoints(): array
 	{
@@ -233,9 +233,9 @@ final class ApiManager
 	/**
 	 * Route user query to class and action.
 	 *
-	 * @param mixed[] $params
+	 * @param array<string, mixed> $params
 	 * @param string $version in format /\d{1,3}(?:\.\d{1,3})?/
-	 * @return string[]
+	 * @return array<string, string>
 	 */
 	private function route(string $route, string $version, array $params): array
 	{

@@ -65,8 +65,9 @@ final class ApiManager
 				} catch (StructuredApiException $e) {
 					throw $e;
 				} catch (\Throwable $e) {
-					if (($isDebugger = class_exists(Debugger::class)) === true) {
-						Debugger::log($e);
+					$isDebugger = class_exists(Debugger::class);
+					if ($isDebugger === true) {
+						Debugger::log($e, ILogger::EXCEPTION);
 					}
 
 					$response = new JsonResponse($this->convention, [
@@ -92,7 +93,7 @@ final class ApiManager
 
 	/**
 	 * @param array<string, mixed>|null $params
-	 * @return mixed[]
+	 * @return array<string|int, mixed>
 	 * @throws StructuredApiException
 	 */
 	public function get(string $path, ?array $params = [], ?string $method = null): array
@@ -131,7 +132,7 @@ final class ApiManager
 	/**
 	 * Create new API endpoint instance with all injected dependencies.
 	 *
-	 * @param mixed[] $params
+	 * @param array<string, mixed> $params
 	 * @internal
 	 */
 	public function getEndpointService(string $className, array $params): Endpoint
@@ -157,7 +158,8 @@ final class ApiManager
 			throw new ThrowResponse($response);
 		}
 		if ($this->response->isSent() === false) {
-			if (($httpCode = $response->getHttpCode()) < 100) {
+			$httpCode = $response->getHttpCode();
+			if ($httpCode < 100) {
 				$httpCode = 100;
 			} elseif ($httpCode > 599) {
 				if (class_exists('\Tracy\Debugger') === true) {
@@ -183,25 +185,28 @@ final class ApiManager
 
 
 	/**
-	 * @param mixed[] $params
+	 * @param array<string, mixed> $params
 	 * @throws StructuredApiException
 	 */
 	private function process(Endpoint $endpoint, array $params, string $action, string $method): ?Response
 	{
-		if (($methodName = Helpers::resolveMethodName($endpoint, $method, $action)) === null) {
+		$methodName = Helpers::resolveMethodName($endpoint, $method, $action);
+		if ($methodName === null) {
 			return new JsonResponse($this->convention, [
 				'state' => 'error',
 				'message' => 'Method for action "' . $action . '" and HTTP method "' . $method . '" is not implemented.',
 			], 404);
 		}
 		foreach ($this->matchExtensions as $extension) {
-			if (($extensionResponse = $extension->beforeProcess($endpoint, $params, $action, $method)) !== null) {
+			$extensionResponse = $extension->beforeProcess($endpoint, $params, $action, $method);
+			if ($extensionResponse !== null) {
 				return $extensionResponse;
 			}
 		}
 		$response = $this->invokeActionMethod($endpoint, $methodName, $method, $params);
 		foreach ($this->matchExtensions as $extension) {
-			if (($extensionResponse = $extension->afterProcess($endpoint, $params, $response)) !== null) {
+			$extensionResponse = $extension->afterProcess($endpoint, $params, $response);
+			if ($extensionResponse !== null) {
 				return $extensionResponse;
 			}
 		}
@@ -213,16 +218,18 @@ final class ApiManager
 	/**
 	 * Safe method for get parameters from query. This helper is for CLI mode and broken Ngnix mod rewriting.
 	 *
-	 * @return mixed[]
+	 * @return array<string, mixed>
 	 */
 	private function safeGetParams(string $path): array
 	{
 		$return = (array) ($_GET ?? []);
-
-		if ($return === [] && ($query = trim(explode('?', $path, 2)[1] ?? '')) !== '') {
-			parse_str($query, $queryParams);
-			foreach ($queryParams as $key => $value) {
-				$return[$key] = $value;
+		if ($return === []) {
+			$query = trim(explode('?', $path, 2)[1] ?? '');
+			if ($query !== '') {
+				parse_str($query, $queryParams);
+				foreach ($queryParams as $key => $value) {
+					$return[$key] = $value;
+				}
 			}
 		}
 
@@ -241,7 +248,8 @@ final class ApiManager
 	{
 		$class = null;
 		$action = null;
-		if (!str_contains($route = trim($route, '/'), '/')) { // 1. Simple match
+		$route = trim($route, '/');
+		if (!str_contains($route, '/')) { // 1. Simple match
 			$class = $this->endpoints[$route] ?? null;
 			$action = 'default';
 		} elseif (preg_match('/^([^\/]+)\/([^\/]+)$/', $route, $routeParser)) { // 2. <endpoint>/<action>
@@ -271,7 +279,7 @@ final class ApiManager
 	/**
 	 * Call all endpoint methods in regular order and return response state.
 	 *
-	 * @param mixed[] $params
+	 * @param array<string, mixed> $params
 	 * @throws StructuredApiException
 	 */
 	private function invokeActionMethod(
@@ -305,40 +313,47 @@ final class ApiManager
 
 
 	/**
-	 * @return mixed[]
+	 * Gets POST data directly from the HTTP header, or tries to parse the data from the string.
+	 * Some legacy clients send data as json, which is in base string format, so field casting to array is mandatory.
+	 *
+	 * @return array<string, mixed>
 	 */
 	private function getBodyParams(string $method): array
 	{
-		if ($method !== 'GET' && $method !== 'DELETE') {
-			$return = array_merge((array) $this->request->getPost(), $this->request->getFiles());
-			if (
-				\count($_POST) === 1
-				&& preg_match('/^\{.*\}$/', $post = array_keys($_POST)[0])
-				&& is_array($json = json_decode($post, true)) === true
-			) {
-				foreach ($json as $key => $value) {
-					$return[$key] = $value;
-				}
-				unset($_POST[$post]);
-			} elseif (
-				($input = (string) file_get_contents('php://input')) !== ''
-				&& $json = json_decode($input, true)
-			) {
-				foreach ($json as $key => $value) {
-					$return[$key] = $value;
-				}
-			}
-
-			return $return;
+		if ($method === 'GET' || $method === 'DELETE') {
+			return [];
 		}
 
-		return [];
+		$return = array_merge((array) $this->request->getPost(), $this->request->getFiles());
+		try {
+			$post = array_keys($_POST)[0] ?? '';
+			if ($post !== '' && preg_match('/^{.*}$/', $post)) { // support for legacy clients
+				$json = json_decode($post, true);
+				if (is_array($json) === false) {
+					throw new \LogicException('Json is not valid array.');
+				}
+				unset($_POST[$post]);
+			}
+		} catch (\Throwable) {
+			try {
+				$input = (string) file_get_contents('php://input');
+				$json = $input !== '' ? (array) json_decode($input, true) : [];
+			} catch (\Throwable) {
+				// Silence is golden.
+			}
+		}
+
+		foreach ($json ?? [] as $key => $value) {
+			$return[$key] = $value;
+		}
+
+		return $return;
 	}
 
 
 	private function checkFirewall(): void
 	{
-		if (str_contains($userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '', 'CloudFlare-AlwaysOnline') === true) {
+		if (str_contains($_SERVER['HTTP_USER_AGENT'] ?? '', 'CloudFlare-AlwaysOnline') === true) {
 			header('HTTP/1.0 403 Forbidden');
 			echo '<title>Access denied | API endpoint</title>';
 			echo '<h1>Access denied</h1>';

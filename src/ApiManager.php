@@ -47,7 +47,7 @@ final class ApiManager
 	 * which returns the data as a complete HTTP response.
 	 * The invalid path will be ignored because it may be handled by another application layer or other route.
 	 *
-	 * @param array<string, mixed>|null $params
+	 * @param array<string|int, mixed>|null $params
 	 * @throws StructuredApiException
 	 */
 	public function run(string $path, ?array $params = [], ?string $method = null, bool $throw = false): void
@@ -92,7 +92,7 @@ final class ApiManager
 
 
 	/**
-	 * @param array<string, mixed>|null $params
+	 * @param array<string|int, mixed>|null $params
 	 * @return array<string|int, mixed>
 	 * @throws StructuredApiException
 	 */
@@ -132,7 +132,7 @@ final class ApiManager
 	/**
 	 * Create new API endpoint instance with all injected dependencies.
 	 *
-	 * @param array<string, mixed> $params
+	 * @param array<string|int, mixed> $params
 	 * @internal
 	 */
 	public function getEndpointService(string $className, array $params): Endpoint
@@ -185,7 +185,7 @@ final class ApiManager
 
 
 	/**
-	 * @param array<string, mixed> $params
+	 * @param array<string|int, mixed> $params
 	 * @throws StructuredApiException
 	 */
 	private function process(Endpoint $endpoint, array $params, string $action, string $method): ?Response
@@ -218,7 +218,7 @@ final class ApiManager
 	/**
 	 * Safe method for get parameters from query. This helper is for CLI mode and broken Ngnix mod rewriting.
 	 *
-	 * @return array<string, mixed>
+	 * @return array<string|int, mixed>
 	 */
 	private function safeGetParams(string $path): array
 	{
@@ -240,7 +240,7 @@ final class ApiManager
 	/**
 	 * Route user query to class and action.
 	 *
-	 * @param array<string, mixed> $params
+	 * @param array<string|int, mixed> $params
 	 * @param string $version in format /\d{1,3}(?:\.\d{1,3})?/
 	 * @return array<string, string>
 	 */
@@ -279,7 +279,7 @@ final class ApiManager
 	/**
 	 * Call all endpoint methods in regular order and return response state.
 	 *
-	 * @param array<string, mixed> $params
+	 * @param array<string|int, mixed> $params
 	 * @throws StructuredApiException
 	 */
 	private function invokeActionMethod(
@@ -316,7 +316,7 @@ final class ApiManager
 	 * Gets POST data directly from the HTTP header, or tries to parse the data from the string.
 	 * Some legacy clients send data as json, which is in base string format, so field casting to array is mandatory.
 	 *
-	 * @return array<string, mixed>
+	 * @return array<string|int, mixed>
 	 */
 	private function getBodyParams(string $method): array
 	{

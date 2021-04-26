@@ -62,7 +62,8 @@ final class Helpers
 
 	public static function httpMethod(): string
 	{
-		if (($method = $_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST'
+		$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+		if ($method === 'POST'
 			&& preg_match('#^[A-Z]+$#D', $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] ?? '')
 		) {
 			$method = $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'];

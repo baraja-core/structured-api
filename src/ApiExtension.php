@@ -114,7 +114,8 @@ final class ApiExtension extends CompilerExtension
 						$endpoint->addSetup('?->? = $this->getByType(?)', ['@self', $property, $service]);
 					}
 				}
-				if (isset($return[$name = Helpers::formatToApiName((string) preg_replace('/^.*?([^\\\\]+)Endpoint$/', '$1', $class))]) === true) {
+				$name = Helpers::formatToApiName((string) preg_replace('/^.*?([^\\\\]+)Endpoint$/', '$1', $class));
+				if (isset($return[$name]) === true) {
 					throw new \RuntimeException(
 						'Api Manager: Endpoint "' . $name . '" already exist, '
 						. 'because this endpoint implements service "' . $class . '" and "' . $return[$name] . '".',

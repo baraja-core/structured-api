@@ -103,8 +103,8 @@ abstract class BaseEndpoint implements Endpoint
 	 * This method returns an array of data exactly as you pass it and converts it to a valid json.
 	 *
 	 * Note: The formatting and type of data is purely managed by the user.
-	 *       If you want to send status data, it is recommended to use the sendOk() and sendError() methods.
-	 *       This method should be used for sending data in a user-defined structure only.
+	 * If you want to send status data, it is recommended to use the sendOk() and sendError() methods.
+	 * This method should be used for sending data in a user-defined structure only.
 	 *
 	 * @param mixed[] $haystack
 	 */
@@ -171,7 +171,9 @@ abstract class BaseEndpoint implements Endpoint
 	 */
 	final public function flashMessage(string $message, string $type = 'info'): void
 	{
-		if (\in_array($type = strtolower($type), $types = ['success', 'info', 'warning', 'error'], true) === false) {
+		$type = strtolower($type);
+		$types = ['success', 'info', 'warning', 'error'];
+		if (\in_array($type, $types, true) === false) {
 			throw new \RuntimeException('Flash message type "' . $type . '" must be one of "' . implode('", "', $types) . '".');
 		}
 		$this->messages[] = [
@@ -289,7 +291,8 @@ abstract class BaseEndpoint implements Endpoint
 
 	final public function getAuthorizator(): Authorizator
 	{
-		if (($authorizator = $this->getUser()->getAuthorizatorIfExists()) === null) {
+		$authorizator = $this->getUser()->getAuthorizatorIfExists();
+		if ($authorizator === null) {
 			throw new \RuntimeException('Authorizator has not been set.');
 		}
 
@@ -406,5 +409,14 @@ abstract class BaseEndpoint implements Endpoint
 	final public function injectContainer(Container $container): void
 	{
 		$this->container = $container;
+	}
+
+
+	/**
+	 * Is it an AJAX request?
+	 */
+	final public function isAjax(): bool
+	{
+		return strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest';
 	}
 }

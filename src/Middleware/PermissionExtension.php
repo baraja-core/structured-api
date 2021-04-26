@@ -70,7 +70,7 @@ final class PermissionExtension implements MatchExtension
 				}
 			}
 		} catch (\ReflectionException $e) {
-			throw new \InvalidArgumentException('Endpoint "' . \get_class($endpoint) . '" can not be reflected: ' . $e->getMessage(), $e->getCode(), $e);
+			throw new \InvalidArgumentException('Endpoint "' . $endpoint::class . '" can not be reflected: ' . $e->getMessage(), $e->getCode(), $e);
 		}
 		try {
 			$methodName = Helpers::resolveMethodName($endpoint, $method, $action);

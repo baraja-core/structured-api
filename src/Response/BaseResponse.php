@@ -113,21 +113,7 @@ abstract class BaseResponse implements Response
 	private function process(mixed $haystack, array $trackedInstanceHashes = []): mixed
 	{
 		if (\is_array($haystack) === true) {
-			$return = [];
-			foreach ($haystack as $key => $value) {
-				if ($value instanceof ItemsList && $key !== 'items') {
-					throw new \InvalidArgumentException('Convention error: Item list must be in key "items", but "' . $key . '" given.');
-				}
-				if ($value instanceof Paginator && $key !== 'paginator') {
-					throw new \InvalidArgumentException('Convention error: Paginator must be in key "paginator", but "' . $key . '" given.');
-				}
-
-				$return[$key] = $this->hideKey($key, $value)
-					? self::HIDDEN_KEY_LABEL
-					: $this->process($value);
-			}
-
-			return $return;
+			return $this->processArray($haystack);
 		}
 		if (\is_object($haystack) === false) {
 			return $haystack;
@@ -136,31 +122,87 @@ abstract class BaseResponse implements Response
 			return $haystack->format($this->convention->getDateTimeFormat());
 		}
 		if ($haystack instanceof Paginator) {
-			return [
-				'page' => $haystack->getPage(),
-				'pageCount' => $haystack->getPageCount(),
-				'itemCount' => $haystack->getItemCount(),
-				'itemsPerPage' => $haystack->getItemsPerPage(),
-				'firstPage' => $haystack->getFirstPage(),
-				'lastPage' => $haystack->getLastPage(),
-				'isFirstPage' => $haystack->isFirst(),
-				'isLastPage' => $haystack->isLast(),
-			];
+			return $this->processPaginator($haystack);
 		}
 		if ($haystack instanceof StatusCount) {
-			return [
-				'key' => $haystack->getKey(),
-				'label' => $haystack->getLabel(),
-				'count' => $haystack->getCount(),
-			];
+			return $this->processStatusCount($haystack);
 		}
 		if ($haystack instanceof ItemsList) {
 			return $this->process($haystack->getData(), $trackedInstanceHashes);
 		}
 		if ($this->convention->isRewriteTooStringMethod() && \method_exists($haystack, '__toString') === true) {
-			return (string) $haystack;
+			return (string)$haystack;
 		}
 
+		return $this->processReflection($haystack, $trackedInstanceHashes);
+	}
+
+
+	/**
+	 * @param mixed[] $haystack
+	 * @return mixed[]
+	 */
+	private function processArray(array $haystack): array
+	{
+		$return = [];
+		foreach ($haystack as $key => $value) {
+			if ($value instanceof ItemsList && $key !== 'items') {
+				throw new \InvalidArgumentException(
+					'Convention error: Item list must be in key "items", but "' . $key . '" given.'
+				);
+			}
+			if ($value instanceof Paginator && $key !== 'paginator') {
+				throw new \InvalidArgumentException(
+					'Convention error: Paginator must be in key "paginator", but "' . $key . '" given.'
+				);
+			}
+
+			$return[$key] = $this->hideKey($key, $value)
+				? self::HIDDEN_KEY_LABEL
+				: $this->process($value);
+		}
+
+		return $return;
+	}
+
+
+	/**
+	 * @return mixed[]
+	 */
+	private function processPaginator(Paginator $haystack): array
+	{
+		return [
+			'page' => $haystack->getPage(),
+			'pageCount' => $haystack->getPageCount(),
+			'itemCount' => $haystack->getItemCount(),
+			'itemsPerPage' => $haystack->getItemsPerPage(),
+			'firstPage' => $haystack->getFirstPage(),
+			'lastPage' => $haystack->getLastPage(),
+			'isFirstPage' => $haystack->isFirst(),
+			'isLastPage' => $haystack->isLast(),
+		];
+	}
+
+
+	/**
+	 * @return mixed[]
+	 */
+	private function processStatusCount(StatusCount $haystack): array
+	{
+		return [
+			'key' => $haystack->getKey(),
+			'label' => $haystack->getLabel(),
+			'count' => $haystack->getCount(),
+		];
+	}
+
+
+	/**
+	 * @param bool[] $trackedInstanceHashes (key => true)
+	 * @return mixed[]
+	 */
+	private function processReflection(mixed $haystack, array $trackedInstanceHashes): array
+	{
 		$return = [];
 		try {
 			foreach ((new \ReflectionClass($haystack))->getProperties() as $property) {

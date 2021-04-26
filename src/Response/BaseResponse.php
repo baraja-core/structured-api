@@ -131,7 +131,7 @@ abstract class BaseResponse implements Response
 			return $this->process($haystack->getData(), $trackedInstanceHashes);
 		}
 		if ($this->convention->isRewriteTooStringMethod() && \method_exists($haystack, '__toString') === true) {
-			return (string)$haystack;
+			return (string) $haystack;
 		}
 
 		return $this->processReflection($haystack, $trackedInstanceHashes);

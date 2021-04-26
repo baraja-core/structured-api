@@ -165,11 +165,14 @@ abstract class BaseResponse implements Response
 		try {
 			foreach ((new \ReflectionClass($haystack))->getProperties() as $property) {
 				$property->setAccessible(true);
-				if (($key = $property->getName()) && ($key[0] ?? '') === '_') {
+				$key = $property->getName();
+				if ($key && ($key[0] ?? '') === '_') {
 					continue;
 				}
-				if (\is_object($value = $property->getValue($haystack)) === true) {
-					if (isset($trackedInstanceHashes[$objectHash = spl_object_hash($value)]) === true) {
+				$value = $property->getValue($haystack);
+				if (\is_object($value) === true) {
+					$objectHash = spl_object_hash($value);
+					if (isset($trackedInstanceHashes[$objectHash]) === true) {
 						throw new \InvalidArgumentException(
 							'Attention: Recursion has been stopped! BaseResponse detected an infinite recursion that was automatically stopped.'
 							. "\n\n" . 'To resolve this issue: Never pass entire recursive entities to the API. If you can, pass the processed field without recursion.',

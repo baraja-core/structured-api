@@ -140,7 +140,35 @@ final class ApiManager
 		/** @var Endpoint $endpoint */
 		$endpoint = $this->container->getByType($className);
 		$endpoint->setConvention($this->convention);
-		$endpoint->setData($params);
+
+		$createReflection = static function (object $class, string $propertyName): ?\ReflectionProperty {
+			try {
+				$ref = new \ReflectionProperty($class, $propertyName);
+				$ref->setAccessible(true);
+
+				return $ref;
+			} catch (\ReflectionException) {
+				$refClass = new \ReflectionClass($class);
+				$parentClass = $refClass->getParentClass();
+				while ($parentClass !== false) {
+					try {
+						$ref = $parentClass->getProperty($propertyName);
+						$ref->setAccessible(true);
+
+						return $ref;
+					} catch (\ReflectionException) {
+						$parentClass = $refClass->getParentClass();
+					}
+				}
+			}
+
+			return null;
+		};
+
+		$endpointDataReflection = $createReflection($endpoint, 'data');
+		if ($endpointDataReflection !== null) {
+			$endpointDataReflection->setValue($endpoint, $params);
+		}
 
 		return $endpoint;
 	}

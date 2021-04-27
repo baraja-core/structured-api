@@ -147,6 +147,20 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
+	 * @param array<mixed, mixed> $data
+	 */
+	final public function sendSuccess(array $data = [], ?string $message = null, ?int $code = null): void
+	{
+		$this->sendJson([
+			'state' => 'success',
+			'message' => $message,
+			'code' => $code ??= $this->convention->getDefaultOkCode(),
+			'data' => $data,
+		], (int) $code);
+	}
+
+
+	/**
 	 * @param array<int, mixed> $items
 	 * @param array<mixed, mixed> $data
 	 */

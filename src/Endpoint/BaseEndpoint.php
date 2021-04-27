@@ -284,7 +284,7 @@ abstract class BaseEndpoint implements Endpoint
 	{
 		try {
 			return $this->getUser()->isLoggedIn();
-		} catch (\Throwable $e) {
+		} catch (\Throwable) {
 			return false;
 		}
 	}

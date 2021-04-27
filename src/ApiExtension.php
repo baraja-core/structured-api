@@ -49,7 +49,7 @@ final class ApiExtension extends CompilerExtension
 		/** @var ServiceDefinition $apiManager */
 		$apiManager = $this->getContainerBuilder()->getDefinitionByType(ApiManager::class);
 
-		/** @var mixed[] $config */
+		/** @var array<string, mixed> $config */
 		$config = $this->getConfig();
 
 		$skipError = (bool) ($config['skipError'] ?? false);

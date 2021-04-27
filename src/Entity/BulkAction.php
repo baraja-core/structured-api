@@ -8,12 +8,12 @@ namespace Baraja\StructuredApi\Entity;
 interface BulkAction
 {
 	/**
-	 * @return string[] (action => label)
+	 * @return array<string, string> (action => label)
 	 */
 	public function getBulkActionsList(): array;
 
 	/**
-	 * @param string[] $ids
+	 * @param array<int, int|string> $ids
 	 */
 	public function postProcessBulkAction(string $action, array $ids): void;
 }

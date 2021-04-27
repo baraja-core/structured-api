@@ -10,11 +10,6 @@ use Baraja\StructuredApi\Entity\Convention;
 
 interface Endpoint extends Service
 {
-	/**
-	 * @param array<mixed, mixed> $data
-	 */
-	public function setData(array $data): void;
-
 	public function setConvention(Convention $convention): void;
 
 	public function startup(): void;

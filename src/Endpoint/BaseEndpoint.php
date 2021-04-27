@@ -85,16 +85,6 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
-	/**
-	 * @param array<mixed, mixed> $data
-	 * @internal only for ApiManager.
-	 */
-	final public function setData(array $data): void
-	{
-		$this->data = $data;
-	}
-
-
 	final public function setConvention(Convention $convention): void
 	{
 		$this->convention = $convention;

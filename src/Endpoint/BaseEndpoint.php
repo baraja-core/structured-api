@@ -223,20 +223,23 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param array<int, int|string|null> $haystack (key => scalar)
+	 * @param array<int|string, int|string|null> $haystack (key => scalar)
 	 * @return array<int, array<string, string|int|null>>
 	 */
 	final public function formatKeyValueArray(array $haystack, string $key = 'key', string $value = 'value'): array
 	{
 		$return = [];
-		foreach ($haystack as $_key => $_value) {
-			if (\is_scalar($_value) === false && $_value !== null) {
-				throw new \InvalidArgumentException('Format key value must be scalar, but "' . get_debug_type($_value) . '" given.');
+		foreach ($haystack as $dataKey => $dataValue) {
+			/** @phpstan-ignore-next-line */
+			if (\is_scalar($dataValue) === false && $dataValue !== null) {
+				throw new \InvalidArgumentException(
+					'Format key value must be scalar, but "' . get_debug_type($dataValue) . '" given.',
+				);
 			}
 
 			$return[] = [
-				$key => $_key === '' ? null : $_key,
-				$value => $_value,
+				$key => $dataKey === '' ? null : $dataKey,
+				$value => $dataValue,
 			];
 		}
 
@@ -245,8 +248,8 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param mixed[] $haystack (key => scalar)
-	 * @return mixed[][]
+	 * @param array<int|string, int|string|null> $haystack (key => scalar)
+	 * @return array<int, array<string, string|int|null>>
 	 */
 	final public function formatBootstrapSelectArray(array $haystack): array
 	{

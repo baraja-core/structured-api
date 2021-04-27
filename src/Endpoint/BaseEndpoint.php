@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
+use Baraja\Localization\Localization;
 use Baraja\StructuredApi\Entity\Convention;
 use Nette\Application\LinkGenerator;
 use Nette\Application\UI\InvalidLinkException;
 use Nette\Caching\Cache;
 use Nette\Caching\Storage;
 use Nette\DI\Container;
+use Nette\Http\Request;
 use Nette\Localization\Translator;
 use Nette\Security\Authorizator;
 use Nette\Security\IIdentity;
@@ -49,9 +51,9 @@ abstract class BaseEndpoint implements Endpoint
 	{
 		if (PHP_SAPI !== 'cli' && class_exists('\Baraja\Localization\Localization') === true) {
 			/** @var \Nette\Http\Request $httpRequest */
-			$httpRequest = $this->container->getByType(\Nette\Http\Request::class);
+			$httpRequest = $this->container->getByType(Request::class);
 			/** @var \Baraja\Localization\Localization $localization */
-			$localization = $this->container->getByType(\Baraja\Localization\Localization::class);
+			$localization = $this->container->getByType(Localization::class);
 			$localization->processHttpRequest($httpRequest);
 		}
 
@@ -170,7 +172,6 @@ abstract class BaseEndpoint implements Endpoint
 	final public function sendItems(array $items, ?Paginator $paginator = null, array $data = []): void
 	{
 		$return = ['items' => $items];
-
 		if ($paginator !== null) {
 			$return['paginator'] = $paginator;
 		}
@@ -214,7 +215,6 @@ abstract class BaseEndpoint implements Endpoint
 	final public function validateDataKeys(array $keys, ?string $message = null, ?int $code = null): void
 	{
 		$invalidKeys = [];
-
 		foreach ($keys as $key) {
 			if (array_key_exists($key, $this->data) === false) {
 				$invalidKeys[] = $key;
@@ -318,7 +318,7 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param mixed[] $params
+	 * @param array<string, mixed> $params
 	 * @throws InvalidLinkException
 	 */
 	final public function link(string $dest, array $params = []): string
@@ -337,7 +337,7 @@ abstract class BaseEndpoint implements Endpoint
 	/**
 	 * Generate link. If link does not exist return null.
 	 *
-	 * @param mixed[] $params
+	 * @param array<string, mixed> $params
 	 */
 	final public function linkSafe(string $dest, array $params = []): ?string
 	{
@@ -350,7 +350,7 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param mixed[] $params
+	 * @param array<string, mixed> $params
 	 */
 	final public function redirect(string $dest, array $params = [], int $httpCode = 301): void
 	{
@@ -377,7 +377,6 @@ abstract class BaseEndpoint implements Endpoint
 			/** @var Storage $storage */
 			$storage = $this->container->getByType(Storage::class);
 		}
-
 		if (isset($cache[$name]) === false) {
 			$cache[$name] = new Cache($storage, $name);
 		}
@@ -389,7 +388,6 @@ abstract class BaseEndpoint implements Endpoint
 	final public function getTranslator(): Translator
 	{
 		static $translator;
-
 		if ($translator === null) {
 			/** @var Translator $translator */
 			$translator = $this->container->getByType(Translator::class);

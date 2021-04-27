@@ -11,7 +11,7 @@ use Baraja\StructuredApi\Entity\Convention;
 interface Endpoint extends Service
 {
 	/**
-	 * @param mixed[] $data
+	 * @param array<mixed, mixed> $data
 	 */
 	public function setData(array $data): void;
 

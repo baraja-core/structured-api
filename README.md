@@ -55,7 +55,7 @@ final class MyAwesomeEndpoint extends BaseEndpoint
    }
 
    /**
-    * @param mixed[] $data
+    * @param array<mixed, mixed> $data
     */
    public function postCreateUser(array $data): void
    {

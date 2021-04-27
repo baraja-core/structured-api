@@ -198,7 +198,7 @@ abstract class BaseResponse implements Response
 
 
 	/**
-	 * @param bool[] $trackedInstanceHashes (key => true)
+	 * @param array<string, bool> $trackedInstanceHashes (key => true)
 	 * @return mixed[]
 	 */
 	private function processReflection(mixed $haystack, array $trackedInstanceHashes): array

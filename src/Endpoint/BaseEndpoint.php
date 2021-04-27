@@ -75,7 +75,7 @@ abstract class BaseEndpoint implements Endpoint
 	 * This method is suitable for processing large amounts of data that
 	 * do not have a predetermined structure that we are able to describe as an object.
 	 *
-	 * @return mixed[]
+	 * @return array<mixed, mixed>
 	 */
 	public function getData(): array
 	{
@@ -84,7 +84,7 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param mixed[] $data
+	 * @param array<mixed, mixed> $data
 	 * @internal only for ApiManager.
 	 */
 	final public function setData(array $data): void
@@ -133,7 +133,7 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param mixed[] $data
+	 * @param array<mixed, mixed> $data
 	 */
 	final public function sendOk(array $data = [], ?string $message = null, ?int $code = null): void
 	{
@@ -147,8 +147,8 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param mixed[] $items
-	 * @param mixed[] $data
+	 * @param array<int, mixed> $items
+	 * @param array<mixed, mixed> $data
 	 */
 	final public function sendItems(array $items, ?Paginator $paginator = null, array $data = []): void
 	{
@@ -216,15 +216,15 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param mixed[] $haystack (key => scalar)
-	 * @return mixed[][]
+	 * @param array<int, int|string|null> $haystack (key => scalar)
+	 * @return array<int, array<string, string|int|null>>
 	 */
 	final public function formatKeyValueArray(array $haystack, string $key = 'key', string $value = 'value'): array
 	{
 		$return = [];
 		foreach ($haystack as $_key => $_value) {
 			if (\is_scalar($_value) === false && $_value !== null) {
-				throw new \InvalidArgumentException('Format key value must be scalar, but "' . gettype($_value) . '" given.');
+				throw new \InvalidArgumentException('Format key value must be scalar, but "' . get_debug_type($_value) . '" given.');
 			}
 
 			$return[] = [

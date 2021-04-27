@@ -124,11 +124,12 @@ abstract class BaseEndpoint implements Endpoint
 
 	final public function sendError(string $message, ?int $code = null): void
 	{
+		$code ??= $this->convention->getDefaultOkCode();
 		$this->sendJson([
 			'state' => 'error',
 			'message' => $message,
-			'code' => $code ??= $this->convention->getDefaultErrorCode(),
-		], (int) $code);
+			'code' => $code,
+		], $code);
 	}
 
 
@@ -137,12 +138,13 @@ abstract class BaseEndpoint implements Endpoint
 	 */
 	final public function sendOk(array $data = [], ?string $message = null, ?int $code = null): void
 	{
+		$code ??= $this->convention->getDefaultOkCode();
 		$this->sendJson([
 			'state' => 'ok',
 			'message' => $message,
-			'code' => $code ??= $this->convention->getDefaultOkCode(),
+			'code' => $code,
 			'data' => $data,
-		], (int) $code);
+		], $code);
 	}
 
 
@@ -151,12 +153,13 @@ abstract class BaseEndpoint implements Endpoint
 	 */
 	final public function sendSuccess(array $data = [], ?string $message = null, ?int $code = null): void
 	{
+		$code ??= $this->convention->getDefaultOkCode();
 		$this->sendJson([
 			'state' => 'success',
 			'message' => $message,
-			'code' => $code ??= $this->convention->getDefaultOkCode(),
+			'code' => $code,
 			'data' => $data,
-		], (int) $code);
+		], $code);
 	}
 
 

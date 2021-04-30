@@ -355,24 +355,28 @@ final class ApiManager
 		$return = array_merge((array) $this->request->getPost(), $this->request->getFiles());
 		try {
 			$post = array_keys($_POST)[0] ?? '';
-			if ($post !== '' && preg_match('/^{.*}$/', $post)) { // support for legacy clients
+			if (str_starts_with($post, '{') && str_ends_with($post, '}')) { // support for legacy clients
 				$json = json_decode($post, true);
 				if (is_array($json) === false) {
 					throw new \LogicException('Json is not valid array.');
 				}
 				unset($_POST[$post]);
+				foreach ($json ?? [] as $key => $value) {
+					$return[$key] = $value;
+				}
 			}
 		} catch (\Throwable) {
-			try {
-				$input = (string) file_get_contents('php://input');
-				$json = $input !== '' ? (array) json_decode($input, true) : [];
-			} catch (\Throwable) {
-				// Silence is golden.
-			}
+			// Silence is golden.
 		}
-
-		foreach ($json ?? [] as $key => $value) {
-			$return[$key] = $value;
+		try {
+			$input = (string) file_get_contents('php://input');
+			if ($input !== '') {
+				foreach ((array) json_decode($input, true) as $key => $value) {
+					$return[$key] = $value;
+				}
+			}
+		} catch (\Throwable) {
+			// Silence is golden.
 		}
 
 		return $return;

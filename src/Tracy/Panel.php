@@ -14,6 +14,7 @@ final class Panel implements IBarPanel
 {
 	private ?Endpoint $endpoint = null;
 
+	/** @var array<string, mixed>|null */
 	private ?array $args = null;
 
 	private ?Response $response = null;

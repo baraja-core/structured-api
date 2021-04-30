@@ -7,6 +7,7 @@ namespace Baraja\StructuredApi\Tracy;
 
 use Baraja\StructuredApi\Endpoint;
 use Baraja\StructuredApi\Response;
+use Baraja\Url\Url;
 use Tracy\Dumper;
 use Tracy\IBarPanel;
 
@@ -55,7 +56,12 @@ final class Panel implements IBarPanel
 			. '</h1>'
 			. '<div class="tracy-inner baraja-cms">'
 			. '<div class="tracy-inner-container">'
-			. '<div style="font-size:13pt;color:#555">Request</div>'
+			. '<div style="font-size:13pt;color:#555">'
+			. 'Request '
+			. ($this->httpMethod === 'GET'
+				? '<a href="' . Url::get()->getBaseUrl() . '/' . $this->path . '" target="_blank">Open in new tab</a>'
+				: '')
+			. '</div>'
 			. '<table>'
 			. '<tr><th>URL</th><td><code>' . htmlspecialchars($this->path) . '</code></td></tr>'
 			. ($this->endpoint !== null

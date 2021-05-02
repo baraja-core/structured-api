@@ -425,6 +425,7 @@ abstract class BaseEndpoint implements Endpoint
 	 */
 	final public function isAjax(): bool
 	{
-		return strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest';
+		return strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest'
+			|| isset($_SERVER['HTTP_X_TRACY_AJAX']);
 	}
 }

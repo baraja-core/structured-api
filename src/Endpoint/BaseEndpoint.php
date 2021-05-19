@@ -25,6 +25,19 @@ abstract class BaseEndpoint implements Endpoint
 {
 	use SmartObject;
 
+	public const
+		FLASH_MESSAGE_SUCCESS = 'success',
+		FLASH_MESSAGE_INFO = 'info',
+		FLASH_MESSAGE_WARNING = 'warning',
+		FLASH_MESSAGE_ERROR = 'error';
+
+	public const FLASH_MESSAGE_TYPES = [
+		self::FLASH_MESSAGE_SUCCESS,
+		self::FLASH_MESSAGE_INFO,
+		self::FLASH_MESSAGE_WARNING,
+		self::FLASH_MESSAGE_ERROR,
+	];
+
 	/** @var callable[] */
 	public array $onSaveState = [];
 
@@ -176,14 +189,17 @@ abstract class BaseEndpoint implements Endpoint
 	 * All Flash messages will be returned in `flashMessages` key in all responses.
 	 * Warning: FlashMessage can change the structure of your response data.
 	 *
-	 * @param string $type of array [success, info, warning, error]
+	 * @param string $type one of FLASH_MESSAGE_* constant
 	 */
-	final public function flashMessage(string $message, string $type = 'info'): void
+	final public function flashMessage(string $message, string $type = self::FLASH_MESSAGE_INFO): void
 	{
 		$type = strtolower($type);
-		$types = ['success', 'info', 'warning', 'error'];
-		if (\in_array($type, $types, true) === false) {
-			throw new \LogicException('Flash message type "' . $type . '" must be one of "' . implode('", "', $types) . '".');
+		if (\in_array($type, self::FLASH_MESSAGE_TYPES, true) === false) {
+			throw new \LogicException(
+				'Flash message type "' . $type . '" '
+				. 'must be one of "' . implode('", "', self::FLASH_MESSAGE_TYPES) . '". '
+				. 'Did you use FLASH_MESSAGE_* constant?',
+			);
 		}
 		$this->messages[] = [
 			'message' => $message,

@@ -10,6 +10,8 @@ Full compatible smart structured API defined by schema.
 - Full compatible with Nette framework,
 - Inject dependencies by `@inject` annotation in public property.
 
+![Baraja Structured API debug Tracy panel](doc/tracy-panel-design.png)
+
 📦 Installation & Basic Usage
 -----------------------------
 

@@ -10,6 +10,7 @@ use Baraja\ServiceMethodInvoker;
 use Baraja\ServiceMethodInvoker\ProjectEntityRepository;
 use Baraja\StructuredApi\Entity\Convention;
 use Baraja\StructuredApi\Middleware\MatchExtension;
+use Baraja\StructuredApi\Tracy\Panel;
 use Nette\DI\Container;
 use Nette\Http\Request;
 use Nette\Http\Response as HttpResponse;
@@ -53,7 +54,10 @@ final class ApiManager
 	public function run(string $path, ?array $params = [], ?string $method = null, bool $throw = false): void
 	{
 		$this->checkFirewall();
-		$params = array_merge($this->safeGetParams($path), $this->getBodyParams($method = $method ?: Helpers::httpMethod()), $params ?? []);
+		$method = $method ?: Helpers::httpMethod();
+		$params = array_merge($this->safeGetParams($path), $this->getBodyParams($method), $params ?? []);
+		$panel = new Panel($path, $params, $method);
+		Debugger::getBar()->addPanel($panel);
 
 		if (preg_match('/^api\/v(?<v>\d{1,3}(?:\.\d{1,3})?)\/(?<path>.*?)$/', $path, $pathParser)) {
 			try {
@@ -61,7 +65,9 @@ final class ApiManager
 				$response = null;
 				try {
 					$endpoint = $this->getEndpointService($route['class'], $params);
-					$response = $this->process($endpoint, $params, $route['action'], $method);
+					$panel->setEndpoint($endpoint);
+					$response = $this->process($endpoint, $params, $route['action'], $method, $panel);
+					$panel->setResponse($response);
 				} catch (StructuredApiException $e) {
 					throw $e;
 				} catch (\Throwable $e) {
@@ -216,8 +222,13 @@ final class ApiManager
 	 * @param array<string|int, mixed> $params
 	 * @throws StructuredApiException
 	 */
-	private function process(Endpoint $endpoint, array $params, string $action, string $method): ?Response
-	{
+	private function process(
+		Endpoint $endpoint,
+		array $params,
+		string $action,
+		string $method,
+		Panel $panel,
+	): ?Response {
 		$methodName = Helpers::resolveMethodName($endpoint, $method, $action);
 		if ($methodName === null) {
 			return new JsonResponse($this->convention, [
@@ -231,7 +242,7 @@ final class ApiManager
 				return $extensionResponse;
 			}
 		}
-		$response = $this->invokeActionMethod($endpoint, $methodName, $method, $params);
+		$response = $this->invokeActionMethod($endpoint, $methodName, $method, $params, $panel);
 		foreach ($this->matchExtensions as $extension) {
 			$extensionResponse = $extension->afterProcess($endpoint, $params, $response);
 			if ($extensionResponse !== null) {
@@ -314,15 +325,23 @@ final class ApiManager
 		Endpoint $endpoint,
 		string $methodName,
 		string $method,
-		array $params
+		array $params,
+		Panel $panel,
 	): ?Response {
 		$endpoint->startup();
 		$endpoint->startupCheck();
 		$response = null;
 
 		try {
-			$response = (new ServiceMethodInvoker($this->projectEntityRepository))
-				->invoke($endpoint, $methodName, $params, true);
+			$invoker = new ServiceMethodInvoker($this->projectEntityRepository);
+			$args = $invoker->getInvokeArgs($endpoint, $methodName, $params, true);
+			$panel->setArgs($args);
+
+			try {
+				$response = (new \ReflectionMethod($endpoint, $methodName))->invokeArgs($endpoint, $args);
+			} catch (\ReflectionException $e) {
+				throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+			}
 		} catch (\InvalidArgumentException $e) {
 			return $this->rewriteInvalidArgumentException($e) ?? throw $e;
 		} catch (ThrowResponse $e) {
@@ -355,24 +374,28 @@ final class ApiManager
 		$return = array_merge((array) $this->request->getPost(), $this->request->getFiles());
 		try {
 			$post = array_keys($_POST)[0] ?? '';
-			if ($post !== '' && preg_match('/^{.*}$/', $post)) { // support for legacy clients
+			if (str_starts_with($post, '{') && str_ends_with($post, '}')) { // support for legacy clients
 				$json = json_decode($post, true);
 				if (is_array($json) === false) {
 					throw new \LogicException('Json is not valid array.');
 				}
 				unset($_POST[$post]);
+				foreach ($json ?? [] as $key => $value) {
+					$return[$key] = $value;
+				}
 			}
 		} catch (\Throwable) {
-			try {
-				$input = (string) file_get_contents('php://input');
-				$json = $input !== '' ? (array) json_decode($input, true) : [];
-			} catch (\Throwable) {
-				// Silence is golden.
-			}
+			// Silence is golden.
 		}
-
-		foreach ($json ?? [] as $key => $value) {
-			$return[$key] = $value;
+		try {
+			$input = (string) file_get_contents('php://input');
+			if ($input !== '') {
+				foreach ((array) json_decode($input, true) as $key => $value) {
+					$return[$key] = $value;
+				}
+			}
+		} catch (\Throwable) {
+			// Silence is golden.
 		}
 
 		return $return;

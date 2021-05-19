@@ -77,7 +77,7 @@ abstract class BaseEndpoint implements Endpoint
 	 * This method is suitable for processing large amounts of data that
 	 * do not have a predetermined structure that we are able to describe as an object.
 	 *
-	 * @return array<mixed, mixed>
+	 * @return array<int|string, mixed>
 	 */
 	public function getData(): array
 	{
@@ -98,7 +98,7 @@ abstract class BaseEndpoint implements Endpoint
 	 * If you want to send status data, it is recommended to use the sendOk() and sendError() methods.
 	 * This method should be used for sending data in a user-defined structure only.
 	 *
-	 * @param mixed[] $haystack
+	 * @param array<int|string, mixed> $haystack
 	 */
 	final public function sendJson(array $haystack, int $httpCode = 200): void
 	{
@@ -127,7 +127,7 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param array<mixed, mixed> $data
+	 * @param array<int|string, mixed> $data
 	 */
 	final public function sendOk(array $data = [], ?string $message = null, ?int $code = null): void
 	{
@@ -142,7 +142,7 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param array<mixed, mixed> $data
+	 * @param array<int|string, mixed> $data
 	 */
 	final public function sendSuccess(array $data = [], ?string $message = null, ?int $code = null): void
 	{
@@ -158,7 +158,7 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * @param array<int, mixed> $items
-	 * @param array<mixed, mixed> $data
+	 * @param array<int|string, mixed> $data
 	 */
 	final public function sendItems(array $items, ?Paginator $paginator = null, array $data = []): void
 	{
@@ -183,7 +183,7 @@ abstract class BaseEndpoint implements Endpoint
 		$type = strtolower($type);
 		$types = ['success', 'info', 'warning', 'error'];
 		if (\in_array($type, $types, true) === false) {
-			throw new \RuntimeException('Flash message type "' . $type . '" must be one of "' . implode('", "', $types) . '".');
+			throw new \LogicException('Flash message type "' . $type . '" must be one of "' . implode('", "', $types) . '".');
 		}
 		$this->messages[] = [
 			'message' => $message,
@@ -192,8 +192,15 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
+	/**
+	 * @deprecated since 2021-05-19 use method arguments instead.
+	 */
 	final public function validateDataKey(string $key, ?string $message = null, ?int $code = null): void
 	{
+		trigger_error(
+			__METHOD__ . ': This method is deprecated, use method arguments instead.',
+			E_USER_DEPRECATED,
+		);
 		if (array_key_exists($key, $this->data) === false) {
 			$this->sendError($message ?? 'Key "' . $key . '" is required.', $code);
 		}
@@ -201,10 +208,15 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param mixed[] $keys
+	 * @deprecated since 2021-05-19 use method arguments instead.
+	 * @param array<string, mixed> $keys
 	 */
 	final public function validateDataKeys(array $keys, ?string $message = null, ?int $code = null): void
 	{
+		trigger_error(
+			__METHOD__ . ': This method is deprecated, use method arguments instead.',
+			E_USER_DEPRECATED,
+		);
 		$invalidKeys = [];
 		foreach ($keys as $key) {
 			if (array_key_exists($key, $this->data) === false) {
@@ -392,7 +404,7 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param mixed[]|mixed ...$parameters
+	 * @param array<string, mixed>|mixed ...$parameters
 	 */
 	final public function translate(mixed $message, ...$parameters): string
 	{
@@ -401,7 +413,7 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @return mixed[]
+	 * @return array<string, mixed>
 	 */
 	final public function getParameters(): array
 	{

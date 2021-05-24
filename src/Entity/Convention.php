@@ -56,14 +56,21 @@ final class Convention
 	}
 
 
+	/**
+	 * @phpstan-return positive-int
+	 */
 	public function getDefaultOkCode(): int
 	{
 		return $this->defaultOkCode;
 	}
 
 
+	/**
+	 * @param int<100, 999> $code
+	 */
 	public function setDefaultOkCode(int $code): void
 	{
+		/** @phpstan-ignore-next-line */
 		if ($code < 100 || $code > 999) {
 			throw new \InvalidArgumentException('Code must be in interval (100; 999), but ' . $code . ' given.');
 		}

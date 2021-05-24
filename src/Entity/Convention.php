@@ -12,8 +12,10 @@ final class Convention
 {
 	private string $dateTimeFormat = 'Y-m-d H:i:s';
 
+	/** @var positive-int */
 	private int $defaultErrorCode = 500;
 
+	/** @var positive-int */
 	private int $defaultOkCode = 200;
 
 	private bool $rewriteTooStringMethod = true;
@@ -40,12 +42,18 @@ final class Convention
 	}
 
 
+	/**
+	 * @phpstan-return positive-int
+	 */
 	public function getDefaultErrorCode(): int
 	{
 		return $this->defaultErrorCode;
 	}
 
 
+	/**
+	 * @param positive-int $code
+	 */
 	public function setDefaultErrorCode(int $code): void
 	{
 		if ($code < 100 || $code > 999) {
@@ -66,11 +74,10 @@ final class Convention
 
 
 	/**
-	 * @param int<100, 999> $code
+	 * @param positive-int $code
 	 */
 	public function setDefaultOkCode(int $code): void
 	{
-		/** @phpstan-ignore-next-line */
 		if ($code < 100 || $code > 999) {
 			throw new \InvalidArgumentException('Code must be in interval (100; 999), but ' . $code . ' given.');
 		}

@@ -112,6 +112,7 @@ abstract class BaseEndpoint implements Endpoint
 	 * This method should be used for sending data in a user-defined structure only.
 	 *
 	 * @param array<int|string, mixed> $haystack
+	 * @param positive-int $httpCode
 	 * @phpstan-return never-return
 	 * @throws ThrowResponse
 	 */
@@ -130,6 +131,7 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
+	 * @param positive-int|null $code
 	 * @phpstan-return never-return
 	 * @throws ThrowResponse
 	 */
@@ -147,6 +149,7 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * @param array<int|string, mixed> $data
+	 * @param positive-int|null $code
 	 * @phpstan-return never-return
 	 * @throws ThrowResponse
 	 */
@@ -164,6 +167,7 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * @param array<int|string, mixed> $data
+	 * @param positive-int|null $code
 	 * @phpstan-return never-return
 	 * @throws ThrowResponse
 	 */
@@ -385,6 +389,7 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * @param array<string, mixed> $params
+	 * @param positive-int $httpCode
 	 * @phpstan-return never-return
 	 * @throws ThrowResponse
 	 */
@@ -395,6 +400,7 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
+	 * @param positive-int $httpCode
 	 * @phpstan-return never-return
 	 * @throws ThrowResponse
 	 */

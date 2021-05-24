@@ -112,6 +112,7 @@ abstract class BaseEndpoint implements Endpoint
 	 * This method should be used for sending data in a user-defined structure only.
 	 *
 	 * @param array<int|string, mixed> $haystack
+	 * @throws ThrowResponse
 	 */
 	final public function sendJson(array $haystack, int $httpCode = 200): void
 	{
@@ -127,6 +128,9 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
+	/**
+	 * @throws ThrowResponse
+	 */
 	final public function sendError(string $message, ?int $code = null, ?string $hint = null): void
 	{
 		$code ??= $this->convention->getDefaultOkCode();
@@ -141,6 +145,7 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * @param array<int|string, mixed> $data
+	 * @throws ThrowResponse
 	 */
 	final public function sendOk(array $data = [], ?string $message = null, ?int $code = null): void
 	{
@@ -156,6 +161,7 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * @param array<int|string, mixed> $data
+	 * @throws ThrowResponse
 	 */
 	final public function sendSuccess(array $data = [], ?string $message = null, ?int $code = null): void
 	{
@@ -172,6 +178,7 @@ abstract class BaseEndpoint implements Endpoint
 	/**
 	 * @param array<int, mixed> $items
 	 * @param array<int|string, mixed> $data
+	 * @throws ThrowResponse
 	 */
 	final public function sendItems(array $items, ?Paginator $paginator = null, array $data = []): void
 	{
@@ -373,6 +380,7 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * @param array<string, mixed> $params
+	 * @throws ThrowResponse
 	 */
 	final public function redirect(string $dest, array $params = [], int $httpCode = 301): void
 	{
@@ -380,6 +388,9 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
+	/**
+	 * @throws ThrowResponse
+	 */
 	final public function redirectUrl(string $url, int $httpCode = 301): void
 	{
 		if (Validators::isUrl($url) === false) {

@@ -8,7 +8,7 @@ Full compatible smart structured API defined by schema.
 - Define full type-hint input parameters,
 - Validate returned data by schema,
 - Full compatible with Nette framework,
-- Inject dependencies by `@inject` annotation in public property.
+- Inject dependencies by `#[Inject]` attribute (or old `@inject` annotation syntax) in public property.
 
 ![Baraja Structured API debug Tracy panel](doc/tracy-panel-design.png)
 

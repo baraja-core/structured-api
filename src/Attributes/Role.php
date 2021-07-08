@@ -7,8 +7,7 @@ namespace Baraja\StructuredApi\Attributes;
 use Attribute;
 
 
-#[Attribute(Attribute::TARGET_CLASS)]
-#[Attribute(Attribute::TARGET_METHOD)]
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
 class Role
 {
 	/** @var string[] */

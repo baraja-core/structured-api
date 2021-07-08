@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
+use Baraja\StructuredApi\Attributes\PublicEndpoint;
 use DateTime;
 
-/**
- * @public
- */
+#[PublicEndpoint]
 final class PingEndpoint extends BaseEndpoint
 {
 	public function actionDefault(): void

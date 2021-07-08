@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi\Middleware;
 
 
+use Baraja\StructuredApi\Attributes\PublicEndpoint;
 use Baraja\StructuredApi\Endpoint;
 use Baraja\StructuredApi\Entity\Convention;
 use Baraja\StructuredApi\Helpers;
@@ -59,9 +60,10 @@ final class PermissionExtension implements MatchExtension
 	private function checkPermission(Endpoint $endpoint, string $method, string $action): bool
 	{
 		try {
-			$docComment = trim((string) (new \ReflectionClass($endpoint))->getDocComment());
-			$public = (bool) preg_match('/@public(?:$|\s|\n)/', $docComment);
-			if (($docComment === '' || $public === false) && $this->user->isLoggedIn() === false) {
+			$ref = new \ReflectionClass($endpoint);
+			$docComment = trim((string) $ref->getDocComment());
+			$public = (PHP_VERSION_ID >= 80000 && $ref->getAttributes(PublicEndpoint::class)) || str_contains($docComment, '@public');
+			if ($public === false && $this->user->isLoggedIn() === false) {
 				throw new \InvalidArgumentException('This API endpoint is private. You must be logged in to use.');
 			}
 			foreach (Helpers::parseRolesFromComment($docComment) as $role) {

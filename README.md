@@ -219,14 +219,12 @@ final class ArticleEndpoint extends BaseEndpoint
 
 > 🚩**Warning:** If you do not set the rights at all, by default all endpoints are private and you must log in to call them! 👮
 
-All API requests are validated at runtime. If you want to allow all users access to your endpoints, please add the `@public` annotation to main class doc comment.
+All API requests are validated at runtime. If you want to allow all users access to your endpoints, please add the `#[PublicEndpoint]` attribute to class.
 
 For example (this endpoint will be public):
 
 ```php
-/**
- * @public
- */
+#[PublicEndpoint]
 final class ProductEndpoint extends BaseEndpoint
 {
 }
@@ -248,9 +246,7 @@ final class ArticleEndpoint extends BaseEndpoint
 Rights settings can also be combined. For example, in a public endpoint, restrict rights to a specific method only:
 
 ```php
-/**
- * @public
- */
+#[PublicEndpoint]
 final class SitemapEndpoint extends BaseEndpoint
 {
 

@@ -230,14 +230,12 @@ final class ProductEndpoint extends BaseEndpoint
 }
 ```
 
-To restrict rights, define an `@role` annotation over a class or method.
+To restrict rights, define an `#[Role]` attribute over a class or method.
 
 For example (only administrators and moderators can call this endpoint):
 
 ```php
-/**
- * @role admin, moderator
- */
+#[Role(roles: ['admin', 'moderator'])]
 final class ArticleEndpoint extends BaseEndpoint
 {
 }
@@ -249,10 +247,7 @@ Rights settings can also be combined. For example, in a public endpoint, restric
 #[PublicEndpoint]
 final class SitemapEndpoint extends BaseEndpoint
 {
-
-   /**
-    * @role admin
-    */
+   #[Role(roles: 'admin')]
    public function actionClearCache(): void
    {
       // your secured implementation

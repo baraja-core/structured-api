@@ -74,6 +74,7 @@ final class Helpers
 
 
 	/**
+	 * @deprecated since 2021-07-08, use #[Role] attribute instead.
 	 * @return string[]
 	 */
 	public static function parseRolesFromComment(string $comment): array

@@ -6,6 +6,7 @@ namespace Baraja\StructuredApi\Middleware;
 
 
 use Baraja\StructuredApi\Attributes\PublicEndpoint;
+use Baraja\StructuredApi\Attributes\Role;
 use Baraja\StructuredApi\Endpoint;
 use Baraja\StructuredApi\Entity\Convention;
 use Baraja\StructuredApi\Helpers;
@@ -60,16 +61,14 @@ final class PermissionExtension implements MatchExtension
 	private function checkPermission(Endpoint $endpoint, string $method, string $action): bool
 	{
 		try {
-			$ref = new \ReflectionClass($endpoint);
-			$docComment = trim((string) $ref->getDocComment());
-			$public = (PHP_VERSION_ID >= 80000 && $ref->getAttributes(PublicEndpoint::class)) || str_contains($docComment, '@public');
+			$refClass = new \ReflectionClass($endpoint);
+			$docComment = trim((string) $refClass->getDocComment());
+			$public = (PHP_VERSION_ID >= 80000 && $refClass->getAttributes(PublicEndpoint::class)) || str_contains($docComment, '@public');
 			if ($public === false && $this->user->isLoggedIn() === false) {
 				throw new \InvalidArgumentException('This API endpoint is private. You must be logged in to use.');
 			}
-			foreach (Helpers::parseRolesFromComment($docComment) as $role) {
-				if ($this->user->isInRole($role) === true) {
-					return true;
-				}
+			if ($this->checkRoles($refClass)) {
+				return true;
 			}
 		} catch (\ReflectionException $e) {
 			throw new \InvalidArgumentException('Endpoint "' . $endpoint::class . '" can not be reflected: ' . $e->getMessage(), $e->getCode(), $e);
@@ -79,19 +78,12 @@ final class PermissionExtension implements MatchExtension
 			if ($methodName === null) {
 				throw new \InvalidArgumentException('Method for action "' . $action . '" and HTTP method "' . $method . '" is not implemented.');
 			}
-			$ref = new \ReflectionMethod($endpoint, $methodName);
+			$refMethod = new \ReflectionMethod($endpoint, $methodName);
 		} catch (\ReflectionException $e) {
 			throw new \InvalidArgumentException('Method "' . $action . '" can not be reflected: ' . $e->getMessage(), $e->getCode(), $e);
 		}
-		$roles = Helpers::parseRolesFromComment((string) $ref->getDocComment());
-		if ($roles !== []) { // roles as required, user must be logged in
-			foreach ($roles as $role) {
-				if ($this->user->isInRole($role) === true) {
-					return true;
-				}
-			}
-
-			return false;
+		if ($this->getRoleList($refMethod) !== []) { // roles as required, user must be logged in
+			return $this->checkRoles($refMethod);
 		}
 		if (
 			($public ?? false) === false
@@ -101,5 +93,32 @@ final class PermissionExtension implements MatchExtension
 		}
 
 		return $public ?? false;
+	}
+
+
+	/**
+	 * @return string[]
+	 */
+	private function getRoleList(\ReflectionClass|\ReflectionMethod $ref): array
+	{
+		$return = [];
+		foreach ($ref->getAttributes(Role::class) as $attribute) {
+			$return[] = $attribute->getArguments()['roles'] ?? [];
+		}
+		$return[] = Helpers::parseRolesFromComment(trim((string) $ref->getDocComment()));
+
+		return array_unique(array_merge([], ...$return));
+	}
+
+
+	private function checkRoles(\ReflectionClass|\ReflectionMethod $ref): bool
+	{
+		foreach ($this->getRoleList($ref) as $role) {
+			if ($this->user->isInRole($role) === true) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

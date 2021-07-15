@@ -57,8 +57,9 @@ final class ApiExtension extends CompilerExtension
 
 		$class->getMethod('initialize')->addBody(
 			'// Structured API.' . "\n"
-			. '(function () {' . "\n"
-			. "\t" . 'if (strncmp($basePath = ' . Helpers::class . '::processPath($this->getService(\'http.request\')), \'api/\', 4) === 0) {' . "\n"
+			. '(function (): void {' . "\n"
+			. "\t" . '$basePath = ' . Helpers::class . '::processPath($this->getService(\'http.request\'));' . "\n"
+			. "\t" . 'if (str_starts_with($basePath, \'api/\')) {' . "\n"
 			. "\t\t" . '$this->getService(?)->onStartup[] = function(' . Application::class . ' $a) use ($basePath): void {' . "\n"
 			. "\t\t\t" . ($skipError === true
 				? "\t" . 'try {' . "\n"

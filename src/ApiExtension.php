@@ -54,13 +54,13 @@ final class ApiExtension extends CompilerExtension
 		$config = $this->getConfig();
 
 		$skipError = (bool) ($config['skipError'] ?? false);
-		$body = '$this->getService(\'' . $apiManager->getName() . '\')->run($basePath);';
+		$body = '$this->getService(\'' . $apiManager->getName() . '\')->run();';
 
 		$class->getMethod('initialize')->addBody(
 			'// Structured API.' . "\n"
 			. '(function (): void {' . "\n"
 			. "\t" . 'if (str_starts_with(' . Url::class . '::get()->getRelativeUrl(), \'api/\')) {' . "\n"
-			. "\t\t" . '$this->getService(?)->onStartup[] = function(' . Application::class . ' $a) use ($basePath): void {' . "\n"
+			. "\t\t" . '$this->getService(?)->onStartup[] = function(' . Application::class . ' $a): void {' . "\n"
 			. "\t\t\t" . ($skipError === true
 				? "\t" . 'try {' . "\n"
 				. "\t\t\t" . $body . "\n"

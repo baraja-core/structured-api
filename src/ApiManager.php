@@ -11,6 +11,7 @@ use Baraja\ServiceMethodInvoker\ProjectEntityRepository;
 use Baraja\StructuredApi\Entity\Convention;
 use Baraja\StructuredApi\Middleware\MatchExtension;
 use Baraja\StructuredApi\Tracy\Panel;
+use Baraja\Url\Url;
 use Nette\DI\Container;
 use Nette\Http\Request;
 use Nette\Http\Response as HttpResponse;
@@ -51,8 +52,9 @@ final class ApiManager
 	 * @param array<string|int, mixed>|null $params
 	 * @throws StructuredApiException
 	 */
-	public function run(string $path, ?array $params = [], ?string $method = null, bool $throw = false): void
+	public function run(?string $path = null, ?array $params = [], ?string $method = null, bool $throw = false): void
 	{
+		$path ??= Url::get()->getRelativeUrl();
 		$this->checkFirewall();
 		$method = $method ?: Helpers::httpMethod();
 		$params = array_merge($this->safeGetParams($path), $this->getBodyParams($method), $params ?? []);

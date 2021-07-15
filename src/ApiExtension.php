@@ -7,6 +7,7 @@ namespace Baraja\StructuredApi;
 
 use Baraja\StructuredApi\Entity\Convention;
 use Baraja\StructuredApi\Middleware\PermissionExtension;
+use Baraja\Url\Url;
 use Nette\Application\Application;
 use Nette\DI\CompilerExtension;
 use Nette\DI\Container;
@@ -58,8 +59,7 @@ final class ApiExtension extends CompilerExtension
 		$class->getMethod('initialize')->addBody(
 			'// Structured API.' . "\n"
 			. '(function (): void {' . "\n"
-			. "\t" . '$basePath = ' . Helpers::class . '::processPath($this->getService(\'http.request\'));' . "\n"
-			. "\t" . 'if (str_starts_with($basePath, \'api/\')) {' . "\n"
+			. "\t" . 'if (str_starts_with(' . Url::class . '::get()->getRelativeUrl(), \'api/\')) {' . "\n"
 			. "\t\t" . '$this->getService(?)->onStartup[] = function(' . Application::class . ' $a) use ($basePath): void {' . "\n"
 			. "\t\t\t" . ($skipError === true
 				? "\t" . 'try {' . "\n"

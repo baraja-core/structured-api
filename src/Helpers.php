@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
-use Baraja\Url\Url;
-use Nette\Http\Request;
 use Nette\Utils\Strings;
 
 final class Helpers
@@ -15,16 +13,6 @@ final class Helpers
 	public function __construct()
 	{
 		throw new \Error('Class ' . self::class . ' is static and cannot be instantiated.');
-	}
-
-
-	/**
-	 * Return current API path by current HTTP URL.
-	 * In case of CLI return empty string.
-	 */
-	public static function processPath(Request $httpRequest): string
-	{
-		return trim(str_replace(rtrim($httpRequest->getUrl()->withoutUserInfo()->getBaseUrl(), '/'), '', Url::get()->getCurrentUrl()), '/');
 	}
 
 

@@ -78,7 +78,7 @@ final class ApiExtension extends CompilerExtension
 
 
 	/**
-	 * @return string[] (name => type)
+	 * @return array<string, class-string> (name => type)
 	 */
 	private function createEndpointServices(ContainerBuilder $builder): array
 	{
@@ -91,6 +91,9 @@ final class ApiExtension extends CompilerExtension
 
 		$return = [];
 		foreach (array_unique(array_keys($robot->getIndexedClasses())) as $class) {
+			if ($class === BaseEndpoint::class) {
+				continue;
+			}
 			if (!class_exists($class) && !interface_exists($class) && !trait_exists($class)) {
 				throw new \RuntimeException(
 					'Class "' . $class . '" was found, but it cannot be loaded by autoloading.' . "\n"
@@ -102,7 +105,17 @@ final class ApiExtension extends CompilerExtension
 			} catch (\ReflectionException $e) {
 				throw new \RuntimeException('Service "' . $class . '" is broken: ' . $e->getMessage(), $e->getCode(), $e);
 			}
-			if ($rc->isInstantiable() && $rc->implementsInterface(Endpoint::class)) {
+			try {
+				if ($rc->isInstantiable() === false) {
+					if ($rc->hasMethod('__construct') && !$rc->getMethod('__construct')->isPublic()) {
+						throw new \RuntimeException('Constructor of endpoint "' . $class . '" is not callable.');
+					}
+					continue;
+				}
+			} catch (\ReflectionException) {
+				continue;
+			}
+			if ($rc->implementsInterface(Endpoint::class)) {
 				$endpoint = $builder->addDefinition($this->prefix('endpoint') . '.' . str_replace('\\', '.', $class))
 					->setFactory($class)
 					->addTag('structured-api-endpoint')

@@ -55,7 +55,7 @@ final class ApiManager
 	{
 		$path ??= Url::get()->getRelativeUrl();
 		$this->checkFirewall();
-		$method = ((string) $method) === '' ? Helpers::httpMethod() : $method;
+		$method = $method === null || $method === '' ? Helpers::httpMethod() : $method;
 		$params = array_merge($this->safeGetParams($path), $this->getBodyParams($method), $params ?? []);
 		$panel = new Panel($path, $params, $method);
 		Debugger::getBar()->addPanel($panel);

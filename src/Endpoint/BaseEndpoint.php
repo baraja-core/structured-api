@@ -111,7 +111,7 @@ abstract class BaseEndpoint implements Endpoint
 	 * If you want to send status data, it is recommended to use the sendOk() and sendError() methods.
 	 * This method should be used for sending data in a user-defined structure only.
 	 *
-	 * @param array<int|string, mixed> $haystack
+	 * @param array<string, mixed> $haystack
 	 * @param positive-int $httpCode
 	 * @phpstan-return never-return
 	 * @throws ThrowResponse
@@ -122,7 +122,7 @@ abstract class BaseEndpoint implements Endpoint
 			if (isset($haystack['flashMessages']) === true) {
 				throw new \RuntimeException('Flash message was already defined in your data. Did you want to use the flashMessage() function?');
 			}
-			$haystack = array_merge($haystack, ['flashMessages' => $this->messages]);
+			$haystack += ['flashMessages' => $this->messages];
 			$this->messages = []; // Reset for next response
 		}
 
@@ -148,7 +148,7 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param array<int|string, mixed> $data
+	 * @param array<string, mixed> $data
 	 * @param positive-int|null $code
 	 * @phpstan-return never-return
 	 * @throws ThrowResponse
@@ -166,7 +166,7 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @param array<int|string, mixed> $data
+	 * @param array<string, mixed> $data
 	 * @param positive-int|null $code
 	 * @phpstan-return never-return
 	 * @throws ThrowResponse
@@ -185,7 +185,7 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * @param array<int, mixed> $items
-	 * @param array<int|string, mixed> $data
+	 * @param array<string, mixed> $data
 	 * @phpstan-return never-return
 	 * @throws ThrowResponse
 	 */
@@ -193,7 +193,7 @@ abstract class BaseEndpoint implements Endpoint
 	{
 		$return = ['items' => $items];
 		if ($paginator !== null) {
-			$return['paginator'] = $paginator;
+			$return += ['paginator' => $paginator];
 		}
 
 		$this->sendJson(array_merge($return, $data));

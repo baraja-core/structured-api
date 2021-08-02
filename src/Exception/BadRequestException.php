@@ -13,7 +13,7 @@ final class BadRequestException extends \RuntimeException
 
 	public function __construct(string $message = '', int $httpCode = 0, ?\Throwable $previous = null)
 	{
-		parent::__construct($message, $httpCode ?: $this->code, $previous);
+		parent::__construct($message, $httpCode === 0 ? $this->code : $httpCode, $previous);
 	}
 
 

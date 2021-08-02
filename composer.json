@@ -24,6 +24,7 @@
 		"nette/security": "^3.1"
 	},
 	"require-dev": {
+		"baraja-core/localization": "^2.0",
 		"tracy/tracy": "^2.8",
 		"phpstan/phpstan": "^0.12.94",
 		"phpstan/extension-installer": "^1.0",

@@ -33,7 +33,7 @@ final class Panel implements IBarPanel
 		private array $params,
 		private string $httpMethod,
 	) {
-		$this->inputTime = (float) microtime(true);
+		$this->inputTime = microtime(true);
 	}
 
 
@@ -107,7 +107,7 @@ final class Panel implements IBarPanel
 	public function setResponse(?Response $response): void
 	{
 		$this->response = $response;
-		$this->responseTime = (float) microtime(true);
+		$this->responseTime = microtime(true);
 	}
 
 

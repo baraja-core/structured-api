@@ -11,12 +11,12 @@ use Baraja\StructuredApi\Response;
 interface MatchExtension
 {
 	/**
-	 * @param mixed[] $params
+	 * @param array<string|int, mixed> $params
 	 */
 	public function beforeProcess(Endpoint $endpoint, array $params, string $action, string $method): ?Response;
 
 	/**
-	 * @param mixed[] $params
+	 * @param array<string|int, mixed> $params
 	 */
 	public function afterProcess(Endpoint $endpoint, array $params, ?Response $response): ?Response;
 }

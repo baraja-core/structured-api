@@ -63,7 +63,7 @@ final class PermissionExtension implements MatchExtension
 		try {
 			$refClass = new \ReflectionClass($endpoint);
 			$docComment = trim((string) $refClass->getDocComment());
-			$public = (PHP_VERSION_ID >= 80000 && $refClass->getAttributes(PublicEndpoint::class)) || str_contains($docComment, '@public');
+			$public = $refClass->getAttributes(PublicEndpoint::class) !== [] || str_contains($docComment, '@public');
 			if ($public === false && $this->user->isLoggedIn() === false) {
 				throw new \InvalidArgumentException('This API endpoint is private. You must be logged in to use.');
 			}
@@ -97,7 +97,7 @@ final class PermissionExtension implements MatchExtension
 
 
 	/**
-	 * @return string[]
+	 * @return array<int, string>
 	 */
 	private function getRoleList(\ReflectionClass|\ReflectionMethod $ref): array
 	{
@@ -105,6 +105,7 @@ final class PermissionExtension implements MatchExtension
 		foreach ($ref->getAttributes(Role::class) as $attribute) {
 			$return[] = $attribute->getArguments()['roles'] ?? [];
 		}
+		/** @phpstan-ignore-next-line */
 		$return[] = Helpers::parseRolesFromComment(trim((string) $ref->getDocComment()));
 
 		return array_unique(array_merge([], ...$return));

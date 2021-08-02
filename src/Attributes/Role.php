@@ -10,7 +10,7 @@ use Attribute;
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
 class Role
 {
-	/** @var string[] */
+	/** @var array<int, string> */
 	private array $roles;
 
 
@@ -21,8 +21,8 @@ class Role
 	{
 		$return = [];
 		foreach (is_string($roles) ? [$roles] : $roles as $role) {
-			$role = trim(strtolower((string) $role), '-');
-			if (!preg_match('/^[a-z0-9-]+/', $role)) {
+			$role = strtolower(trim((string) $role, '-'));
+			if (preg_match('/^[a-z0-9-]+/', $role) !== 1) {
 				throw new \InvalidArgumentException('Role "' . $role . '" is not valid.');
 			}
 			$return[] = $role;
@@ -32,7 +32,7 @@ class Role
 
 
 	/**
-	 * @return string[]
+	 * @return array<int, string>
 	 */
 	public function getRoles(): array
 	{

@@ -23,14 +23,14 @@ abstract class BaseResponse implements Response
 
 
 	/**
-	 * @param mixed[] $haystack
+	 * @param array<string, mixed> $haystack
 	 */
 	final public function __construct(
 		private Convention $convention,
 		array $haystack,
 		int|string $httpCode = 200
 	) {
-		if (is_string($httpCode) && !preg_match('#^[+-]?\d*[.]?\d+$#D', $httpCode)) {
+		if (is_string($httpCode) && preg_match('#^[+-]?\d*[.]?\d+$#D', $httpCode) !== 1) {
 			$httpCode = 500;
 		}
 		$this->haystack = $haystack;
@@ -85,7 +85,7 @@ abstract class BaseResponse implements Response
 			}
 		}
 		if ($value !== null && isset($hide[$key]) === true) {
-			if (preg_match('/^\$2[ayb]\$.{56}$/', (string) $value)) { // Allow BCrypt hash only.
+			if (preg_match('/^\$2[ayb]\$.{56}$/', (string) $value) === 1) { // Allow BCrypt hash only.
 				return false;
 			}
 			if (\class_exists(Debugger::class) === true) {
@@ -167,17 +167,17 @@ abstract class BaseResponse implements Response
 
 
 	/**
-	 * @return mixed[]
+	 * @return array{page: int, pageCount: int, itemCount: int, itemsPerPage: int, firstPage: int, lastPage: int, isFirstPage: bool, isLastPage: bool}
 	 */
 	private function processPaginator(Paginator $haystack): array
 	{
 		return [
 			'page' => $haystack->getPage(),
-			'pageCount' => $haystack->getPageCount(),
-			'itemCount' => $haystack->getItemCount(),
+			'pageCount' => (int) $haystack->getPageCount(),
+			'itemCount' => (int) $haystack->getItemCount(),
 			'itemsPerPage' => $haystack->getItemsPerPage(),
 			'firstPage' => $haystack->getFirstPage(),
-			'lastPage' => $haystack->getLastPage(),
+			'lastPage' => (int) $haystack->getLastPage(),
 			'isFirstPage' => $haystack->isFirst(),
 			'isLastPage' => $haystack->isLast(),
 		];
@@ -185,7 +185,7 @@ abstract class BaseResponse implements Response
 
 
 	/**
-	 * @return mixed[]
+	 * @return array{key: string, label: string, count: int}
 	 */
 	private function processStatusCount(StatusCount $haystack): array
 	{
@@ -208,7 +208,7 @@ abstract class BaseResponse implements Response
 			foreach ((new \ReflectionClass($haystack))->getProperties() as $property) {
 				$property->setAccessible(true);
 				$key = $property->getName();
-				if ($key && ($key[0] ?? '') === '_') {
+				if (($key[0] ?? '') === '_') {
 					continue;
 				}
 				$value = $property->getValue($haystack);

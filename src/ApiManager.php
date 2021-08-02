@@ -21,8 +21,7 @@ use Tracy\ILogger;
 
 final class ApiManager
 {
-
-	/** @var array<string, string> (endpointPath => endpointType) */
+	/** @var array<string, class-string> (endpointPath => endpointType) */
 	private array $endpoints;
 
 	/** @var MatchExtension[] */
@@ -30,7 +29,7 @@ final class ApiManager
 
 
 	/**
-	 * @param array<string, string> $endpoints
+	 * @param array<string, class-string> $endpoints
 	 */
 	public function __construct(
 		array $endpoints,
@@ -56,12 +55,12 @@ final class ApiManager
 	{
 		$path ??= Url::get()->getRelativeUrl();
 		$this->checkFirewall();
-		$method = $method ?: Helpers::httpMethod();
+		$method = ((string) $method) === '' ? Helpers::httpMethod() : $method;
 		$params = array_merge($this->safeGetParams($path), $this->getBodyParams($method), $params ?? []);
 		$panel = new Panel($path, $params, $method);
 		Debugger::getBar()->addPanel($panel);
 
-		if (preg_match('/^api\/v(?<v>\d{1,3}(?:\.\d{1,3})?)\/(?<path>.*?)$/', $path, $pathParser)) {
+		if (preg_match('/^api\/v(?<v>\d{1,3}(?:\.\d{1,3})?)\/(?<path>.*?)$/', $path, $pathParser) === 1) {
 			try {
 				$route = $this->route((string) preg_replace('/^(.*?)(\?.*|)$/', '$1', $pathParser['path']), $pathParser['v'], $params);
 				$response = null;
@@ -129,7 +128,7 @@ final class ApiManager
 
 
 	/**
-	 * @return array<string, string>
+	 * @return array<string, class-string>
 	 */
 	public function getEndpoints(): array
 	{
@@ -263,7 +262,7 @@ final class ApiManager
 	 */
 	private function safeGetParams(string $path): array
 	{
-		$return = (array) ($_GET ?? []);
+		$return = $_GET ?? [];
 		if ($return === []) {
 			$query = trim(explode('?', $path, 2)[1] ?? '');
 			if ($query !== '') {
@@ -283,7 +282,7 @@ final class ApiManager
 	 *
 	 * @param array<string|int, mixed> $params
 	 * @param string $version in format /\d{1,3}(?:\.\d{1,3})?/
-	 * @return array<string, string>
+	 * @return array{class: class-string, action: string}
 	 */
 	private function route(string $route, string $version, array $params): array
 	{
@@ -293,7 +292,7 @@ final class ApiManager
 		if (!str_contains($route, '/')) { // 1. Simple match
 			$class = $this->endpoints[$route] ?? null;
 			$action = 'default';
-		} elseif (preg_match('/^([^\/]+)\/([^\/]+)$/', $route, $routeParser)) { // 2. <endpoint>/<action>
+		} elseif (preg_match('/^([^\/]+)\/([^\/]+)$/', $route, $routeParser) === 1) { // 2. <endpoint>/<action>
 			$class = $this->endpoints[$routeParser[1]] ?? null;
 			$action = Helpers::formatApiName($routeParser[2]);
 		}
@@ -303,7 +302,7 @@ final class ApiManager
 		if ($class === null) {
 			throw new BadRequestException(
 				'Can not route "' . $route . '", because endpoint does not exist.'
-				. ($params !== [] ? "\n" . 'Given params:' . "\n" . json_encode($params) : ''),
+				. ($params !== [] ? "\n" . 'Given params:' . "\n" . json_encode($params, JSON_THROW_ON_ERROR) : ''),
 			);
 		}
 		if (\class_exists($class) === false) {
@@ -420,13 +419,13 @@ final class ApiManager
 	private function rewriteInvalidArgumentException(\InvalidArgumentException $e): ?Response
 	{
 		$message = null;
-		if (preg_match('/^UserException:\s+(.+)$/', $e->getMessage(), $eMessageParser)) {
+		if (preg_match('/^UserException:\s+(.+)$/', $e->getMessage(), $eMessageParser) === 1) {
 			$message = $eMessageParser[1] ?? $e->getMessage();
 		} elseif (isset($e->getTrace()[0]['class']) && str_ends_with((string) $e->getTrace()[0]['class'], '\Assert')) {
 			for ($i = 0; $i <= 3; $i++) {
 				if (
 					isset($e->getTrace()[$i])
-					&& preg_match('/^set([A-Za-z0-9]+)$/', $e->getTrace()[$i]['function'] ?? '', $functionParser)
+					&& preg_match('/^set([A-Za-z0-9]+)$/', $e->getTrace()[$i]['function'] ?? '', $functionParser) === 1
 				) {
 					$message = Strings::firstUpper($functionParser[1]) . ': ' . $e->getMessage();
 					break;

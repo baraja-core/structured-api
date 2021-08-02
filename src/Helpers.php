@@ -51,13 +51,12 @@ final class Helpers
 	public static function httpMethod(): string
 	{
 		$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-		if ($method === 'POST'
-			&& preg_match('#^[A-Z]+$#D', $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] ?? '')
-		) {
-			$method = $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'];
+		$methodOverride = $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] ?? '';
+		if ($method === 'POST' && $methodOverride !== '' && preg_match('#^[A-Z]+$#D', $methodOverride) === 1) {
+			$method = $methodOverride;
 		}
 
-		return $method ?: 'GET';
+		return $method;
 	}
 
 
@@ -67,7 +66,7 @@ final class Helpers
 	 */
 	public static function parseRolesFromComment(string $comment): array
 	{
-		if (preg_match('/@role\s+([^\n]+)/', $comment, $roleParser)) {
+		if (preg_match('/@role\s+([^\n]+)/', $comment, $roleParser) === 1) {
 			return array_map(static fn(string $role): string => strtolower(trim($role)), explode(',', trim($roleParser[1])));
 		}
 

@@ -71,16 +71,16 @@ final class PermissionExtension implements MatchExtension
 				return true;
 			}
 		} catch (\ReflectionException $e) {
-			throw new \InvalidArgumentException('Endpoint "' . $endpoint::class . '" can not be reflected: ' . $e->getMessage(), $e->getCode(), $e);
+			throw new \InvalidArgumentException(sprintf('Endpoint "%s" can not be reflected: %s', $endpoint::class, $e->getMessage()), 500, $e);
 		}
 		try {
 			$methodName = Helpers::resolveMethodName($endpoint, $method, $action);
 			if ($methodName === null) {
-				throw new \InvalidArgumentException('Method for action "' . $action . '" and HTTP method "' . $method . '" is not implemented.');
+				throw new \InvalidArgumentException(sprintf('Method for action "%s" and HTTP method "%s" is not implemented.', $action, $method));
 			}
 			$refMethod = new \ReflectionMethod($endpoint, $methodName);
 		} catch (\ReflectionException $e) {
-			throw new \InvalidArgumentException('Method "' . $action . '" can not be reflected: ' . $e->getMessage(), $e->getCode(), $e);
+			throw new \InvalidArgumentException(sprintf('Method "%s" can not be reflected: %s', $action, $e->getMessage()), 500, $e);
 		}
 		if ($this->getRoleList($refMethod) !== []) { // roles as required, user must be logged in
 			return $this->checkRoles($refMethod);

@@ -55,7 +55,15 @@ abstract class BaseResponse implements Response
 	 */
 	final public function toArray(): array
 	{
-		return $this->process($this->haystack);
+		$return = $this->process($this->haystack);
+		if (is_array($return)) {
+			return $return;
+		}
+
+		throw new \LogicException(sprintf(
+			'Response can not be casted to array, because type "%s" given.',
+			get_debug_type($return)
+		));
 	}
 
 
@@ -84,7 +92,7 @@ abstract class BaseResponse implements Response
 				$hide[$hideKey] = true;
 			}
 		}
-		if ($value !== null && isset($hide[$key]) === true) {
+		if (isset($hide[$key]) && (is_string($value) || $value instanceof \Stringable)) {
 			if (preg_match('/^\$2[ayb]\$.{56}$/', (string) $value) === 1) { // Allow BCrypt hash only.
 				return false;
 			}
@@ -108,7 +116,7 @@ abstract class BaseResponse implements Response
 	/**
 	 * Convert common haystack to json compatible format.
 	 *
-	 * @param bool[] $trackedInstanceHashes (key => true)
+	 * @param array<string, bool> $trackedInstanceHashes (key => true)
 	 */
 	private function process(mixed $haystack, array $trackedInstanceHashes = []): mixed
 	{
@@ -204,8 +212,9 @@ abstract class BaseResponse implements Response
 	private function processReflection(mixed $haystack, array $trackedInstanceHashes): array
 	{
 		$return = [];
-		try {
-			foreach ((new \ReflectionClass($haystack))->getProperties() as $property) {
+		if (is_object($haystack)) {
+			$ref = new \ReflectionClass($haystack);
+			foreach ($ref->getProperties() as $property) {
 				$property->setAccessible(true);
 				$key = $property->getName();
 				if (($key[0] ?? '') === '_') {
@@ -226,16 +235,20 @@ abstract class BaseResponse implements Response
 					? self::HIDDEN_KEY_LABEL
 					: $this->process($value, $trackedInstanceHashes);
 			}
-		} catch (\ReflectionException $e) {
-			if (\is_iterable($haystack)) {
-				foreach ($haystack as $key => $value) {
-					$return[$key] = $this->hideKey($key, $value)
-						? self::HIDDEN_KEY_LABEL
-						: $this->process($value);
-				}
-			} else {
-				throw new \RuntimeException('Can not hydrate input to array: ' . $e->getMessage(), $e->getCode(), $e);
+		} elseif (is_iterable($haystack)) {
+			foreach ($haystack as $key => $value) {
+				$return[$key] = $this->hideKey($key, $value)
+					? self::HIDDEN_KEY_LABEL
+					: $this->process($value);
 			}
+		} else {
+			throw new \RuntimeException(
+				sprintf(
+					'Can not hydrate input to array, because type "%s" given.',
+					get_debug_type($haystack)
+				),
+				500
+			);
 		}
 
 		return $return;

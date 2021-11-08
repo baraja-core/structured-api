@@ -77,10 +77,12 @@ final class ApiManager
 						Debugger::log($e, ILogger::EXCEPTION);
 					}
 
+					$code = $e->getCode();
+					$code = is_int($code) && $code > 0 ? $code : 500;
 					$response = new JsonResponse($this->convention, [
 						'state' => 'error',
 						'message' => $isDebugger && Debugger::isEnabled() === true ? $e->getMessage() : null,
-						'code' => $code = (($code = (int) $e->getCode()) === 0 ? 500 : $code),
+						'code' => $code,
 					], $code);
 				}
 				if ($response === null) {
@@ -339,16 +341,25 @@ final class ApiManager
 			$panel->setArgs($args);
 
 			try {
-				$response = (new \ReflectionMethod($endpoint, $methodName))->invokeArgs($endpoint, $args);
+				$methodResponse = (new \ReflectionMethod($endpoint, $methodName))->invokeArgs($endpoint, $args);
+				if ($methodResponse === null || $methodResponse instanceof Response) {
+					$response = $methodResponse;
+				} else {
+					throw new \LogicException(sprintf(
+						'Response "%s" is not valid, because it must be instance of "%s".',
+						get_debug_type($methodResponse),
+						Response::class,
+					));
+				}
 			} catch (\ReflectionException $e) {
-				throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+				throw new \RuntimeException($e->getMessage(), 500, $e);
 			}
 		} catch (\InvalidArgumentException $e) {
 			return $this->rewriteInvalidArgumentException($e) ?? throw $e;
 		} catch (ThrowResponse $e) {
 			$response = $e->getResponse();
 		} catch (RuntimeInvokeException $e) {
-			throw new StructuredApiException($e->getMessage(), (int) $e->getCode(), $e);
+			throw new StructuredApiException($e->getMessage(), 500, $e);
 		}
 		if ($method !== 'GET' && $response === null) {
 			$response = new JsonResponse($this->convention, ['state' => 'ok']);
@@ -421,14 +432,18 @@ final class ApiManager
 		$message = null;
 		if (preg_match('/^UserException:\s+(.+)$/', $e->getMessage(), $eMessageParser) === 1) {
 			$message = $eMessageParser[1] ?? $e->getMessage();
-		} elseif (isset($e->getTrace()[0]['class']) && str_ends_with((string) $e->getTrace()[0]['class'], '\Assert')) {
-			for ($i = 0; $i <= 3; $i++) {
-				if (
-					isset($e->getTrace()[$i])
-					&& preg_match('/^set([A-Za-z0-9]+)$/', $e->getTrace()[$i]['function'] ?? '', $functionParser) === 1
-				) {
-					$message = Strings::firstUpper($functionParser[1]) . ': ' . $e->getMessage();
-					break;
+		} else{
+			$traceClass = $e->getTrace()[0]['class'] ?? null;
+			if (is_string($traceClass) && str_ends_with($traceClass, '\Assert')) {
+				for ($i = 0; $i <= 3; $i++) {
+					$traceFunction = $e->getTrace()[$i]['function'] ?? null;
+					if (
+						is_string($traceFunction)
+						&& preg_match('/^set([A-Za-z0-9]+)$/', $traceFunction, $functionParser) === 1
+					) {
+						$message = Strings::firstUpper($functionParser[1]) . ': ' . $e->getMessage();
+						break;
+					}
 				}
 			}
 		}

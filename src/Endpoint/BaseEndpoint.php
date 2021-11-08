@@ -243,7 +243,7 @@ abstract class BaseEndpoint implements Endpoint
 	/**
 	 * @deprecated since 2021-05-19 use method arguments instead.
 	 * @param positive-int|null $code
-	 * @param array<string, mixed> $keys
+	 * @param array<int|string, string> $keys
 	 */
 	final public function validateDataKeys(array $keys, ?string $message = null, ?int $code = null): void
 	{

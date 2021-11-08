@@ -144,7 +144,7 @@ final class ApiManager
 	 */
 	public function getEndpointService(string $className, array $params): Endpoint
 	{
-		/** @var Endpoint $endpoint */
+		/** @var Endpoint $endpoint @phpstan-ignore-next-line */
 		$endpoint = $this->container->getByType($className);
 		$endpoint->setConvention($this->convention);
 
@@ -262,7 +262,7 @@ final class ApiManager
 	 */
 	private function safeGetParams(string $path): array
 	{
-		$return = $_GET ?? [];
+		$return = $_GET;
 		if ($return === []) {
 			$query = trim(explode('?', $path, 2)[1] ?? '');
 			if ($query !== '') {
@@ -381,7 +381,7 @@ final class ApiManager
 					throw new \LogicException('Json is not valid array.');
 				}
 				unset($_POST[$post]);
-				foreach ($json ?? [] as $key => $value) {
+				foreach ($json as $key => $value) {
 					$return[$key] = $value;
 				}
 			}

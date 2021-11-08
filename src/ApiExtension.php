@@ -82,8 +82,9 @@ final class ApiExtension extends CompilerExtension
 	 */
 	private function createEndpointServices(ContainerBuilder $builder): array
 	{
+		$rootDir = dirname(__DIR__, 4);
 		$robot = new RobotLoader;
-		$robot->addDirectory($rootDir = dirname(__DIR__, 4));
+		$robot->addDirectory($rootDir);
 		$robot->setTempDirectory($rootDir . '/temp/cache/baraja.structuredApi');
 		$robot->acceptFiles = ['*Endpoint.php'];
 		$robot->reportParseErrors(false);
@@ -100,11 +101,7 @@ final class ApiExtension extends CompilerExtension
 					. 'More information: https://php.baraja.cz/autoloading-trid',
 				);
 			}
-			try {
-				$rc = new \ReflectionClass($class);
-			} catch (\ReflectionException $e) {
-				throw new \RuntimeException('Service "' . $class . '" is broken: ' . $e->getMessage(), $e->getCode(), $e);
-			}
+			$rc = new \ReflectionClass($class);
 			try {
 				if ($rc->isInstantiable() === false) {
 					if ($rc->hasMethod('__construct') && !$rc->getMethod('__construct')->isPublic()) {

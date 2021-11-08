@@ -432,7 +432,7 @@ final class ApiManager
 		$message = null;
 		if (preg_match('/^UserException:\s+(.+)$/', $e->getMessage(), $eMessageParser) === 1) {
 			$message = $eMessageParser[1] ?? $e->getMessage();
-		} else{
+		} else {
 			$traceClass = $e->getTrace()[0]['class'] ?? null;
 			if (is_string($traceClass) && str_ends_with($traceClass, '\Assert')) {
 				for ($i = 0; $i <= 3; $i++) {

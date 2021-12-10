@@ -20,14 +20,10 @@ final class Serializer
 
 	public function serialize(object $haystack): Response
 	{
-		$ref = new \ReflectionClass($haystack);
-		$return = [];
-		foreach ($ref->getProperties() as $property) {
-			$property->setAccessible(true);
-			$return[$property->getName()] = $property->getValue($haystack);
-		}
-
-		return new JsonResponse($this->convention, $return);
+		return new JsonResponse(
+			$this->convention,
+			$this->processObject($haystack),
+		);
 	}
 
 

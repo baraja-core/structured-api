@@ -21,6 +21,8 @@ use Tracy\ILogger;
 
 final class ApiManager
 {
+	private Serializer $serializer;
+
 	/** @var array<string, class-string> (endpointPath => endpointType) */
 	private array $endpoints;
 
@@ -39,6 +41,7 @@ final class ApiManager
 		private Convention $convention,
 		private ?ProjectEntityRepository $projectEntityRepository = null
 	) {
+		$this->serializer = new Serializer($convention);
 		$this->endpoints = $endpoints;
 	}
 
@@ -344,9 +347,11 @@ final class ApiManager
 				$methodResponse = (new \ReflectionMethod($endpoint, $methodName))->invokeArgs($endpoint, $args);
 				if ($methodResponse === null || $methodResponse instanceof Response) {
 					$response = $methodResponse;
+				} elseif (is_object($methodResponse)) {
+					$response = $this->serializer->serialize($methodResponse);
 				} else {
 					throw new \LogicException(sprintf(
-						'Response "%s" is not valid, because it must be instance of "%s".',
+						'Response "%s" is not valid, because it must be instance of "%s" or serializable object (DTO).',
 						get_debug_type($methodResponse),
 						Response::class,
 					));

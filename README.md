@@ -42,6 +42,23 @@ namespace App\Model;
 
 final class MyAwesomeEndpoint extends BaseEndpoint
 {
+   /**
+    * This is test API endpoint as demonstration of inner logic.
+    *
+    * @param string $hello some user-defined parameter.
+    */
+   public function actionDefault(string $hello = 'world'): array
+   {
+      // The endpoint response can be simply returned as an array or object.
+      // It will be automatically converted to JSON.
+
+      return [
+         'name' => 'Test API endpoint',
+         'hello' => $hello,
+      ]);
+   }
+   
+   // or use old syntax:
 
    /**
     * This is test API endpoint as demonstration of inner logic.
@@ -72,6 +89,8 @@ final class MyAwesomeEndpoint extends BaseEndpoint
 Method `actionDefault` is used for request in format `/api/v1/test` with query parameter `?hello=...`.
 
 Method `postCreateUser` will be called by POST request with all data.
+
+Always return the response from the endpoint directly as the return type of the method. This makes static analysis easier for other tools (for example, for checking code integrity or generating documentation). The `sendJson()`, `sendOk()`, and `sendError()` methods are still supported, but may be marked as deprecated in the future.
 
 📝 Endpoint registration
 ------------------------
@@ -145,7 +164,6 @@ Combined example:
 ```php
 final class ArticleEndpoint extends BaseEndpoint
 {
-
    /**
     * @param string|null $locale in format "cs" or "en"
     * @param int $page real page number for filtering, 1 => first page ... "n" page

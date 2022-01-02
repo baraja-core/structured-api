@@ -273,6 +273,11 @@ final class SitemapEndpoint extends BaseEndpoint
 }
 ```
 
+🔒 Check API token
+------------------
+
+If you want to provide the API to your external partners or to provide secure communication with another application, it is a good idea to use authentication of all requests via an API token. There is an official extension [structured-api-token-authorizer](https://github.com/baraja-core/structured-api-token-authorizator) for this use.
+
 🗺️ Project endpoint documentation
 ---------------------------------
 

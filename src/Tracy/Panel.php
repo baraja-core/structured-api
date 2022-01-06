@@ -41,8 +41,11 @@ final class Panel implements IBarPanel
 	{
 		$time = $this->getResponseTime();
 
-		return 'API ' . htmlspecialchars($this->httpMethod)
-			. ($time > 0 ? ' ' . number_format($time, 1, '.', ' ') . ' ms' : '');
+		return sprintf(
+			'API %s%s',
+			htmlspecialchars($this->httpMethod),
+			$time > 0 ? sprintf(' %s ms', number_format($time, 1, '.', ' ')) : '',
+		);
 	}
 
 
@@ -51,15 +54,15 @@ final class Panel implements IBarPanel
 		$time = $this->getResponseTime();
 
 		return '<h1>Structured API'
-			. ($time > 0 ? ' [' . number_format($time, 1, '.', ' ') . ' ms]' : '')
-			. ' [' . htmlspecialchars($this->httpMethod) . ']'
+			. ($time > 0 ? sprintf(' [%s ms]', number_format($time, 1, '.', ' ')) : '')
+			. sprintf(' [%s]', htmlspecialchars($this->httpMethod))
 			. '</h1>'
 			. '<div class="tracy-inner baraja-cms">'
 			. '<div class="tracy-inner-container">'
 			. '<div style="font-size:13pt;color:#555">'
 			. 'Request '
 			. ($this->httpMethod === 'GET'
-				? '<a href="' . Url::get()->getBaseUrl() . '/' . $this->path . '" target="_blank">Open in new tab</a>'
+				? '<a href="' . sprintf('%s/%s', Url::get()->getBaseUrl(), $this->path) . '" target="_blank">Open in new tab</a>'
 				: '')
 			. '</div>'
 			. '<table>'

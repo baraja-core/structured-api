@@ -89,7 +89,7 @@ final class ApiManager
 					], $code);
 				}
 				if ($response === null) {
-					throw new BadRequestException('Api endpoint "' . $path . '" must return some output. None returned.');
+					throw new BadRequestException(sprintf('Api endpoint "%s" must return some output. None returned.', $path));
 				}
 			} catch (BadRequestException $e) {
 				$response = new JsonResponse($this->convention, [
@@ -203,7 +203,7 @@ final class ApiManager
 				$httpCode = 100;
 			} elseif ($httpCode > 599) {
 				if (class_exists('\Tracy\Debugger') === true) {
-					Debugger::log(new \LogicException('Bad HTTP response "' . $httpCode . '".'), ILogger::CRITICAL);
+					Debugger::log(new \LogicException(sprintf('Bad HTTP response "%d".', $httpCode)), ILogger::CRITICAL);
 				}
 				$httpCode = 500;
 			}
@@ -239,7 +239,7 @@ final class ApiManager
 		if ($methodName === null) {
 			return new JsonResponse($this->convention, [
 				'state' => 'error',
-				'message' => 'Method for action "' . $action . '" and HTTP method "' . $method . '" is not implemented.',
+				'message' => sprintf('Method for action "%s" and HTTP method "%s" is not implemented.', $action, $method),
 			], 404);
 		}
 		foreach ($this->matchExtensions as $extension) {
@@ -306,12 +306,12 @@ final class ApiManager
 		}
 		if ($class === null) {
 			throw new BadRequestException(
-				'Can not route "' . $route . '", because endpoint does not exist.'
+				sprintf('Can not route "%s", because endpoint does not exist.', $route)
 				. ($params !== [] ? "\n" . 'Given params:' . "\n" . json_encode($params, JSON_THROW_ON_ERROR) : ''),
 			);
 		}
 		if (\class_exists($class) === false) {
-			throw new BadRequestException('Route class "' . $class . '" does not exist.');
+			throw new BadRequestException(sprintf('Route class "%s" does not exist.', $class));
 		}
 
 		return [
@@ -392,7 +392,7 @@ final class ApiManager
 		try {
 			$post = array_keys($_POST)[0] ?? '';
 			if (str_starts_with($post, '{') && str_ends_with($post, '}')) { // support for legacy clients
-				$json = json_decode($post, true);
+				$json = json_decode($post, true, 512, JSON_THROW_ON_ERROR);
 				if (is_array($json) === false) {
 					throw new \LogicException('Json is not valid array.');
 				}
@@ -407,7 +407,8 @@ final class ApiManager
 		try {
 			$input = (string) file_get_contents('php://input');
 			if ($input !== '') {
-				foreach ((array) json_decode($input, true) as $key => $value) {
+				$phpInputArgs = (array) json_decode($input, true, 512, JSON_THROW_ON_ERROR);
+				foreach ($phpInputArgs as $key => $value) {
 					$return[$key] = $value;
 				}
 			}
@@ -446,7 +447,7 @@ final class ApiManager
 						is_string($traceFunction)
 						&& preg_match('/^set([A-Za-z0-9]+)$/', $traceFunction, $functionParser) === 1
 					) {
-						$message = Strings::firstUpper($functionParser[1]) . ': ' . $e->getMessage();
+						$message = sprintf('%s: %s', Strings::firstUpper($functionParser[1]), $e->getMessage());
 						break;
 					}
 				}

@@ -211,11 +211,11 @@ abstract class BaseEndpoint implements Endpoint
 	{
 		$type = strtolower($type);
 		if (\in_array($type, self::FLASH_MESSAGE_TYPES, true) === false) {
-			throw new \LogicException(
-				'Flash message type "' . $type . '" '
-				. 'must be one of "' . implode('", "', self::FLASH_MESSAGE_TYPES) . '". '
-				. 'Did you use FLASH_MESSAGE_* constant?',
-			);
+			throw new \LogicException(sprintf(
+				'Flash message type "%s" must be one of "%s". Did you use FLASH_MESSAGE_* constant?',
+				$type,
+				implode('", "', self::FLASH_MESSAGE_TYPES),
+			));
 		}
 		$this->messages[] = [
 			'message' => $message,
@@ -279,9 +279,7 @@ abstract class BaseEndpoint implements Endpoint
 		foreach ($haystack as $dataKey => $dataValue) {
 			/** @phpstan-ignore-next-line */
 			if (\is_scalar($dataValue) === false && $dataValue !== null) {
-				throw new \InvalidArgumentException(
-					'Format key value must be scalar, but "' . get_debug_type($dataValue) . '" given.',
-				);
+				throw new \InvalidArgumentException(sprintf('Format key value must be scalar, but "%s" given.', get_debug_type($dataValue)));
 			}
 
 			$return[] = [
@@ -319,7 +317,7 @@ abstract class BaseEndpoint implements Endpoint
 	final public function startupCheck(): void
 	{
 		if ($this->startupCheck === false) {
-			throw new \LogicException('Method ' . static::class . '::startup() or its descendant doesn\'t call parent::startup()."');
+			throw new \LogicException(sprintf('Method %s::startup() or its descendant doesn\'t call parent::startup()."', static::class));
 		}
 	}
 
@@ -421,7 +419,7 @@ abstract class BaseEndpoint implements Endpoint
 	final public function redirectUrl(string $url, int $httpCode = 301): void
 	{
 		if (Validators::isUrl($url) === false) {
-			throw new \InvalidArgumentException('Haystack "' . $url . '" is not valid URL for redirect.');
+			throw new \InvalidArgumentException(sprintf('Haystack "%s" is not valid URL for redirect.', $url));
 		}
 		throw new ThrowResponse(new RedirectResponse($this->convention, ['url' => $url], $httpCode));
 	}
@@ -431,7 +429,7 @@ abstract class BaseEndpoint implements Endpoint
 	{
 		static $storage;
 		static $cache = [];
-		$name = 'api---' . strtolower($namespace ?? $this->getName());
+		$name = sprintf('api---%s', strtolower($namespace ?? $this->getName()));
 
 		if ($storage === null) {
 			/** @var Storage $storage */

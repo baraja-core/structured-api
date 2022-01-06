@@ -97,7 +97,7 @@ final class ApiExtension extends CompilerExtension
 			}
 			if (!class_exists($class) && !interface_exists($class) && !trait_exists($class)) {
 				throw new \RuntimeException(
-					'Class "' . $class . '" was found, but it cannot be loaded by autoloading.' . "\n"
+					sprintf('Class "%s" was found, but it cannot be loaded by autoloading.', $class) . "\n"
 					. 'More information: https://php.baraja.cz/autoloading-trid',
 				);
 			}
@@ -105,7 +105,7 @@ final class ApiExtension extends CompilerExtension
 			try {
 				if ($rc->isInstantiable() === false) {
 					if ($rc->hasMethod('__construct') && !$rc->getMethod('__construct')->isPublic()) {
-						throw new \RuntimeException('Constructor of endpoint "' . $class . '" is not callable.');
+						throw new \RuntimeException(sprintf('Constructor of endpoint "%s" is not callable.', $class));
 					}
 					continue;
 				}
@@ -127,10 +127,12 @@ final class ApiExtension extends CompilerExtension
 				}
 				$name = Helpers::formatToApiName((string) preg_replace('/^.*?([^\\\\]+)Endpoint$/', '$1', $class));
 				if (isset($return[$name]) === true) {
-					throw new \RuntimeException(
-						'Api Manager: Endpoint "' . $name . '" already exist, '
-						. 'because this endpoint implements service "' . $class . '" and "' . $return[$name] . '".',
-					);
+					throw new \RuntimeException(sprintf(
+						'Api Manager: Endpoint "%s" already exist, because this endpoint implements service "%s" and "%s".',
+						$name,
+						$class,
+						$return[$name],
+					));
 				}
 				$return[$name] = $class;
 			}

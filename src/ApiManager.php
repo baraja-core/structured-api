@@ -475,7 +475,7 @@ final class ApiManager
 		foreach ($params as $key => $value) {
 			if (is_string($key) === false) {
 				$key = (string) $key;
-				trigger_error('Argument %s: Only string keys are supported.', $key);
+				trigger_error(sprintf('Argument %s: Only string keys are supported.', $key));
 			}
 			if ($key === '') {
 				throw new \InvalidArgumentException('Only non-empty string keys are supported.');

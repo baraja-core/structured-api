@@ -296,10 +296,22 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * @param array<int|string, int|string|null> $haystack (key => scalar)
-	 * @return array<int, array<string, string|int|null>>
+	 * @return array<int, array{value: int|string, text: string}>
 	 */
 	final public function formatBootstrapSelectArray(array $haystack): array
 	{
+		/** @phpstan-ignore-next-line */
+		return $this->formatKeyValueArray($haystack, 'value', 'text');
+	}
+
+
+	/**
+	 * @param array<int|string, int|string|null> $haystack (key => scalar)
+	 * @return array<int, array{value: int, text: string}>
+	 */
+	final public function formatBootstrapSelectList(array $haystack): array
+	{
+		/** @phpstan-ignore-next-line */
 		return $this->formatKeyValueArray($haystack, 'value', 'text');
 	}
 

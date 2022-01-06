@@ -39,7 +39,6 @@ declare(strict_types=1);
 
 namespace App\Model;
 
-
 final class MyAwesomeEndpoint extends BaseEndpoint
 {
    /**
@@ -57,7 +56,7 @@ final class MyAwesomeEndpoint extends BaseEndpoint
          'hello' => $hello,
       ]);
    }
-   
+
    // or use old syntax:
 
    /**

@@ -7,13 +7,12 @@ namespace Baraja\StructuredApi\Entity;
 
 final class ItemsList
 {
-
-	/** @var ItemsListItem[] */
+	/** @var array<int, ItemsListItem> */
 	private array $items;
 
 
 	/**
-	 * @param ItemsListItem[] $items
+	 * @param array<int, ItemsListItem> $items
 	 */
 	public function __construct(array $items = [])
 	{
@@ -22,7 +21,7 @@ final class ItemsList
 
 
 	/**
-	 * @param ItemsListItem[] $items
+	 * @param array<int, ItemsListItem> $items
 	 */
 	public static function from(array $items): self
 	{
@@ -31,7 +30,7 @@ final class ItemsList
 
 
 	/**
-	 * @return mixed[][]
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function getData(): array
 	{
@@ -55,7 +54,7 @@ final class ItemsList
 
 
 	/**
-	 * @return ItemsListItem[]
+	 * @return array<int, ItemsListItem>
 	 */
 	public function getItems(): array
 	{

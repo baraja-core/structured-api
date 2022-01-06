@@ -39,7 +39,7 @@ final class ApiManager
 		private Request $request,
 		private HttpResponse $response,
 		private Convention $convention,
-		private ?ProjectEntityRepository $projectEntityRepository = null
+		private ?ProjectEntityRepository $projectEntityRepository = null,
 	) {
 		$this->serializer = new Serializer($convention);
 		$this->endpoints = $endpoints;

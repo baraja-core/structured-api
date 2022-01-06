@@ -13,7 +13,7 @@ use Baraja\StructuredApi\Entity\Convention;
 final class Serializer
 {
 	public function __construct(
-		private Convention $convention
+		private Convention $convention,
 	) {
 	}
 

@@ -8,7 +8,7 @@ namespace Baraja\StructuredApi;
 final class ThrowResponse extends \RuntimeException
 {
 	public function __construct(
-		private Response $response
+		private Response $response,
 	) {
 		parent::__construct('');
 	}

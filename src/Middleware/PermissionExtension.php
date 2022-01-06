@@ -18,7 +18,7 @@ final class PermissionExtension implements MatchExtension
 {
 	public function __construct(
 		private User $user,
-		private Convention $convention
+		private Convention $convention,
 	) {
 	}
 

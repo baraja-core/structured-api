@@ -28,7 +28,7 @@ abstract class BaseResponse implements Response
 	final public function __construct(
 		private Convention $convention,
 		array $haystack,
-		int|string $httpCode = 200
+		int|string $httpCode = 200,
 	) {
 		if (is_string($httpCode) && preg_match('#^[+-]?\d*[.]?\d+$#D', $httpCode) !== 1) {
 			$httpCode = 500;
@@ -62,7 +62,7 @@ abstract class BaseResponse implements Response
 
 		throw new \LogicException(sprintf(
 			'Response can not be casted to array, because type "%s" given.',
-			get_debug_type($return)
+			get_debug_type($return),
 		));
 	}
 
@@ -156,12 +156,12 @@ abstract class BaseResponse implements Response
 		foreach ($haystack as $key => $value) {
 			if ($value instanceof ItemsList && $key !== 'items') {
 				throw new \InvalidArgumentException(
-					'Convention error: Item list must be in key "items", but "' . $key . '" given.'
+					'Convention error: Item list must be in key "items", but "' . $key . '" given.',
 				);
 			}
 			if ($value instanceof Paginator && $key !== 'paginator') {
 				throw new \InvalidArgumentException(
-					'Convention error: Paginator must be in key "paginator", but "' . $key . '" given.'
+					'Convention error: Paginator must be in key "paginator", but "' . $key . '" given.',
 				);
 			}
 
@@ -245,9 +245,9 @@ abstract class BaseResponse implements Response
 			throw new \RuntimeException(
 				sprintf(
 					'Can not hydrate input to array, because type "%s" given.',
-					get_debug_type($haystack)
+					get_debug_type($haystack),
 				),
-				500
+				500,
 			);
 		}
 

@@ -15,7 +15,7 @@ final class StatusCount
 	public function __construct(
 		private string $key,
 		private int $count,
-		?string $label = null
+		?string $label = null,
 	) {
 		$this->label = $label ?? Strings::firstUpper(str_replace('-', ' ', $key));
 	}

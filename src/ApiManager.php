@@ -235,6 +235,7 @@ final class ApiManager
 		string $method,
 		Panel $panel,
 	): ?Response {
+		$params = $this->formatParams($params);
 		$methodName = Helpers::resolveMethodName($endpoint, $method, $action);
 		if ($methodName === null) {
 			return new JsonResponse($this->convention, [
@@ -324,7 +325,7 @@ final class ApiManager
 	/**
 	 * Call all endpoint methods in regular order and return response state.
 	 *
-	 * @param array<string|int, mixed> $params
+	 * @param array<string, mixed> $params
 	 * @throws StructuredApiException
 	 */
 	private function invokeActionMethod(
@@ -461,5 +462,27 @@ final class ApiManager
 		}
 
 		return null;
+	}
+
+
+	/**
+	 * @param array<string|int, mixed> $params
+	 * @return array<string, mixed>
+	 */
+	private function formatParams(array $params): array
+	{
+		$return = [];
+		foreach ($params as $key => $value) {
+			if (is_string($key) === false) {
+				$key = (string) $key;
+				trigger_error('Argument %s: Only string keys are supported.', $key);
+			}
+			if ($key === '') {
+				throw new \InvalidArgumentException('Only non-empty string keys are supported.');
+			}
+			$return[$key] = $value;
+		}
+
+		return $return;
 	}
 }

@@ -24,7 +24,7 @@ final class PermissionExtension implements MatchExtension
 
 
 	/**
-	 * @param mixed[] $params
+	 * @param array<string, mixed> $params
 	 */
 	public function beforeProcess(Endpoint $endpoint, array $params, string $action, string $method): ?Response
 	{
@@ -50,7 +50,7 @@ final class PermissionExtension implements MatchExtension
 
 
 	/**
-	 * @param mixed[] $params
+	 * @param array<string, mixed> $params
 	 */
 	public function afterProcess(Endpoint $endpoint, array $params, ?Response $response): ?Response
 	{

@@ -136,4 +136,3 @@ final class Panel implements IBarPanel
 			: 0;
 	}
 }
-P

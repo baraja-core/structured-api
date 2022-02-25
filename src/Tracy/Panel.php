@@ -80,8 +80,8 @@ final class Panel implements IBarPanel
 		$buffer .= '<table>'
 			. '<tr><th>Raw HTTP input</th><th>Real endpoint args</th></tr>'
 			. '<tr>'
-			. '<td>' . Dumper::toHtml($this->params) . '</td>'
-			. '<td>' . ($this->args !== null ? Dumper::toHtml($this->args) : 'No data.') . '</td>'
+			. '<td class="structured-api__dump">' . Dumper::toHtml($this->params) . '</td>'
+			. '<td class="structured-api__dump">' . ($this->args !== null ? Dumper::toHtml($this->args) : 'No data.') . '</td>'
 			. '</tr>'
 			. '</table>';
 
@@ -101,6 +101,7 @@ final class Panel implements IBarPanel
 
 		// container end
 		$buffer .= '</div></div>';
+		$buffer .= '<style>.structured-api__dump{padding:0 !important}.structured-api__dump .tracy-dump{margin:0 !important}</style>';
 
 		return $buffer;
 	}
@@ -135,3 +136,4 @@ final class Panel implements IBarPanel
 			: 0;
 	}
 }
+P

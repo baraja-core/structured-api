@@ -20,7 +20,7 @@ final class Convention
 
 	private bool $rewriteTooStringMethod = true;
 
-	/** @var string[] */
+	/** @var array<int, string> */
 	private array $keysToHide = ['password', 'passwd', 'pass', 'pwd', 'creditcard', 'credit card', 'cc', 'pin'];
 
 	private bool $ignoreDefaultPermission = false;
@@ -34,10 +34,7 @@ final class Convention
 
 	public function setDateTimeFormat(string $dateTimeFormat): void
 	{
-		if ($dateTimeFormat === '') {
-			throw new \InvalidArgumentException('DateTime format can not be empty string.');
-		}
-
+		assert($dateTimeFormat === '', 'DateTime format can not be empty string.');
 		$this->dateTimeFormat = $dateTimeFormat;
 	}
 
@@ -57,7 +54,7 @@ final class Convention
 	public function setDefaultErrorCode(int $code): void
 	{
 		if ($code < 100 || $code > 999) {
-			throw new \InvalidArgumentException('Code must be in interval (100; 999), but ' . $code . ' given.');
+			throw new \InvalidArgumentException(sprintf('Code must be in interval (100; 999), but %d given.', $code));
 		}
 
 		$this->defaultErrorCode = $code;
@@ -79,7 +76,7 @@ final class Convention
 	public function setDefaultOkCode(int $code): void
 	{
 		if ($code < 100 || $code > 999) {
-			throw new \InvalidArgumentException('Code must be in interval (100; 999), but ' . $code . ' given.');
+			throw new \InvalidArgumentException(sprintf('Code must be in interval (100; 999), but %d given.', $code));
 		}
 
 		$this->defaultOkCode = $code;
@@ -99,7 +96,7 @@ final class Convention
 
 
 	/**
-	 * @return string[]
+	 * @return array<int, string>
 	 */
 	public function getKeysToHide(): array
 	{
@@ -108,7 +105,7 @@ final class Convention
 
 
 	/**
-	 * @param string[] $keysToHide
+	 * @param array<int, string> $keysToHide
 	 */
 	public function setKeysToHide(array $keysToHide): void
 	{

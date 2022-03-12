@@ -41,51 +41,69 @@ final class Panel implements IBarPanel
 	{
 		$time = $this->getResponseTime();
 
-		return 'API ' . htmlspecialchars($this->httpMethod)
-			. ($time > 0 ? ' ' . number_format($time, 1, '.', ' ') . ' ms' : '');
+		return sprintf(
+			'API %s%s',
+			htmlspecialchars($this->httpMethod),
+			$time > 0 ? sprintf(' %s ms', number_format($time, 1, '.', ' ')) : '',
+		);
 	}
 
 
 	public function getPanel(): string
 	{
+		// header
 		$time = $this->getResponseTime();
+		$buffer = '<h1>Structured API';
+		if ($time > 0) {
+			$buffer .= sprintf(' [%s ms]', number_format($time, 1, '.', ' '));
+		}
+		$buffer .= sprintf(' [%s]', htmlspecialchars($this->httpMethod));
+		$buffer .= '</h1>';
 
-		return '<h1>Structured API'
-			. ($time > 0 ? ' [' . number_format($time, 1, '.', ' ') . ' ms]' : '')
-			. ' [' . htmlspecialchars($this->httpMethod) . ']'
-			. '</h1>'
-			. '<div class="tracy-inner baraja-cms">'
-			. '<div class="tracy-inner-container">'
-			. '<div style="font-size:13pt;color:#555">'
-			. 'Request '
-			. ($this->httpMethod === 'GET'
-				? '<a href="' . Url::get()->getBaseUrl() . '/' . $this->path . '" target="_blank">Open in new tab</a>'
-				: '')
-			. '</div>'
-			. '<table>'
-			. '<tr><th>URL</th><td><code>' . htmlspecialchars($this->path) . '</code></td></tr>'
-			. ($this->endpoint !== null
-				? '<tr><th>Endpoint</th><td><code>' . htmlspecialchars($this->endpoint::class) . '</code></td></tr>'
-				: '')
-			. '</table>'
-			. '<table>'
-			. '<tr><th>Raw input</th><th>Real args</th></tr>'
+		// container begin
+		$buffer .= '<div class="tracy-inner baraja-cms"><div class="tracy-inner-container">';
+
+		// request
+		$buffer .= '<div style="font-size:13pt;color:#555">Request ';
+		if ($this->httpMethod === 'GET') {
+			$buffer .= sprintf('<a href="%s" target="_blank">Open in new tab</a>', sprintf('%s/%s', Url::get()->getBaseUrl(), $this->path));
+		}
+		$buffer .= '</div>';
+
+		// called endpoint
+		$buffer .= '<table>'
+			. '<tr><th>URL</th><td><code>' . htmlspecialchars($this->path) . '</code></td></tr>';
+		if ($this->endpoint !== null) {
+			$buffer .= sprintf('<tr><th>Endpoint</th><td><code>%s</code></td></tr>', htmlspecialchars($this->endpoint::class));
+		}
+		$buffer .= '</table>';
+		$buffer .= '<table>'
+			. '<tr><th>Raw HTTP input</th><th>Real endpoint args</th></tr>'
 			. '<tr>'
-			. '<td>' . Dumper::toHtml($this->params) . '</td>'
-			. '<td>' . ($this->args !== null ? Dumper::toHtml($this->args) : 'No data.') . '</td>'
+			. '<td class="structured-api__dump">' . Dumper::toHtml($this->params) . '</td>'
+			. '<td class="structured-api__dump">' . ($this->args !== null ? Dumper::toHtml($this->args) : 'No data.') . '</td>'
 			. '</tr>'
-			. '</table>'
-			. ($this->response !== null
-				? '<div style="font-size:13pt;color:#555;margin-top:12px">Response</div>'
+			. '</table>';
+
+		// response
+		if ($this->response !== null) {
+			$buffer .= '<div style="font-size:13pt;color:#555;margin-top:18px;padding-top:16px;border-top:1px solid #ddd">Response</div>'
 				. '<table>'
 				. '<tr><th>Type</th><td><code>' . htmlspecialchars($this->response::class) . '</code></td></tr>'
 				. '<tr><th>HTTP code</th><td><code>' . htmlspecialchars((string) $this->response->getHttpCode()) . '</code></td></tr>'
 				. '<tr><th>Content type</th><td><code>' . htmlspecialchars($this->response->getContentType()) . '</code></td></tr>'
 				. '</table>'
 				. '<p>Real output:</p>'
-				. Dumper::toHtml($this->response->toArray())
-				: '<p style="text-align:center"><i style="color:red">Empty response or error.</i></p>'
-			) . '</div></div>';
+				. Dumper::toHtml($this->response->toArray());
+		} else {
+			$buffer .= '<p style="text-align:center"><i style="color:red">Empty response or error.</i></p>';
+		}
+
+		// container end
+		$buffer .= '</div></div>';
+		$buffer .= '<style>.structured-api__dump{padding:0 !important}.structured-api__dump .tracy-dump{margin:0 !important}</style>';
+
+		return $buffer;
 	}
 
 

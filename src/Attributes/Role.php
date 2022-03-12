@@ -23,7 +23,7 @@ class Role
 		foreach (is_string($roles) ? [$roles] : $roles as $role) {
 			$role = strtolower(trim((string) $role, '-'));
 			if (preg_match('/^[a-z0-9-]+/', $role) !== 1) {
-				throw new \InvalidArgumentException('Role "' . $role . '" is not valid.');
+				throw new \InvalidArgumentException(sprintf('Role "%s" is not valid.', $role));
 			}
 			$return[] = $role;
 		}

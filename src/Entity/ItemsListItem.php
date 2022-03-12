@@ -16,7 +16,7 @@ final class ItemsListItem
 	 */
 	public function __construct(
 		private int|string $id,
-		array $data = []
+		array $data = [],
 	) {
 		$this->data = $data;
 	}

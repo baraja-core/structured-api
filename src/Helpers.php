@@ -12,19 +12,27 @@ final class Helpers
 	/** @throws \Error */
 	public function __construct()
 	{
-		throw new \Error('Class ' . self::class . ' is static and cannot be instantiated.');
+		throw new \Error(sprintf('Class "%s" is static and cannot be instantiated.', self::class));
 	}
 
 
 	public static function formatApiName(string $name): string
 	{
-		return (string) preg_replace_callback('/-([a-z])/', static fn(array $match): string => strtoupper($match[1]), Strings::firstUpper($name));
+		return (string) preg_replace_callback(
+			'/-([a-z])/',
+			static fn(array $match): string => strtoupper($match[1]),
+			Strings::firstUpper($name),
+		);
 	}
 
 
 	public static function formatToApiName(string $type): string
 	{
-		return (string) preg_replace_callback('/([A-Z])/', static fn(array $match): string => '-' . strtolower($match[1]), Strings::firstLower($type));
+		return (string) preg_replace_callback(
+			'/([A-Z])/',
+			static fn(array $match): string => sprintf('-%s', strtolower($match[1])),
+			Strings::firstLower($type),
+		);
 	}
 
 
@@ -33,9 +41,9 @@ final class Helpers
 		$tryMethods = [];
 		$tryMethods[] = ($method === 'GET' ? 'action' : strtolower($method)) . Strings::firstUpper($action);
 		if ($method === 'PUT') {
-			$tryMethods[] = 'update' . Strings::firstUpper($action);
+			$tryMethods[] = sprintf('update%s', Strings::firstUpper($action));
 		} elseif ($method === 'POST') {
-			$tryMethods[] = 'create' . Strings::firstUpper($action);
+			$tryMethods[] = sprintf('create%s', Strings::firstUpper($action));
 		}
 
 		foreach ($tryMethods as $tryMethod) {

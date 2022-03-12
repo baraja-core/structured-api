@@ -21,6 +21,8 @@ use Tracy\ILogger;
 
 final class ApiManager
 {
+	private Serializer $serializer;
+
 	/** @var array<string, class-string> (endpointPath => endpointType) */
 	private array $endpoints;
 
@@ -37,8 +39,9 @@ final class ApiManager
 		private Request $request,
 		private HttpResponse $response,
 		private Convention $convention,
-		private ?ProjectEntityRepository $projectEntityRepository = null
+		private ?ProjectEntityRepository $projectEntityRepository = null,
 	) {
+		$this->serializer = new Serializer($convention);
 		$this->endpoints = $endpoints;
 	}
 
@@ -77,14 +80,16 @@ final class ApiManager
 						Debugger::log($e, ILogger::EXCEPTION);
 					}
 
+					$code = $e->getCode();
+					$code = is_int($code) && $code > 0 ? $code : 500;
 					$response = new JsonResponse($this->convention, [
 						'state' => 'error',
 						'message' => $isDebugger && Debugger::isEnabled() === true ? $e->getMessage() : null,
-						'code' => $code = (($code = (int) $e->getCode()) === 0 ? 500 : $code),
+						'code' => $code,
 					], $code);
 				}
 				if ($response === null) {
-					throw new BadRequestException('Api endpoint "' . $path . '" must return some output. None returned.');
+					throw new BadRequestException(sprintf('Api endpoint "%s" must return some output. None returned.', $path));
 				}
 			} catch (BadRequestException $e) {
 				$response = new JsonResponse($this->convention, [
@@ -144,7 +149,7 @@ final class ApiManager
 	 */
 	public function getEndpointService(string $className, array $params): Endpoint
 	{
-		/** @var Endpoint $endpoint */
+		/** @var Endpoint $endpoint @phpstan-ignore-next-line */
 		$endpoint = $this->container->getByType($className);
 		$endpoint->setConvention($this->convention);
 
@@ -198,7 +203,7 @@ final class ApiManager
 				$httpCode = 100;
 			} elseif ($httpCode > 599) {
 				if (class_exists('\Tracy\Debugger') === true) {
-					Debugger::log(new \LogicException('Bad HTTP response "' . $httpCode . '".'), ILogger::CRITICAL);
+					Debugger::log(new \LogicException(sprintf('Bad HTTP response "%d".', $httpCode)), ILogger::CRITICAL);
 				}
 				$httpCode = 500;
 			}
@@ -230,11 +235,12 @@ final class ApiManager
 		string $method,
 		Panel $panel,
 	): ?Response {
+		$params = $this->formatParams($params);
 		$methodName = Helpers::resolveMethodName($endpoint, $method, $action);
 		if ($methodName === null) {
 			return new JsonResponse($this->convention, [
 				'state' => 'error',
-				'message' => 'Method for action "' . $action . '" and HTTP method "' . $method . '" is not implemented.',
+				'message' => sprintf('Method for action "%s" and HTTP method "%s" is not implemented.', $action, $method),
 			], 404);
 		}
 		foreach ($this->matchExtensions as $extension) {
@@ -262,7 +268,7 @@ final class ApiManager
 	 */
 	private function safeGetParams(string $path): array
 	{
-		$return = $_GET ?? [];
+		$return = $_GET;
 		if ($return === []) {
 			$query = trim(explode('?', $path, 2)[1] ?? '');
 			if ($query !== '') {
@@ -301,12 +307,12 @@ final class ApiManager
 		}
 		if ($class === null) {
 			throw new BadRequestException(
-				'Can not route "' . $route . '", because endpoint does not exist.'
+				sprintf('Can not route "%s", because endpoint does not exist.', $route)
 				. ($params !== [] ? "\n" . 'Given params:' . "\n" . json_encode($params, JSON_THROW_ON_ERROR) : ''),
 			);
 		}
 		if (\class_exists($class) === false) {
-			throw new BadRequestException('Route class "' . $class . '" does not exist.');
+			throw new BadRequestException(sprintf('Route class "%s" does not exist.', $class));
 		}
 
 		return [
@@ -319,7 +325,7 @@ final class ApiManager
 	/**
 	 * Call all endpoint methods in regular order and return response state.
 	 *
-	 * @param array<string|int, mixed> $params
+	 * @param array<string, mixed> $params
 	 * @throws StructuredApiException
 	 */
 	private function invokeActionMethod(
@@ -339,16 +345,27 @@ final class ApiManager
 			$panel->setArgs($args);
 
 			try {
-				$response = (new \ReflectionMethod($endpoint, $methodName))->invokeArgs($endpoint, $args);
+				$methodResponse = (new \ReflectionMethod($endpoint, $methodName))->invokeArgs($endpoint, $args);
+				if ($methodResponse === null || $methodResponse instanceof Response) {
+					$response = $methodResponse;
+				} elseif (is_object($methodResponse)) {
+					$response = $this->serializer->serialize($methodResponse);
+				} else {
+					throw new \LogicException(sprintf(
+						'Response "%s" is not valid, because it must be instance of "%s" or serializable object (DTO).',
+						get_debug_type($methodResponse),
+						Response::class,
+					));
+				}
 			} catch (\ReflectionException $e) {
-				throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+				throw new \RuntimeException($e->getMessage(), 500, $e);
 			}
 		} catch (\InvalidArgumentException $e) {
 			return $this->rewriteInvalidArgumentException($e) ?? throw $e;
 		} catch (ThrowResponse $e) {
 			$response = $e->getResponse();
 		} catch (RuntimeInvokeException $e) {
-			throw new StructuredApiException($e->getMessage(), (int) $e->getCode(), $e);
+			throw new StructuredApiException($e->getMessage(), 500, $e);
 		}
 		if ($method !== 'GET' && $response === null) {
 			$response = new JsonResponse($this->convention, ['state' => 'ok']);
@@ -376,12 +393,12 @@ final class ApiManager
 		try {
 			$post = array_keys($_POST)[0] ?? '';
 			if (str_starts_with($post, '{') && str_ends_with($post, '}')) { // support for legacy clients
-				$json = json_decode($post, true);
+				$json = json_decode($post, true, 512, JSON_THROW_ON_ERROR);
 				if (is_array($json) === false) {
 					throw new \LogicException('Json is not valid array.');
 				}
 				unset($_POST[$post]);
-				foreach ($json ?? [] as $key => $value) {
+				foreach ($json as $key => $value) {
 					$return[$key] = $value;
 				}
 			}
@@ -391,7 +408,8 @@ final class ApiManager
 		try {
 			$input = (string) file_get_contents('php://input');
 			if ($input !== '') {
-				foreach ((array) json_decode($input, true) as $key => $value) {
+				$phpInputArgs = (array) json_decode($input, true, 512, JSON_THROW_ON_ERROR);
+				foreach ($phpInputArgs as $key => $value) {
 					$return[$key] = $value;
 				}
 			}
@@ -421,14 +439,18 @@ final class ApiManager
 		$message = null;
 		if (preg_match('/^UserException:\s+(.+)$/', $e->getMessage(), $eMessageParser) === 1) {
 			$message = $eMessageParser[1] ?? $e->getMessage();
-		} elseif (isset($e->getTrace()[0]['class']) && str_ends_with((string) $e->getTrace()[0]['class'], '\Assert')) {
-			for ($i = 0; $i <= 3; $i++) {
-				if (
-					isset($e->getTrace()[$i])
-					&& preg_match('/^set([A-Za-z0-9]+)$/', $e->getTrace()[$i]['function'] ?? '', $functionParser) === 1
-				) {
-					$message = Strings::firstUpper($functionParser[1]) . ': ' . $e->getMessage();
-					break;
+		} else {
+			$traceClass = $e->getTrace()[0]['class'] ?? null;
+			if (is_string($traceClass) && str_ends_with($traceClass, '\Assert')) {
+				for ($i = 0; $i <= 3; $i++) {
+					$traceFunction = $e->getTrace()[$i]['function'] ?? null;
+					if (
+						is_string($traceFunction)
+						&& preg_match('/^set([A-Za-z0-9]+)$/', $traceFunction, $functionParser) === 1
+					) {
+						$message = sprintf('%s: %s', Strings::firstUpper($functionParser[1]), $e->getMessage());
+						break;
+					}
 				}
 			}
 		}
@@ -440,5 +462,27 @@ final class ApiManager
 		}
 
 		return null;
+	}
+
+
+	/**
+	 * @param array<string|int, mixed> $params
+	 * @return array<string, mixed>
+	 */
+	private function formatParams(array $params): array
+	{
+		$return = [];
+		foreach ($params as $key => $value) {
+			if (is_string($key) === false) {
+				$key = (string) $key;
+				trigger_error(sprintf('Argument %s: Only string keys are supported.', $key));
+			}
+			if ($key === '') {
+				throw new \InvalidArgumentException('Only non-empty string keys are supported.');
+			}
+			$return[$key] = $value;
+		}
+
+		return $return;
 	}
 }

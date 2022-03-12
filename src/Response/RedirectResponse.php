@@ -9,6 +9,10 @@ class RedirectResponse extends BaseResponse
 {
 	public function getUrl(): string
 	{
-		return $this->haystack['url'] ?? throw new \LogicException('URL does not exist. Did you call redirect() method first?');
+		$url = $this->haystack['url'] ?? null;
+		if (is_string($url)) {
+			return $url;
+		}
+		throw new \LogicException('URL does not exist. Did you call redirect() method first?');
 	}
 }

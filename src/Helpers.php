@@ -75,6 +75,12 @@ final class Helpers
 	public static function parseRolesFromComment(string $comment): array
 	{
 		if (preg_match('/@role\s+([^\n]+)/', $comment, $roleParser) === 1) {
+			trigger_error(
+				'Doc annotation @role is deprecated since 2021-07-08, use PHP 8.0 #[Role] attribute instead.'
+				. "\n" . sprintf('Comment: %s', $roleParser[0]),
+				E_USER_DEPRECATED,
+			);
+
 			return array_map(static fn(string $role): string => strtolower(trim($role)), explode(',', trim($roleParser[1])));
 		}
 

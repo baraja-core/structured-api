@@ -25,17 +25,24 @@ abstract class BaseEndpoint implements Endpoint
 {
 	use SmartObject;
 
+	/** @deprecated since 2022-04-18, use Perl case instead */
 	public const
 		FLASH_MESSAGE_SUCCESS = 'success',
 		FLASH_MESSAGE_INFO = 'info',
 		FLASH_MESSAGE_WARNING = 'warning',
 		FLASH_MESSAGE_ERROR = 'error';
 
-	public const FLASH_MESSAGE_TYPES = [
-		self::FLASH_MESSAGE_SUCCESS,
-		self::FLASH_MESSAGE_INFO,
-		self::FLASH_MESSAGE_WARNING,
-		self::FLASH_MESSAGE_ERROR,
+	public const
+		FlashMessageSuccess = 'success',
+		FlashMessageInfo = 'info',
+		FlashMessageWarning = 'warning',
+		FlashMessageError = 'error';
+
+	public const FlashMessageTypes = [
+		self::FlashMessageSuccess,
+		self::FlashMessageInfo,
+		self::FlashMessageWarning,
+		self::FlashMessageError,
 	];
 
 	/** @var callable[] */
@@ -207,14 +214,14 @@ abstract class BaseEndpoint implements Endpoint
 	 *
 	 * @param string $type one of FLASH_MESSAGE_* constant
 	 */
-	final public function flashMessage(string $message, string $type = self::FLASH_MESSAGE_INFO): void
+	final public function flashMessage(string $message, string $type = self::FlashMessageInfo): void
 	{
 		$type = strtolower($type);
-		if (\in_array($type, self::FLASH_MESSAGE_TYPES, true) === false) {
+		if (\in_array($type, self::FlashMessageTypes, true) === false) {
 			throw new \LogicException(sprintf(
 				'Flash message type "%s" must be one of "%s". Did you use FLASH_MESSAGE_* constant?',
 				$type,
-				implode('", "', self::FLASH_MESSAGE_TYPES),
+				implode('", "', self::FlashMessageTypes),
 			));
 		}
 		$this->messages[] = [

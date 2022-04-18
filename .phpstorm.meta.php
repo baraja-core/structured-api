@@ -15,8 +15,8 @@ exitPoint(\Baraja\StructuredApi\BaseEndpoint::redirectUrl());
 expectedArguments(
 	\Baraja\StructuredApi\BaseEndpoint::flashMessage(),
 	1,
-	\Baraja\StructuredApi\BaseEndpoint::FLASH_MESSAGE_SUCCESS,
-	\Baraja\StructuredApi\BaseEndpoint::FLASH_MESSAGE_INFO,
-	\Baraja\StructuredApi\BaseEndpoint::FLASH_MESSAGE_WARNING,
-	\Baraja\StructuredApi\BaseEndpoint::FLASH_MESSAGE_ERROR,
+	\Baraja\StructuredApi\BaseEndpoint::FlashMessageSuccess,
+	\Baraja\StructuredApi\BaseEndpoint::FlashMessageInfo,
+	\Baraja\StructuredApi\BaseEndpoint::FlashMessageWarning,
+	\Baraja\StructuredApi\BaseEndpoint::FlashMessageError,
 );

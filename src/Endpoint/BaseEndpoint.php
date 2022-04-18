@@ -225,51 +225,6 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
-	 * @deprecated since 2021-05-19 use method arguments instead.
-	 * @param positive-int|null $code
-	 */
-	final public function validateDataKey(string $key, ?string $message = null, ?int $code = null): void
-	{
-		trigger_error(
-			__METHOD__ . ': This method is deprecated, use method arguments instead.',
-			E_USER_DEPRECATED,
-		);
-		if (array_key_exists($key, $this->data) === false) {
-			$this->sendError($message ?? 'Key "' . $key . '" is required.', $code);
-		}
-	}
-
-
-	/**
-	 * @deprecated since 2021-05-19 use method arguments instead.
-	 * @param positive-int|null $code
-	 * @param array<int|string, string> $keys
-	 */
-	final public function validateDataKeys(array $keys, ?string $message = null, ?int $code = null): void
-	{
-		trigger_error(
-			__METHOD__ . ': This method is deprecated, use method arguments instead.',
-			E_USER_DEPRECATED,
-		);
-		$invalidKeys = [];
-		foreach ($keys as $key) {
-			if (array_key_exists($key, $this->data) === false) {
-				$invalidKeys[] = $key;
-			}
-		}
-
-		if ($invalidKeys !== []) {
-			$this->sendError(
-				$message ?? (\count($invalidKeys) === 1
-					? 'Key "' . $invalidKeys[0] . '" is required.'
-					: 'Keys "' . implode('", "', $invalidKeys) . '" are required.'),
-				$code,
-			);
-		}
-	}
-
-
-	/**
 	 * @param array<int|string, int|string|null> $haystack (key => scalar)
 	 * @return array<int, array<string, string|int|null>>
 	 */

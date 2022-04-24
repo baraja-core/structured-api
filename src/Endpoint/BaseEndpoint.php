@@ -25,7 +25,7 @@ abstract class BaseEndpoint implements Endpoint
 {
 	use SmartObject;
 
-	/** @deprecated since 2022-04-18, use Perl case instead */
+	// TODO: @deprecated since 2022-04-18, use Perl case instead
 	public const
 		FLASH_MESSAGE_SUCCESS = 'success',
 		FLASH_MESSAGE_INFO = 'info',

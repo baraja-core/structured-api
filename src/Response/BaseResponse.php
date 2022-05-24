@@ -260,7 +260,6 @@ abstract class BaseResponse implements Response
 
 	private function processEnum(\UnitEnum $enum): string|int
 	{
-		/** @phpstan-ignore-next-line */
 		return $enum->value ?? $enum->name;
 	}
 }

@@ -138,6 +138,9 @@ abstract class BaseResponse implements Response
 		if ($haystack instanceof ItemsList) {
 			return $this->process($haystack->getData(), $trackedInstanceHashes);
 		}
+		if ($haystack instanceof \UnitEnum) {
+			return $this->processEnum($haystack);
+		}
 		if ($this->convention->isRewriteTooStringMethod() && \method_exists($haystack, '__toString') === true) {
 			return (string) $haystack;
 		}
@@ -252,5 +255,12 @@ abstract class BaseResponse implements Response
 		}
 
 		return $return;
+	}
+
+
+	private function processEnum(\UnitEnum $enum): string|int
+	{
+		/** @phpstan-ignore-next-line */
+		return $enum->value ?? $enum->name;
 	}
 }

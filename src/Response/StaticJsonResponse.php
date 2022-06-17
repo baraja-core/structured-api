@@ -7,8 +7,6 @@ namespace Baraja\StructuredApi;
 
 interface StaticJsonResponse
 {
-	public static function __toString(): string;
-
 	/**
 	 * @return mixed[]
 	 */

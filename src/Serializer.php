@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
+use Baraja\Localization\Translation;
 use Baraja\StructuredApi\Entity\Convention;
 
 /**
@@ -42,6 +43,9 @@ final class Serializer
 			return $this->processArray($haystack, $level);
 		}
 		if (is_object($haystack)) {
+			if ($haystack instanceof Translation) {
+				return (string) $haystack;
+			}
 			return $this->processObject($haystack, $level);
 		}
 

@@ -7,6 +7,9 @@ namespace Baraja\StructuredApi;
 
 use Baraja\Localization\Translation;
 use Baraja\StructuredApi\Entity\Convention;
+use Baraja\StructuredApi\Entity\ItemsList;
+use Baraja\StructuredApi\Entity\StatusCount;
+use Nette\Utils\Paginator;
 
 /**
  * Serialize typed object (DTO) to array response.
@@ -44,6 +47,24 @@ final class Serializer
 		}
 		if (is_object($haystack)) {
 			if ($haystack instanceof Translation) {
+				return (string) $haystack;
+			}
+			if ($haystack instanceof \DateTimeInterface) {
+				return $haystack->format($this->convention->getDateTimeFormat());
+			}
+			if ($haystack instanceof Paginator) {
+				return $this->processPaginator($haystack);
+			}
+			if ($haystack instanceof StatusCount) {
+				return $this->processStatusCount($haystack);
+			}
+			if ($haystack instanceof ItemsList) {
+				return $this->process($haystack->getData(), $level);
+			}
+			if ($haystack instanceof \UnitEnum) {
+				return $this->processEnum($haystack);
+			}
+			if ($this->convention->isRewriteTooStringMethod() && \method_exists($haystack, '__toString') === true) {
 				return (string) $haystack;
 			}
 			return $this->processObject($haystack, $level);
@@ -86,5 +107,42 @@ final class Serializer
 		}
 
 		return $return;
+	}
+
+
+	/**
+	 * @return array{page: int, pageCount: int, itemCount: int, itemsPerPage: int, firstPage: int, lastPage: int, isFirstPage: bool, isLastPage: bool}
+	 */
+	private function processPaginator(Paginator $haystack): array
+	{
+		return [
+			'page' => $haystack->getPage(),
+			'pageCount' => (int) $haystack->getPageCount(),
+			'itemCount' => (int) $haystack->getItemCount(),
+			'itemsPerPage' => $haystack->getItemsPerPage(),
+			'firstPage' => $haystack->getFirstPage(),
+			'lastPage' => (int) $haystack->getLastPage(),
+			'isFirstPage' => $haystack->isFirst(),
+			'isLastPage' => $haystack->isLast(),
+		];
+	}
+
+
+	/**
+	 * @return array{key: string, label: string, count: int}
+	 */
+	private function processStatusCount(StatusCount $haystack): array
+	{
+		return [
+			'key' => $haystack->getKey(),
+			'label' => $haystack->getLabel(),
+			'count' => $haystack->getCount(),
+		];
+	}
+
+
+	private function processEnum(\UnitEnum $enum): string|int
+	{
+		return $enum->value ?? $enum->name;
 	}
 }

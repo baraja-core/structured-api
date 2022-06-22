@@ -22,7 +22,7 @@ final class Serializer
 	{
 		return new JsonResponse(
 			$this->convention,
-			$this->processObject($haystack),
+			$this->processObject($haystack, 0),
 		);
 	}
 
@@ -30,16 +30,19 @@ final class Serializer
 	/**
 	 * @return float|int|bool|array<int|string, mixed>|string|null
 	 */
-	private function process(mixed $haystack): float|null|int|bool|array|string
+	private function process(mixed $haystack, int $level): float|null|int|bool|array|string
 	{
+		if ($level >= 32) {
+			throw new \LogicException('Structure is too deep.');
+		}
 		if (is_scalar($haystack) || $haystack === null) {
 			return $haystack;
 		}
 		if (is_array($haystack)) {
-			return $this->processArray($haystack);
+			return $this->processArray($haystack, $level);
 		}
 		if (is_object($haystack)) {
-			return $this->processObject($haystack);
+			return $this->processObject($haystack, $level);
 		}
 
 		throw new \InvalidArgumentException(
@@ -54,13 +57,13 @@ final class Serializer
 	/**
 	 * @return array<string, mixed>
 	 */
-	private function processObject(object $haystack): array
+	private function processObject(object $haystack, int $level): array
 	{
 		$ref = new \ReflectionClass($haystack);
 		$return = [];
 		foreach ($ref->getProperties() as $property) {
 			$property->setAccessible(true);
-			$return[$property->getName()] = $this->process($property->getValue($haystack));
+			$return[$property->getName()] = $this->process($property->getValue($haystack), $level);
 		}
 
 		return $return;
@@ -71,11 +74,11 @@ final class Serializer
 	 * @param mixed[] $haystack
 	 * @return mixed[]
 	 */
-	private function processArray(array $haystack): array
+	private function processArray(array $haystack, int $level): array
 	{
 		$return = [];
 		foreach ($haystack as $key => $value) {
-			$return[$key] = $this->process($value);
+			$return[$key] = $this->process($value, $level);
 		}
 
 		return $return;

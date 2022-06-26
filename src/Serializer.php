@@ -22,11 +22,16 @@ final class Serializer
 	}
 
 
-	public function serialize(object $haystack): Response
+	/**
+	 * @param object|mixed[] $haystack
+	 */
+	public function serialize(object|array $haystack): Response
 	{
 		return new JsonResponse(
 			$this->convention,
-			$this->processObject($haystack, 0),
+			is_array($haystack)
+				? $this->processArray($haystack, 0)
+				: $this->processObject($haystack, 0),
 		);
 	}
 

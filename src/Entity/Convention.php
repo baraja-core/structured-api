@@ -25,6 +25,12 @@ final class Convention
 
 	private bool $ignoreDefaultPermission = false;
 
+	/**
+	 * If the property value is "null", it is automatically removed.
+	 * This option optimizes the size of the transferred data.
+	 */
+	private bool $rewriteNullToUndefined = false;
+
 
 	public function getDateTimeFormat(): string
 	{
@@ -122,5 +128,17 @@ final class Convention
 	public function setIgnoreDefaultPermission(bool $ignoreDefaultPermission): void
 	{
 		$this->ignoreDefaultPermission = $ignoreDefaultPermission;
+	}
+
+
+	public function isRewriteNullToUndefined(): bool
+	{
+		return $this->rewriteNullToUndefined;
+	}
+
+
+	public function setRewriteNullToUndefined(bool $rewriteNullToUndefined): void
+	{
+		$this->rewriteNullToUndefined = $rewriteNullToUndefined;
 	}
 }

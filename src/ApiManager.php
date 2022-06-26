@@ -348,7 +348,7 @@ final class ApiManager
 				$methodResponse = (new \ReflectionMethod($endpoint, $methodName))->invokeArgs($endpoint, $args);
 				if ($methodResponse === null || $methodResponse instanceof Response) {
 					$response = $methodResponse;
-				} elseif (is_object($methodResponse)) {
+				} elseif (is_object($methodResponse) || is_array($methodResponse)) {
 					$response = $this->serializer->serialize($methodResponse);
 				} else {
 					throw new \LogicException(sprintf(

@@ -93,7 +93,11 @@ final class Serializer
 		$return = [];
 		foreach ($ref->getProperties() as $property) {
 			$property->setAccessible(true);
-			$return[$property->getName()] = $this->process($property->getValue($haystack), $level);
+			$value = $property->getValue($haystack);
+			if ($value === null && $this->convention->isRewriteNullToUndefined()) {
+				continue;
+			}
+			$return[$property->getName()] = $this->process($value, $level);
 		}
 
 		return $return;
@@ -108,6 +112,9 @@ final class Serializer
 	{
 		$return = [];
 		foreach ($haystack as $key => $value) {
+			if ($value === null && $this->convention->isRewriteNullToUndefined()) {
+				continue;
+			}
 			$return[$key] = $this->process($value, $level);
 		}
 

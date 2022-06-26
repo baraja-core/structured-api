@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
+use Baraja\EcommerceStandard\DTO\PriceInterface;
 use Baraja\Localization\Translation;
 use Baraja\StructuredApi\Entity\Convention;
 use Baraja\StructuredApi\Entity\ItemsList;
@@ -68,6 +69,9 @@ final class Serializer
 			}
 			if ($haystack instanceof \UnitEnum) {
 				return $this->processEnum($haystack);
+			}
+			if (interface_exists(PriceInterface::class) && $haystack instanceof PriceInterface) {
+				return $this->processPrice($haystack);
 			}
 			if ($this->convention->isRewriteTooStringMethod() && \method_exists($haystack, '__toString') === true) {
 				return (string) $haystack;
@@ -156,5 +160,19 @@ final class Serializer
 	private function processEnum(\UnitEnum $enum): string|int
 	{
 		return $enum->value ?? $enum->name;
+	}
+
+
+	/**
+	 * @return array{value: string, currency: string, html: string, isFree: bool}
+	 */
+	private function processPrice(PriceInterface $price): array
+	{
+		return [
+			'value' => $price->getValue(),
+			'currency' => $price->getCurrency()->getSymbol(),
+			'html' => $price->render(true),
+			'isFree' => $price->isFree(),
+		];
 	}
 }

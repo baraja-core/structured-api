@@ -32,7 +32,8 @@
 		"spaze/phpstan-disallowed-calls": "^2.0",
 		"baraja-core/localization": "^2.0",
 		"tracy/tracy": "^2.8",
-		"roave/security-advisories": "dev-master"
+		"roave/security-advisories": "dev-master",
+		"baraja-core/ecommerce-standard": "^0.0"
 	},
 	"autoload": {
 		"classmap": [

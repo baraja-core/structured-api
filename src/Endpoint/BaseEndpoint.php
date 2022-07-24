@@ -144,7 +144,7 @@ abstract class BaseEndpoint implements Endpoint
 	 */
 	final public function sendError(string $message, ?int $code = null, ?string $hint = null): void
 	{
-		$code ??= $this->convention->getDefaultOkCode();
+		$code ??= $this->convention->getDefaultErrorCode();
 		$this->sendJson([
 			'state' => 'error',
 			'message' => $message,

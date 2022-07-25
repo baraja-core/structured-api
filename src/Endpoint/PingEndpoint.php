@@ -6,18 +6,18 @@ namespace Baraja\StructuredApi;
 
 
 use Baraja\StructuredApi\Attributes\PublicEndpoint;
-use DateTime;
+use Baraja\StructuredApi\Endpoint\DTO\PingResponse;
 
 #[PublicEndpoint]
 final class PingEndpoint extends BaseEndpoint
 {
-	public function actionDefault(): void
+	public function actionDefault(): PingResponse
 	{
-		$this->sendJson([
-			'result' => 'PONG',
-			'ip' => $this->getIp(),
-			'datetime' => new DateTime('now'),
-		]);
+		return new PingResponse(
+			result: 'PONG',
+			ip: $this->getIp(),
+			datetime: new \DateTimeImmutable('now'),
+		);
 	}
 
 

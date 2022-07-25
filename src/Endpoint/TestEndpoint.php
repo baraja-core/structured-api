@@ -6,6 +6,8 @@ namespace Baraja\StructuredApi;
 
 
 use Baraja\StructuredApi\Attributes\PublicEndpoint;
+use Baraja\StructuredApi\Endpoint\DTO\CreateUserResponse;
+use Baraja\StructuredApi\Endpoint\DTO\TestResponse;
 
 #[PublicEndpoint]
 final class TestEndpoint extends BaseEndpoint
@@ -15,24 +17,24 @@ final class TestEndpoint extends BaseEndpoint
 	 *
 	 * @param string $hello some user-defined parameter.
 	 */
-	public function actionDefault(string $hello = 'world'): void
+	public function actionDefault(string $hello = 'world'): TestResponse
 	{
-		$this->sendJson([
-			'name' => 'Test API endpoint',
-			'hello' => $hello,
-			'endpoint' => $this->getName(),
-		]);
+		return new TestResponse(
+			name: 'Test API endpoint',
+			hello: $hello,
+			endpoint: $this->getName(),
+		);
 	}
 
 
-	public function postCreateUser(string $username, string $password): void
+	public function postCreateUser(string $username, string $password): CreateUserResponse
 	{
 		if (strlen($password) < 8) {
 			$this->sendError('Password must be at least 8 characters long.');
 		}
 
-		$this->sendOk([
-			'username' => $username,
-		]);
+		return new CreateUserResponse(
+			username: $username,
+		);
 	}
 }

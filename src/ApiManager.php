@@ -150,8 +150,9 @@ final class ApiManager
 	 */
 	public function getEndpointService(string $className, array $params): Endpoint
 	{
-		/** @var Endpoint $endpoint @phpstan-ignore-next-line */
+		/** @phpstan-ignore-next-line */
 		$endpoint = $this->container->getByType($className);
+		assert($endpoint instanceof Endpoint);
 		$endpoint->setConvention($this->convention);
 
 		$createReflection = static function (object $class, string $propertyName): ?\ReflectionProperty {

@@ -74,10 +74,10 @@ abstract class BaseEndpoint implements Endpoint
 	public function startup(): void
 	{
 		if (PHP_SAPI !== 'cli' && class_exists('\Baraja\Localization\Localization') === true) {
-			/** @var \Nette\Http\Request $httpRequest */
 			$httpRequest = $this->container->getByType(Request::class);
-			/** @var \Baraja\Localization\Localization $localization */
 			$localization = $this->container->getByType(Localization::class);
+			assert($httpRequest instanceof Request);
+			assert($localization instanceof Localization);
 			$localization->processHttpRequest($httpRequest);
 		}
 
@@ -355,8 +355,8 @@ abstract class BaseEndpoint implements Endpoint
 		static $linkGenerator;
 
 		if ($linkGenerator === null) {
-			/** @var LinkGenerator $linkGenerator */
 			$linkGenerator = $this->container->getByType(LinkGenerator::class);
+			assert($linkGenerator instanceof LinkGenerator);
 		}
 
 		return $linkGenerator->link(ltrim($dest, ':'), $params);
@@ -411,8 +411,8 @@ abstract class BaseEndpoint implements Endpoint
 		$name = sprintf('api---%s', strtolower($namespace ?? $this->getName()));
 
 		if ($storage === null) {
-			/** @var Storage $storage */
 			$storage = $this->container->getByType(Storage::class);
+			assert($storage instanceof Storage);
 		}
 		if (isset($cache[$name]) === false) {
 			$cache[$name] = new Cache($storage, $name);
@@ -426,8 +426,8 @@ abstract class BaseEndpoint implements Endpoint
 	{
 		static $translator;
 		if ($translator === null) {
-			/** @var Translator $translator */
 			$translator = $this->container->getByType(Translator::class);
+			assert($translator instanceof Translator);
 		}
 
 		return $translator;

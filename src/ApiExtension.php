@@ -44,11 +44,11 @@ final class ApiExtension extends CompilerExtension
 		if (PHP_SAPI === 'cli') {
 			return;
 		}
-		/** @var ServiceDefinition $application */
 		$application = $this->getContainerBuilder()->getDefinitionByType(Application::class);
+		assert($application instanceof ServiceDefinition);
 
-		/** @var ServiceDefinition $apiManager */
 		$apiManager = $this->getContainerBuilder()->getDefinitionByType(ApiManager::class);
+		assert($apiManager instanceof ServiceDefinition);
 
 		/** @var array<string, mixed> $config */
 		$config = $this->getConfig();
@@ -98,7 +98,7 @@ final class ApiExtension extends CompilerExtension
 			if (!class_exists($class) && !interface_exists($class) && !trait_exists($class)) {
 				throw new \RuntimeException(
 					sprintf('Class "%s" was found, but it cannot be loaded by autoloading.', $class) . "\n"
-					. 'More information: https://php.baraja.cz/autoloading-trid',
+					. 'More information: https://en.php.brj.cz/autoloading-classes-in-php',
 				);
 			}
 			$rc = new \ReflectionClass($class);

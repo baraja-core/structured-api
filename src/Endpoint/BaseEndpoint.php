@@ -76,8 +76,6 @@ abstract class BaseEndpoint implements Endpoint
 		if (PHP_SAPI !== 'cli' && class_exists('\Baraja\Localization\Localization') === true) {
 			$httpRequest = $this->container->getByType(Request::class);
 			$localization = $this->container->getByType(Localization::class);
-			assert($httpRequest instanceof Request);
-			assert($localization instanceof Localization);
 			$localization->processHttpRequest($httpRequest);
 		}
 
@@ -356,7 +354,6 @@ abstract class BaseEndpoint implements Endpoint
 
 		if ($linkGenerator === null) {
 			$linkGenerator = $this->container->getByType(LinkGenerator::class);
-			assert($linkGenerator instanceof LinkGenerator);
 		}
 
 		return $linkGenerator->link(ltrim($dest, ':'), $params);
@@ -412,7 +409,6 @@ abstract class BaseEndpoint implements Endpoint
 
 		if ($storage === null) {
 			$storage = $this->container->getByType(Storage::class);
-			assert($storage instanceof Storage);
 		}
 		if (isset($cache[$name]) === false) {
 			$cache[$name] = new Cache($storage, $name);
@@ -427,7 +423,6 @@ abstract class BaseEndpoint implements Endpoint
 		static $translator;
 		if ($translator === null) {
 			$translator = $this->container->getByType(Translator::class);
-			assert($translator instanceof Translator);
 		}
 
 		return $translator;

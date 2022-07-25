@@ -15,6 +15,7 @@
 		"ext-iconv": "*",
 		"baraja-core/service-method-invoker": "^2.2.1",
 		"baraja-core/url": "^1.1",
+		"baraja-core/serializer": "^1.0",
 		"nette/di": "^3.0",
 		"nette/utils": "^3.2",
 		"nette/http": "^3.1",
@@ -32,8 +33,7 @@
 		"spaze/phpstan-disallowed-calls": "^2.0",
 		"baraja-core/localization": "^2.0",
 		"tracy/tracy": "^2.8",
-		"roave/security-advisories": "dev-master",
-		"baraja-core/ecommerce-standard": "^0.0"
+		"roave/security-advisories": "dev-master"
 	},
 	"autoload": {
 		"classmap": [

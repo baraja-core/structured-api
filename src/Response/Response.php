@@ -17,6 +17,7 @@ interface Response
 	public function toArray(): array;
 
 	/**
+	 * @deprecated since 2022-07-25, use toArray().
 	 * @return mixed[]
 	 */
 	public function getArray(): array;

@@ -9,7 +9,7 @@ class RedirectResponse extends BaseResponse
 {
 	public function getUrl(): string
 	{
-		$url = $this->haystack['url'] ?? null;
+		$url = $this->toArray()['url'] ?? null;
 		if (is_string($url)) {
 			return $url;
 		}

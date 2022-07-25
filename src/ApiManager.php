@@ -6,6 +6,7 @@ namespace Baraja\StructuredApi;
 
 
 use Baraja\RuntimeInvokeException;
+use Baraja\Serializer\Serializer;
 use Baraja\ServiceMethodInvoker;
 use Baraja\ServiceMethodInvoker\ProjectEntityRepository;
 use Baraja\StructuredApi\Entity\Convention;
@@ -349,7 +350,7 @@ final class ApiManager
 				if ($methodResponse === null || $methodResponse instanceof Response) {
 					$response = $methodResponse;
 				} elseif (is_object($methodResponse) || is_array($methodResponse)) {
-					$response = $this->serializer->serialize($methodResponse);
+					$response = new JsonResponse($this->convention, $this->serializer->serialize($methodResponse));
 				} else {
 					throw new \LogicException(sprintf(
 						'Response "%s" is not valid, because it must be instance of "%s" or serializable object (DTO).',

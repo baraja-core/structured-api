@@ -7,6 +7,10 @@ namespace Baraja\StructuredApi;
 
 use Baraja\Localization\Localization;
 use Baraja\StructuredApi\Entity\Convention;
+use Baraja\StructuredApi\Response\Status\ErrorResponse;
+use Baraja\StructuredApi\Response\Status\OkResponse;
+use Baraja\StructuredApi\Response\Status\StatusResponse;
+use Baraja\StructuredApi\Response\Status\SuccessResponse;
 use Nette\Application\LinkGenerator;
 use Nette\Application\UI\InvalidLinkException;
 use Nette\Caching\Cache;
@@ -112,20 +116,30 @@ abstract class BaseEndpoint implements Endpoint
 
 
 	/**
+	 * @phpstan-return never-return
+	 * @throws ThrowResponse
+	 */
+	final public function sendResponse(Response $response): void
+	{
+		throw new ThrowResponse($response);
+	}
+
+
+	/**
 	 * This method returns an array of data exactly as you pass it and converts it to a valid json.
 	 *
 	 * Note: The formatting and type of data is purely managed by the user.
 	 * If you want to send status data, it is recommended to use the sendOk() and sendError() methods.
 	 * This method should be used for sending data in a user-defined structure only.
 	 *
-	 * @param array<string, mixed> $haystack
+	 * @param array<string, mixed>|Response|StatusResponse $haystack
 	 * @param positive-int $httpCode
 	 * @phpstan-return never-return
 	 * @throws ThrowResponse
 	 */
-	final public function sendJson(array $haystack, int $httpCode = 200): void
+	final public function sendJson(array|Response|StatusResponse $haystack, int $httpCode = 200): void
 	{
-		if ($this->messages !== []) {
+		if (is_array($haystack) && $this->messages !== []) {
 			if (isset($haystack['flashMessages']) === true) {
 				throw new \RuntimeException('Flash message was already defined in your data. Did you want to use the flashMessage() function?');
 			}
@@ -133,7 +147,7 @@ abstract class BaseEndpoint implements Endpoint
 			$this->messages = []; // Reset for next response
 		}
 
-		throw new ThrowResponse(new JsonResponse($this->convention, $haystack, $httpCode));
+		$this->sendResponse(new JsonResponse($this->convention, $haystack, $httpCode));
 	}
 
 
@@ -145,48 +159,51 @@ abstract class BaseEndpoint implements Endpoint
 	final public function sendError(string $message, ?int $code = null, ?string $hint = null): void
 	{
 		$code ??= $this->convention->getDefaultErrorCode();
-		$this->sendJson([
-			'state' => 'error',
-			'message' => $message,
-			'code' => $code,
-			'hint' => $hint,
-		], $code);
+		$this->sendJson(new ErrorResponse(
+			message: $message,
+			code: $code,
+			hint: $hint,
+		), $code);
 	}
 
 
 	/**
-	 * @param array<string, mixed> $data
+	 * @param array<string, mixed>|Response|StatusResponse $data
 	 * @param positive-int|null $code
 	 * @phpstan-return never-return
 	 * @throws ThrowResponse
 	 */
-	final public function sendOk(array $data = [], ?string $message = null, ?int $code = null): void
-	{
+	final public function sendOk(
+		array|Response|StatusResponse $data = [],
+		?string $message = null,
+		?int $code = null,
+	): void {
 		$code ??= $this->convention->getDefaultOkCode();
-		$this->sendJson([
-			'state' => 'ok',
-			'message' => $message,
-			'code' => $code,
-			'data' => $data,
-		], $code);
+		$this->sendJson(new OkResponse(
+			message: $message,
+			code: $code,
+			data: $data,
+		), $code);
 	}
 
 
 	/**
-	 * @param array<string, mixed> $data
+	 * @param array<string, mixed>|Response|StatusResponse $data
 	 * @param positive-int|null $code
 	 * @phpstan-return never-return
 	 * @throws ThrowResponse
 	 */
-	final public function sendSuccess(array $data = [], ?string $message = null, ?int $code = null): void
-	{
+	final public function sendSuccess(
+		array|Response|StatusResponse $data = [],
+		?string $message = null,
+		?int $code = null,
+	): void {
 		$code ??= $this->convention->getDefaultOkCode();
-		$this->sendJson([
-			'state' => 'success',
-			'message' => $message,
-			'code' => $code,
-			'data' => $data,
-		], $code);
+		$this->sendJson(new SuccessResponse(
+			message: $message,
+			code: $code,
+			data: $data,
+		), $code);
 	}
 
 

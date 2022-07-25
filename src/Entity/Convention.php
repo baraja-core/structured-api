@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi\Entity;
 
 
+use Baraja\Serializer\SerializerConvention;
+
 /**
  * This entity is global configuration for formatting conventions and other future styling.
  */
-final class Convention
+final class Convention extends SerializerConvention
 {
 	private string $dateTimeFormat = 'Y-m-d H:i:s';
 

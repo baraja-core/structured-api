@@ -46,15 +46,16 @@ final class MyAwesomeEndpoint extends BaseEndpoint
     *
     * @param string $hello some user-defined parameter.
     */
-   public function actionDefault(string $hello = 'world'): array
+   public function actionDefault(string $hello = 'world'): MyAwesomeResponse
    {
-      // The endpoint response can be simply returned as an array or object.
+      // The endpoint response can be simply returned as an simple array or typed object.
+      // A type object is much better because it will be used as the basis for documentation.
       // It will be automatically converted to JSON.
 
-      return [
-         'name' => 'Test API endpoint',
-         'hello' => $hello,
-      ]);
+      return new MyAwesomeResponse(
+         name: 'Test API endpoint',
+         hello: $hello,
+      );
    }
 
    // or use old syntax:
@@ -72,15 +73,17 @@ final class MyAwesomeEndpoint extends BaseEndpoint
       ]);
    }
 
+   // or return simple array directly:
+
    /**
     * @param array<mixed, mixed> $data
     */
-   public function postCreateUser(array $data): void
+   public function postCreateUser(array $data): array
    {
-      $this->sendJson([
+      return [
          'state' => 'ok',
          'data' => $data,
-      ]);
+      ];
    }
 }
 ```
@@ -137,7 +140,7 @@ List of aliases (aliases are optional):
 
 For processing complex data structures, it may be useful to obtain the data in its original raw form.
 
-The library reserves the key variable `array $ data`, which always contains the original input values from the user, regardless of validation.
+The library reserves the key variable `array $data`, which always contains the original input values from the user, regardless of validation.
 
 For example:
 
@@ -146,7 +149,7 @@ final class OrderEndpoint extends BaseEndpoint
 {
    public function postProcessOrder(array $data): void
    {
-      // variable $data constains all raw data from user.
+      // variable $data contains all raw data from user.
    }
 }
 ```
@@ -174,8 +177,17 @@ final class ArticleEndpoint extends BaseEndpoint
     * @param string|null $sort sort by supported field
     * @param string|null $orderBy direction by `ASC` or `DESC`
     */
-   public function actionDefault(?string $locale = null, int $page = 1, int $limit = 32, ?string $status = null, ?string $query = null, ?string $filterFrom = null, ?string $filterTo = null, ?string $sort = null, ?string $orderBy = null): void
-   {
+   public function actionDefault(
+      ?string $locale = null,
+      int $page = 1,
+      int $limit = 32,
+      ?string $status = null,
+      ?string $query = null,
+      ?string $filterFrom = null,
+      ?string $filterTo = null,
+      ?string $sort = null,
+      ?string $orderBy = null,
+   ): void {
    }
 }
 ```
@@ -208,9 +220,9 @@ final class ArticleEndpoint extends BaseEndpoint
 }
 ```
 
-Each method always returns a type of `void` and the output logic is solved via methods. The reason is that it is often necessary to pass a number of parameters and one output is not enough.
+Each method can return output either via `send` methods or directly as a type object. A more modern approach is to return the entire object, as this gives us type checking and the underlying basis for automatically generated documentation.
 
-> **Warning:** If you do not pass any output, endpoint processing will fail.
+> **Warning:** If you do not pass any output (by method or return statement), endpoint processing will fail.
 
 When processing actions, it is a good idea to return success or error information:
 

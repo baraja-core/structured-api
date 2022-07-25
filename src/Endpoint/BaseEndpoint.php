@@ -59,7 +59,7 @@ abstract class BaseEndpoint implements Endpoint
 	/** @var mixed[] */
 	protected array $data = [];
 
-	/** @var string[][] */
+	/** @var array<int, array{message: string, type: string}> */
 	private array $messages = [];
 
 	private bool $startupCheck = false;

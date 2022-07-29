@@ -14,6 +14,16 @@ final class ThrowResponse extends \RuntimeException
 	}
 
 
+	/**
+	 * @phpstan-return never-return
+	 * @throws self
+	 */
+	public static function invoke(Response $response): void
+	{
+		throw new self($response);
+	}
+
+
 	public function getResponse(): Response
 	{
 		return $this->response;

@@ -119,7 +119,7 @@ abstract class BaseEndpoint implements Endpoint
 	 */
 	final public function sendResponse(Response $response): void
 	{
-		throw new ThrowResponse($response);
+		ThrowResponse::invoke($response);
 	}
 
 

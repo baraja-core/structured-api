@@ -6,8 +6,9 @@ namespace Baraja\StructuredApi\Response\Status;
 
 
 use Baraja\StructuredApi\Response;
+use Baraja\StructuredApi\ThrowStatusResponse;
 
-final class OkResponse extends StatusResponse
+class OkResponse extends StatusResponse
 {
 	/**
 	 * @param array<string, mixed>|Response|StatusResponse $data
@@ -18,5 +19,28 @@ final class OkResponse extends StatusResponse
 		public ?int $code = null,
 		public array|Response|StatusResponse $data = [],
 	) {
+		if ($code === null) {
+			$this->code = $this->getHttpCode();
+		}
+	}
+
+
+	/**
+	 * @phpstan-return never-return
+	 * @throws ThrowStatusResponse
+	 */
+	public static function invoke(
+		string $state = 'ok',
+		?string $message = null,
+		?int $code = null,
+		array|Response|StatusResponse $data = [],
+	): void {
+		ThrowStatusResponse::invoke(new static($state, $message, $code, $data));
+	}
+
+
+	public function getHttpCode(): int
+	{
+		return 200;
 	}
 }

@@ -10,7 +10,7 @@ use Nette\Utils\JsonException;
 use Tracy\Debugger;
 use Tracy\ILogger;
 
-final class JsonResponse extends BaseResponse
+class JsonResponse extends BaseResponse
 {
 	public function getContentType(): string
 	{

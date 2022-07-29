@@ -349,6 +349,7 @@ final class ApiManager
 				$httpCode = 200;
 				try {
 					$methodResponse = (new \ReflectionMethod($endpoint, $methodName))->invokeArgs($endpoint, $args);
+					/** @phpstan-ignore-next-line */
 				} catch (ThrowStatusResponse $statusResponse) {
 					$methodResponse = $statusResponse->getResponse();
 					$httpCode = $methodResponse->getHttpCode();

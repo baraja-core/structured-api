@@ -8,7 +8,7 @@ namespace Baraja\StructuredApi\Response\Status;
 use Baraja\StructuredApi\Response;
 use Baraja\StructuredApi\ThrowStatusResponse;
 
-final class SuccessResponse extends StatusResponse
+class SuccessResponse extends StatusResponse
 {
 	/**
 	 * @param array<string, mixed>|Response|StatusResponse $data
@@ -36,7 +36,7 @@ final class SuccessResponse extends StatusResponse
 		?int $code = null,
 		array|Response|StatusResponse $data = [],
 	): void {
-		ThrowStatusResponse::invoke(new self($state, $message, $code, $data));
+		ThrowStatusResponse::invoke(new static($state, $message, $code, $data));
 	}
 
 

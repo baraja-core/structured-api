@@ -13,7 +13,7 @@ class OkResponse extends StatusResponse
 	/**
 	 * @param array<string, mixed>|Response|StatusResponse $data
 	 */
-	public function __construct(
+	final public function __construct(
 		public string $state = 'ok',
 		public ?string $message = null,
 		public ?int $code = null,
@@ -26,6 +26,7 @@ class OkResponse extends StatusResponse
 
 
 	/**
+	 * @param array<string, mixed>|Response|StatusResponse $data
 	 * @phpstan-return never-return
 	 * @throws ThrowStatusResponse
 	 */

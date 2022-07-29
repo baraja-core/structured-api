@@ -9,7 +9,7 @@ use Baraja\StructuredApi\ThrowStatusResponse;
 
 class ErrorResponse extends StatusResponse
 {
-	public function __construct(
+	final public function __construct(
 		public string $message,
 		public string $state = 'error',
 		public ?int $code = null,

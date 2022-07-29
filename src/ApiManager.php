@@ -11,7 +11,6 @@ use Baraja\ServiceMethodInvoker;
 use Baraja\ServiceMethodInvoker\ProjectEntityRepository;
 use Baraja\StructuredApi\Entity\Convention;
 use Baraja\StructuredApi\Middleware\MatchExtension;
-use Baraja\StructuredApi\Response\Status\StatusResponse;
 use Baraja\StructuredApi\Tracy\Panel;
 use Baraja\Url\Url;
 use Nette\DI\Container;

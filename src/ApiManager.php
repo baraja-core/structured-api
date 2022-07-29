@@ -11,6 +11,7 @@ use Baraja\ServiceMethodInvoker;
 use Baraja\ServiceMethodInvoker\ProjectEntityRepository;
 use Baraja\StructuredApi\Entity\Convention;
 use Baraja\StructuredApi\Middleware\MatchExtension;
+use Baraja\StructuredApi\Response\Status\StatusResponse;
 use Baraja\StructuredApi\Tracy\Panel;
 use Baraja\Url\Url;
 use Nette\DI\Container;
@@ -339,7 +340,6 @@ final class ApiManager
 	): ?Response {
 		$endpoint->startup();
 		$endpoint->startupCheck();
-		$response = null;
 
 		try {
 			$invoker = new ServiceMethodInvoker($this->projectEntityRepository);
@@ -347,11 +347,21 @@ final class ApiManager
 			$panel->setArgs($args);
 
 			try {
-				$methodResponse = (new \ReflectionMethod($endpoint, $methodName))->invokeArgs($endpoint, $args);
+				$httpCode = 200;
+				try {
+					$methodResponse = (new \ReflectionMethod($endpoint, $methodName))->invokeArgs($endpoint, $args);
+				} catch (ThrowStatusResponse $statusResponse) {
+					$methodResponse = $statusResponse->getResponse();
+					$httpCode = $methodResponse->getHttpCode();
+				}
 				if ($methodResponse === null || $methodResponse instanceof Response) {
 					$response = $methodResponse;
 				} elseif (is_object($methodResponse) || is_array($methodResponse)) {
-					$response = new JsonResponse($this->convention, $this->serializer->serialize($methodResponse));
+					$response = new JsonResponse(
+						convention: $this->convention,
+						haystack: $this->serializer->serialize($methodResponse),
+						httpCode: $httpCode,
+					);
 				} else {
 					throw new \LogicException(sprintf(
 						'Response "%s" is not valid, because it must be instance of "%s" or serializable object (DTO).',

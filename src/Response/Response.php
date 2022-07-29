@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
-interface Response
+interface Response extends HttpCodeResponse
 {
 	public function getContentType(): string;
 
@@ -21,6 +21,4 @@ interface Response
 	 * @return mixed[]
 	 */
 	public function getArray(): array;
-
-	public function getHttpCode(): int;
 }

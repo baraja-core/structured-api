@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi\Response\Status;
 
 
-abstract class StatusResponse
+use Baraja\StructuredApi\HttpCodeResponse;
+
+abstract class StatusResponse implements HttpCodeResponse
 {
 }

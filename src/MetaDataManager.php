@@ -74,7 +74,9 @@ final class MetaDataManager
 				$property,
 			), E_USER_DEPRECATED);
 			/** @phpstan-ignore-next-line */
-			$endpoint->{$property} = $service === Container::class ? $container : $container->getByType($service);
+			$endpoint->{$property} = $service === Container::class
+				? $container
+				: $container->getByType($service);
 		}
 	}
 }

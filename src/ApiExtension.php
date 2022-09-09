@@ -10,11 +10,7 @@ use Baraja\StructuredApi\Middleware\PermissionExtension;
 use Baraja\Url\Url;
 use Nette\Application\Application;
 use Nette\DI\CompilerExtension;
-use Nette\DI\Container;
-use Nette\DI\ContainerBuilder;
 use Nette\DI\Definitions\ServiceDefinition;
-use Nette\DI\Extensions\InjectExtension;
-use Nette\Loaders\RobotLoader;
 use Nette\PhpGenerator\ClassType;
 use Tracy\Debugger;
 

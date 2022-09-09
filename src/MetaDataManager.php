@@ -49,12 +49,14 @@ final class MetaDataManager
 			if ($rc->implementsInterface(Endpoint::class)) {
 				$name = Helpers::formatToApiName((string) preg_replace('/^.*?([^\\\\]+)Endpoint$/', '$1', $class));
 				if (isset($return[$name]) === true) {
-					throw new \RuntimeException(sprintf(
-						'Api Manager: Endpoint "%s" already exist, because this endpoint implements service "%s" and "%s".',
-						$name,
-						$class,
-						$return[$name],
-					));
+					throw new \RuntimeException(
+						sprintf(
+							'Api Manager: Endpoint "%s" already exist, because this endpoint implements service "%s" and "%s".',
+							$name,
+							$class,
+							$return[$name],
+						)
+					);
 				}
 				$return[$name] = $class;
 			}
@@ -66,17 +68,30 @@ final class MetaDataManager
 
 	public static function endpointInjectDependencies(Endpoint $endpoint, Container $container): void
 	{
-		foreach (InjectExtension::getInjectProperties($endpoint::class) as $property => $service) {
-			trigger_error(sprintf(
-				'%s: Property "%s" with @inject annotation or #[Inject] attribute is deprecated design pattern. '
-				. 'Please inject all dependencies to constructor.',
-				$endpoint::class,
-				$property,
-			), E_USER_DEPRECATED);
-			/** @phpstan-ignore-next-line */
-			$endpoint->{$property} = $service === Container::class
-				? $container
-				: $container->getByType($service);
+		$injectProperties = InjectExtension::getInjectProperties($endpoint::class);
+		if ($injectProperties === []) {
+			return;
+		}
+
+		$ref = new \ReflectionClass($endpoint);
+		foreach ($injectProperties as $property => $service) {
+			trigger_error(
+				sprintf(
+					'%s: Property "%s" with @inject annotation or #[Inject] attribute is deprecated design pattern. '
+					. 'Please inject all dependencies to constructor.',
+					$endpoint::class,
+					$property,
+				),
+				E_USER_DEPRECATED,
+			);
+			$p = $ref->getProperty($property);
+			$p->setAccessible(true);
+			$p->setValue(
+				$endpoint,
+				$service === Container::class
+					? $container
+					: $container->getByType($service), // @phpstan-ignore-line
+			);
 		}
 	}
 }

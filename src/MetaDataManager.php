@@ -67,6 +67,13 @@ final class MetaDataManager
 	public static function endpointInjectDependencies(Endpoint $endpoint, Container $container): void
 	{
 		foreach (InjectExtension::getInjectProperties($endpoint::class) as $property => $service) {
+			trigger_error(sprintf(
+				'%s: Property "%s" with @inject annotation or #[Inject] attribute is deprecated design pattern. '
+				. 'Please inject all dependencies to constructor.',
+				$endpoint::class,
+				$property,
+			), E_USER_DEPRECATED);
+			/** @phpstan-ignore-next-line */
 			$endpoint->{$property} = $service === Container::class ? $container : $container->getByType($service);
 		}
 	}

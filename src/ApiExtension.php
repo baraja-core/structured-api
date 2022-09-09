@@ -23,7 +23,13 @@ final class ApiExtension extends CompilerExtension
 	public function beforeCompile(): void
 	{
 		$builder = $this->getContainerBuilder();
-		$endpoints = $this->createEndpointServices($builder);
+		$endpointServices = MetaDataManager::createEndpointServices();
+		foreach ($endpointServices as $endpointService) {
+			$builder->addDefinition($this->prefix('endpoint') . '.' . str_replace('\\', '.', $endpointService))
+				->setFactory($endpointService)
+				->addTag('structured-api-endpoint')
+				->addSetup('?->injectContainer($this)', ['@self']);
+		}
 
 		$builder->addDefinition($this->prefix('convention'))
 			->setFactory(Convention::class);
@@ -34,7 +40,7 @@ final class ApiExtension extends CompilerExtension
 
 		$builder->addDefinition($this->prefix('apiManager'))
 			->setFactory(ApiManager::class)
-			->setArgument('endpoints', $endpoints)
+			->setArgument('endpoints', $endpointServices)
 			->addSetup('?->addMatchExtension(?)', ['@self', '@' . PermissionExtension::class]);
 	}
 
@@ -74,70 +80,5 @@ final class ApiExtension extends CompilerExtension
 			. '})();' . "\n",
 			[$application->getName()],
 		);
-	}
-
-
-	/**
-	 * @return array<string, class-string> (name => type)
-	 */
-	private function createEndpointServices(ContainerBuilder $builder): array
-	{
-		$rootDir = dirname(__DIR__, 4);
-		$robot = new RobotLoader;
-		$robot->addDirectory($rootDir);
-		$robot->setTempDirectory($rootDir . '/temp/cache/baraja.structuredApi');
-		$robot->acceptFiles = ['*Endpoint.php'];
-		$robot->reportParseErrors(false);
-		$robot->refresh();
-
-		$return = [];
-		foreach (array_unique(array_keys($robot->getIndexedClasses())) as $class) {
-			if ($class === BaseEndpoint::class) {
-				continue;
-			}
-			if (!class_exists($class) && !interface_exists($class) && !trait_exists($class)) {
-				throw new \RuntimeException(
-					sprintf('Class "%s" was found, but it cannot be loaded by autoloading.', $class) . "\n"
-					. 'More information: https://en.php.brj.cz/autoloading-classes-in-php',
-				);
-			}
-			$rc = new \ReflectionClass($class);
-			try {
-				if ($rc->isInstantiable() === false) {
-					if ($rc->hasMethod('__construct') && !$rc->getMethod('__construct')->isPublic()) {
-						throw new \RuntimeException(sprintf('Constructor of endpoint "%s" is not callable.', $class));
-					}
-					continue;
-				}
-			} catch (\ReflectionException) {
-				continue;
-			}
-			if ($rc->implementsInterface(Endpoint::class)) {
-				$endpoint = $builder->addDefinition($this->prefix('endpoint') . '.' . str_replace('\\', '.', $class))
-					->setFactory($class)
-					->addTag('structured-api-endpoint')
-					->addSetup('?->injectContainer($this)', ['@self']);
-
-				foreach (InjectExtension::getInjectProperties($class) as $property => $service) {
-					if ($service === Container::class) {
-						$endpoint->addSetup('?->? = $this', ['@self', $property]);
-					} else {
-						$endpoint->addSetup('?->? = $this->getByType(?)', ['@self', $property, $service]);
-					}
-				}
-				$name = Helpers::formatToApiName((string) preg_replace('/^.*?([^\\\\]+)Endpoint$/', '$1', $class));
-				if (isset($return[$name]) === true) {
-					throw new \RuntimeException(sprintf(
-						'Api Manager: Endpoint "%s" already exist, because this endpoint implements service "%s" and "%s".',
-						$name,
-						$class,
-						$return[$name],
-					));
-				}
-				$return[$name] = $class;
-			}
-		}
-
-		return $return;
 	}
 }

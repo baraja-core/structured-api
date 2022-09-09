@@ -16,7 +16,6 @@ use Baraja\Url\Url;
 use Nette\DI\Container;
 use Nette\Http\Request;
 use Nette\Http\Response as HttpResponse;
-use Nette\Utils\Strings;
 use Tracy\Debugger;
 use Tracy\ILogger;
 
@@ -458,7 +457,7 @@ final class ApiManager
 						is_string($traceFunction)
 						&& preg_match('/^set([A-Za-z0-9]+)$/', $traceFunction, $functionParser) === 1
 					) {
-						$message = sprintf('%s: %s', Strings::firstUpper($functionParser[1]), $e->getMessage());
+						$message = sprintf('%s: %s', Helpers::firstUpper($functionParser[1]), $e->getMessage());
 						break;
 					}
 				}

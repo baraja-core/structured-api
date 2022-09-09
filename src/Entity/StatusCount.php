@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi\Entity;
 
 
-use Nette\Utils\Strings;
+use Baraja\StructuredApi\Helpers;
 
 final class StatusCount
 {
@@ -17,7 +17,7 @@ final class StatusCount
 		private int $count,
 		?string $label = null,
 	) {
-		$this->label = $label ?? Strings::firstUpper(str_replace('-', ' ', $key));
+		$this->label = $label ?? Helpers::firstUpper(str_replace('-', ' ', $key));
 	}
 
 

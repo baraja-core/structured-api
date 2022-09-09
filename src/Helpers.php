@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
-use Nette\Utils\Strings;
-
 final class Helpers
 {
 	/** @throws \Error */
@@ -21,7 +19,7 @@ final class Helpers
 		return (string) preg_replace_callback(
 			'/-([a-z])/',
 			static fn(array $match): string => strtoupper($match[1]),
-			Strings::firstUpper($name),
+			self::firstUpper($name),
 		);
 	}
 
@@ -31,7 +29,7 @@ final class Helpers
 		return (string) preg_replace_callback(
 			'/([A-Z])/',
 			static fn(array $match): string => sprintf('-%s', strtolower($match[1])),
-			Strings::firstLower($type),
+			self::firstLower($type),
 		);
 	}
 
@@ -39,11 +37,11 @@ final class Helpers
 	public static function resolveMethodName(Endpoint $endpoint, string $method, string $action): ?string
 	{
 		$tryMethods = [];
-		$tryMethods[] = ($method === 'GET' ? 'action' : strtolower($method)) . Strings::firstUpper($action);
+		$tryMethods[] = ($method === 'GET' ? 'action' : strtolower($method)) . self::firstUpper($action);
 		if ($method === 'PUT') {
-			$tryMethods[] = sprintf('update%s', Strings::firstUpper($action));
+			$tryMethods[] = sprintf('update%s', self::firstUpper($action));
 		} elseif ($method === 'POST') {
-			$tryMethods[] = sprintf('create%s', Strings::firstUpper($action));
+			$tryMethods[] = sprintf('create%s', self::firstUpper($action));
 		}
 
 		foreach ($tryMethods as $tryMethod) {
@@ -90,6 +88,32 @@ final class Helpers
 		$)Dix
 XX
 			, $value);
+	}
+
+
+	public static function firstUpper(string $s): string
+	{
+		return mb_strtoupper(self::substring($s, 0, 1), 'UTF-8') . self::substring($s, 1);
+	}
+
+
+	public static function firstLower(string $s): string
+	{
+		return mb_strtolower(self::substring($s, 0, 1), 'UTF-8') . self::substring($s, 1);
+	}
+
+
+	/**
+	 * Returns a part of UTF-8 string specified by starting position and length. If start is negative,
+	 * the returned string will start at the start'th character from the end of string.
+	 */
+	public static function substring(string $s, int $start, ?int $length = null): string
+	{
+		if (function_exists('mb_substr') === false) {
+			throw new \RuntimeException('PHP extension "mb_substr" is mandatory.');
+		}
+
+		return mb_substr($s, $start, $length, 'UTF-8');
 	}
 
 

@@ -152,6 +152,7 @@ final class ApiManager
 	{
 		/** @phpstan-ignore-next-line */
 		$endpoint = $this->container->getByType($className);
+		MetaDataManager::endpointInjectDependencies($endpoint, $this->container);
 		assert($endpoint instanceof Endpoint);
 		$endpoint->setConvention($this->convention);
 

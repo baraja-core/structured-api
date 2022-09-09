@@ -69,6 +69,31 @@ final class Helpers
 
 
 	/**
+	 * Checks if the value is a valid URL address.
+	 * Moved from nette/utils.
+	 */
+	public static function isUrl(string $value): bool
+	{
+		$alpha = "a-z\x80-\xFF";
+		return (bool) preg_match(<<<XX
+		(^
+			https?://(
+				(([-_0-9$alpha]+\\.)*                       # subdomain
+					[0-9$alpha]([-0-9$alpha]{0,61}[0-9$alpha])?\\.)?  # domain
+					[$alpha]([-0-9$alpha]{0,17}[$alpha])?   # top domain
+				|\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}  # IPv4
+				|\\[[0-9a-f:]{3,39}\\]                      # IPv6
+			)(:\\d{1,5})?                                   # port
+			(/\\S*)?                                        # path
+			(\\?\\S*)?                                      # query
+			(\\#\\S*)?                                      # fragment
+		$)Dix
+XX
+			, $value);
+	}
+
+
+	/**
 	 * @deprecated since 2021-07-08, use #[Role] attribute instead.
 	 * @return string[]
 	 */

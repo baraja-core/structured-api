@@ -180,10 +180,7 @@ final class ApiManager
 			return null;
 		};
 
-		$endpointDataReflection = $createReflection($endpoint, 'data');
-		if ($endpointDataReflection !== null) {
-			$endpointDataReflection->setValue($endpoint, $params);
-		}
+		$createReflection($endpoint, 'data')?->setValue($endpoint, $params);
 
 		return $endpoint;
 	}

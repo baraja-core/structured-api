@@ -55,7 +55,7 @@ final class MetaDataManager
 							$name,
 							$class,
 							$return[$name],
-						)
+						),
 					);
 				}
 				$return[$name] = $class;

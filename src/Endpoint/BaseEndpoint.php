@@ -23,7 +23,6 @@ use Nette\Security\IIdentity;
 use Nette\Security\User;
 use Nette\SmartObject;
 use Nette\Utils\Paginator;
-use Nette\Utils\Validators;
 
 abstract class BaseEndpoint implements Endpoint
 {
@@ -394,7 +393,7 @@ abstract class BaseEndpoint implements Endpoint
 	 */
 	final public function redirectUrl(string $url, int $httpCode = 301): void
 	{
-		if (Validators::isUrl($url) === false) {
+		if (Helpers::isUrl($url) === false) {
 			throw new \InvalidArgumentException(sprintf('Haystack "%s" is not valid URL for redirect.', $url));
 		}
 		throw new ThrowResponse(new RedirectResponse($this->convention, ['url' => $url], $httpCode));

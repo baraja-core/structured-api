@@ -22,7 +22,6 @@ use Nette\Security\Authorizator;
 use Nette\Security\IIdentity;
 use Nette\Security\User;
 use Nette\SmartObject;
-use Nette\Utils\Paginator;
 
 abstract class BaseEndpoint implements Endpoint
 {
@@ -210,7 +209,7 @@ abstract class BaseEndpoint implements Endpoint
 	 * @phpstan-return never-return
 	 * @throws ThrowResponse
 	 */
-	final public function sendItems(array $items, ?Paginator $paginator = null, array $data = []): void
+	final public function sendItems(array $items, ?object $paginator = null, array $data = []): void
 	{
 		$return = ['items' => $items];
 		if ($paginator !== null) {

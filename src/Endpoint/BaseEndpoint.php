@@ -19,12 +19,9 @@ use Nette\Localization\Translator;
 use Nette\Security\Authorizator;
 use Nette\Security\IIdentity;
 use Nette\Security\User;
-use Nette\SmartObject;
 
 abstract class BaseEndpoint implements Endpoint
 {
-	use SmartObject;
-
 	// TODO: @deprecated since 2022-04-18, use Perl case instead
 	public const
 		FLASH_MESSAGE_SUCCESS = 'success',

@@ -26,7 +26,7 @@ final class Container
 	/**
 	 * @template T
 	 * @param class-string<T> $type
-	 * @return ?T
+	 * @return T
 	 */
 	public function getByType(string $type)
 	{

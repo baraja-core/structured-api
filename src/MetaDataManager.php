@@ -98,10 +98,8 @@ final class MetaDataManager
 			);
 			$p = $ref->getProperty($property);
 			$p->setAccessible(true);
-			$p->setValue(
-				$endpoint,
-				$container->getByType($service),
-			);
+			/** @phpstan-ignore-next-line */
+			$p->setValue($endpoint, $container->getByType($service));
 		}
 	}
 }

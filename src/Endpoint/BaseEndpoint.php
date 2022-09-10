@@ -11,8 +11,6 @@ use Baraja\StructuredApi\Response\Status\ErrorResponse;
 use Baraja\StructuredApi\Response\Status\OkResponse;
 use Baraja\StructuredApi\Response\Status\StatusResponse;
 use Baraja\StructuredApi\Response\Status\SuccessResponse;
-use Nette\Application\LinkGenerator;
-use Nette\Application\UI\InvalidLinkException;
 use Nette\Caching\Cache;
 use Nette\Caching\Storage;
 use Nette\DI\Container;
@@ -306,9 +304,11 @@ abstract class BaseEndpoint implements Endpoint
 	final public function getUser(): User
 	{
 		static $user;
-
 		if ($user === null) {
-			$user = $this->container->getByType(User::class);
+			if (class_exists('Nette\Security\User') === false) {
+				throw new \RuntimeException('Service "Nette\Security\User" is not available. Did you install nette/security?');
+			}
+			$user = $this->container->getByType('Nette\Security\User');
 		}
 
 		return $user;
@@ -344,17 +344,22 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * @param array<string, mixed> $params
-	 * @throws InvalidLinkException
 	 */
 	final public function link(string $dest, array $params = []): string
 	{
 		static $linkGenerator;
-
 		if ($linkGenerator === null) {
-			$linkGenerator = $this->container->getByType(LinkGenerator::class);
+			if (class_exists('Nette\Application\LinkGenerator') === false) {
+				throw new \RuntimeException('Service "Nette\Application\LinkGenerator" is not available. Did you install nette/application?');
+			}
+			$linkGenerator = $this->container->getByType('Nette\Application\LinkGenerator');
 		}
 
-		return $linkGenerator->link(ltrim($dest, ':'), $params);
+		try {
+			return $linkGenerator->link(ltrim($dest, ':'), $params);
+		} catch (\Throwable $e) {
+			throw new \InvalidArgumentException($e->getMessage(), $e->getCode());
+		}
 	}
 
 
@@ -367,7 +372,7 @@ abstract class BaseEndpoint implements Endpoint
 	{
 		try {
 			return $this->link($dest, $params);
-		} catch (InvalidLinkException) {
+		} catch (\InvalidArgumentException) {
 			return null;
 		}
 	}

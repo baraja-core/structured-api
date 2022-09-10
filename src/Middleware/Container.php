@@ -28,7 +28,7 @@ final class Container
 	 * @param class-string<T> $type
 	 * @return ?T
 	 */
-	public function getByType(string $type): object
+	public function getByType(string $type)
 	{
 		return $this->container->getByType($type);
 	}

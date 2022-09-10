@@ -100,7 +100,7 @@ final class MetaDataManager
 			$p->setAccessible(true);
 			$p->setValue(
 				$endpoint,
-				$container->getByType($service), // @phpstan-ignore-line
+				$container->getByType($service),
 			);
 		}
 	}

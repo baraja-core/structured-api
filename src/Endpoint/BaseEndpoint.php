@@ -7,13 +7,13 @@ namespace Baraja\StructuredApi;
 
 use Baraja\Localization\Localization;
 use Baraja\StructuredApi\Entity\Convention;
+use Baraja\StructuredApi\Middleware\Container;
 use Baraja\StructuredApi\Response\Status\ErrorResponse;
 use Baraja\StructuredApi\Response\Status\OkResponse;
 use Baraja\StructuredApi\Response\Status\StatusResponse;
 use Baraja\StructuredApi\Response\Status\SuccessResponse;
 use Nette\Caching\Cache;
 use Nette\Caching\Storage;
-use Nette\DI\Container;
 use Nette\Http\Request;
 use Nette\Localization\Translator;
 use Nette\Security\Authorizator;
@@ -294,7 +294,9 @@ abstract class BaseEndpoint implements Endpoint
 
 	final public function saveState(): void
 	{
-		$this->onSaveState($this);
+		foreach ($this->onSaveState as $saveState) {
+			$saveState($this);
+		}
 	}
 
 

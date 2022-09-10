@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
-use Nette\DI\Container;
+use Baraja\StructuredApi\Middleware\Container;
 use Nette\DI\Extensions\InjectExtension;
 use Nette\Loaders\RobotLoader;
 
@@ -68,6 +68,9 @@ final class MetaDataManager
 
 	public static function endpointInjectDependencies(Endpoint $endpoint, Container $container): void
 	{
+		if ($endpoint instanceof BaseEndpoint) {
+			$endpoint->injectContainer($container);
+		}
 		$injectProperties = InjectExtension::getInjectProperties($endpoint::class);
 		if ($injectProperties === []) {
 			return;
@@ -75,6 +78,15 @@ final class MetaDataManager
 
 		$ref = new \ReflectionClass($endpoint);
 		foreach ($injectProperties as $property => $service) {
+			if ($service === 'Nette\DI\Container') {
+				throw new \LogicException(
+					sprintf(
+						'%s [property "%s"]: Injecting the entire Container is not an allowed operation. Please use DIC.',
+						$endpoint::class,
+						$property,
+					),
+				);
+			}
 			trigger_error(
 				sprintf(
 					'%s: Property "%s" with @inject annotation or #[Inject] attribute is deprecated design pattern. '
@@ -88,9 +100,7 @@ final class MetaDataManager
 			$p->setAccessible(true);
 			$p->setValue(
 				$endpoint,
-				$service === Container::class
-					? $container
-					: $container->getByType($service), // @phpstan-ignore-line
+				$container->getByType($service), // @phpstan-ignore-line
 			);
 		}
 	}

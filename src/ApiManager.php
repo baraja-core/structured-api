@@ -10,10 +10,11 @@ use Baraja\Serializer\Serializer;
 use Baraja\ServiceMethodInvoker;
 use Baraja\ServiceMethodInvoker\ProjectEntityRepository;
 use Baraja\StructuredApi\Entity\Convention;
+use Baraja\StructuredApi\Middleware\Container;
 use Baraja\StructuredApi\Middleware\MatchExtension;
 use Baraja\StructuredApi\Tracy\Panel;
 use Baraja\Url\Url;
-use Nette\DI\Container;
+use Nette\DI\Container as NetteContainer;
 use Nette\Http\Request;
 use Nette\Http\Response as HttpResponse;
 use Tracy\Debugger;
@@ -22,6 +23,8 @@ use Tracy\ILogger;
 final class ApiManager
 {
 	private Serializer $serializer;
+
+	private Container $container;
 
 	/** @var array<string, class-string> (endpointPath => endpointType) */
 	private array $endpoints;
@@ -35,13 +38,14 @@ final class ApiManager
 	 */
 	public function __construct(
 		array $endpoints,
-		private Container $container,
+		NetteContainer $netteContainer,
 		private Request $request,
 		private HttpResponse $response,
 		private Convention $convention,
 		private ?ProjectEntityRepository $projectEntityRepository = null,
 	) {
 		$this->serializer = new Serializer($convention);
+		$this->container = new Container($netteContainer);
 		$this->endpoints = $endpoints;
 	}
 
@@ -144,15 +148,13 @@ final class ApiManager
 	/**
 	 * Create new API endpoint instance with all injected dependencies.
 	 *
+	 * @param class-string $className
 	 * @param array<string|int, mixed> $params
 	 * @internal
 	 */
 	public function getEndpointService(string $className, array $params): Endpoint
 	{
-		/** @phpstan-ignore-next-line */
-		$endpoint = $this->container->getByType($className);
-		MetaDataManager::endpointInjectDependencies($endpoint, $this->container);
-		assert($endpoint instanceof Endpoint);
+		$endpoint = $this->container->getEndpoint($className);
 		$endpoint->setConvention($this->convention);
 
 		$createReflection = static function (object $class, string $propertyName): ?\ReflectionProperty {

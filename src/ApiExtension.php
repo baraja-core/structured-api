@@ -23,8 +23,7 @@ final class ApiExtension extends CompilerExtension
 		foreach ($endpointServices as $endpointService) {
 			$builder->addDefinition($this->prefix('endpoint') . '.' . str_replace('\\', '.', $endpointService))
 				->setFactory($endpointService)
-				->addTag('structured-api-endpoint')
-				->addSetup('?->injectContainer($this)', ['@self']);
+				->addTag('structured-api-endpoint');
 		}
 
 		$builder->addDefinition($this->prefix('convention'))

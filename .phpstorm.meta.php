@@ -11,6 +11,11 @@ exitPoint(\Baraja\StructuredApi\BaseEndpoint::sendError());
 exitPoint(\Baraja\StructuredApi\BaseEndpoint::sendItems());
 exitPoint(\Baraja\StructuredApi\BaseEndpoint::redirect());
 exitPoint(\Baraja\StructuredApi\BaseEndpoint::redirectUrl());
+exitPoint(\Baraja\StructuredApi\ThrowStatusResponse::invoke());
+exitPoint(\Baraja\StructuredApi\Response\Status\StatusResponse::invoke());
+exitPoint(\Baraja\StructuredApi\Response\Status\ErrorResponse::invoke());
+exitPoint(\Baraja\StructuredApi\Response\Status\OkResponse::invoke());
+exitPoint(\Baraja\StructuredApi\Response\Status\SuccessResponse::invoke());
 
 expectedArguments(
 	\Baraja\StructuredApi\BaseEndpoint::flashMessage(),

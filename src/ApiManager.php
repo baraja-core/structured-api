@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
+use Baraja\Localization\Localization;
 use Baraja\RuntimeInvokeException;
 use Baraja\Serializer\Serializer;
 use Baraja\ServiceMethodInvoker;
@@ -70,9 +71,8 @@ final class ApiManager
 		if (preg_match('/^api\/v(?<v>\d{1,3}(?:\.\d{1,3})?)\/(?<path>.*?)$/', $path, $pathParser) === 1) {
 			try {
 				$route = $this->route((string) preg_replace('/^(.*?)(\?.*|)$/', '$1', $pathParser['path']), $pathParser['v'], $params);
-				$response = null;
 				try {
-					$endpoint = $this->getEndpointService($route['class'], $params);
+					$endpoint = $this->getEndpointService($route['class']);
 					$panel->setEndpoint($endpoint);
 					$response = $this->process($endpoint, $params, $route['action'], $method, $panel);
 					$panel->setResponse($response);
@@ -149,39 +149,14 @@ final class ApiManager
 	 * Create new API endpoint instance with all injected dependencies.
 	 *
 	 * @param class-string $className
-	 * @param array<string|int, mixed> $params
 	 * @internal
 	 */
-	public function getEndpointService(string $className, array $params): Endpoint
+	public function getEndpointService(string $className): Endpoint
 	{
 		$endpoint = $this->container->getEndpoint($className);
-		$endpoint->setConvention($this->convention);
-
-		$createReflection = static function (object $class, string $propertyName): ?\ReflectionProperty {
-			try {
-				$ref = new \ReflectionProperty($class, $propertyName);
-				$ref->setAccessible(true);
-
-				return $ref;
-			} catch (\ReflectionException) {
-				$refClass = new \ReflectionClass($class);
-				$parentClass = $refClass->getParentClass();
-				while ($parentClass !== false) {
-					try {
-						$ref = $parentClass->getProperty($propertyName);
-						$ref->setAccessible(true);
-
-						return $ref;
-					} catch (\ReflectionException) {
-						$parentClass = $refClass->getParentClass();
-					}
-				}
-			}
-
-			return null;
-		};
-
-		$createReflection($endpoint, 'data')?->setValue($endpoint, $params);
+		if ($endpoint instanceof BaseEndpoint) {
+			$endpoint->convention = $this->convention;
+		}
 
 		return $endpoint;
 	}
@@ -336,8 +311,13 @@ final class ApiManager
 		array $params,
 		Panel $panel,
 	): ?Response {
-		$endpoint->startup();
-		$endpoint->startupCheck();
+		if (PHP_SAPI !== 'cli') {
+			$httpRequest = class_exists(Request::class) ? $this->container->getByType(Request::class) : null;
+			$localization = class_exists(Localization::class) ? $this->container->getByType(Localization::class) : null;
+			if ($httpRequest !== null && $localization !== null) {
+				$localization->processHttpRequest($httpRequest);
+			}
+		}
 
 		try {
 			$invoker = new ServiceMethodInvoker($this->projectEntityRepository);
@@ -381,8 +361,9 @@ final class ApiManager
 		if ($method !== 'GET' && $response === null) {
 			$response = new JsonResponse($this->convention, ['state' => 'ok']);
 		}
-
-		$endpoint->saveState();
+		if ($endpoint instanceof BaseEndpoint) {
+			$endpoint->saveState();
+		}
 
 		return $response;
 	}

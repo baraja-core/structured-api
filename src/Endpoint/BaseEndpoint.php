@@ -7,27 +7,15 @@ namespace Baraja\StructuredApi;
 
 use Baraja\CAS\User;
 use Baraja\CAS\UserIdentity;
-use Baraja\Localization\Localization;
+use Baraja\StructuredApi\Bridge\LinkGeneratorBridge;
 use Baraja\StructuredApi\Entity\Convention;
-use Baraja\StructuredApi\Middleware\Container;
 use Baraja\StructuredApi\Response\Status\ErrorResponse;
 use Baraja\StructuredApi\Response\Status\OkResponse;
 use Baraja\StructuredApi\Response\Status\StatusResponse;
 use Baraja\StructuredApi\Response\Status\SuccessResponse;
-use Nette\Caching\Cache;
-use Nette\Caching\Storage;
-use Nette\Http\Request;
-use Nette\Localization\Translator;
 
 abstract class BaseEndpoint implements Endpoint
 {
-	// TODO: @deprecated since 2022-04-18, use Perl case instead
-	public const
-		FLASH_MESSAGE_SUCCESS = 'success',
-		FLASH_MESSAGE_INFO = 'info',
-		FLASH_MESSAGE_WARNING = 'warning',
-		FLASH_MESSAGE_ERROR = 'error';
-
 	public const
 		FlashMessageSuccess = 'success',
 		FlashMessageInfo = 'info',
@@ -44,70 +32,19 @@ abstract class BaseEndpoint implements Endpoint
 	/** @var callable[] */
 	public array $onSaveState = [];
 
-	/** @deprecated since 2022-10-29, please use static DIC constructor dependencies. */
-	protected Container $container;
+	public ?User $user = null;
 
-	protected Convention $convention;
+	public LinkGeneratorBridge $linkGenerator;
 
-	/**
-	 * @var mixed[]
-	 * @deprecated since 2022-10-29, please use native typed method arguments.
-	 */
-	protected array $data = [];
+	public Convention $convention;
 
 	/** @var array<int, array{message: string, type: string}> */
 	private array $messages = [];
-
-	private bool $startupCheck = false;
 
 
 	public function __toString(): string
 	{
 		return static::class;
-	}
-
-
-	public function startup(): void
-	{
-		if (PHP_SAPI !== 'cli' && class_exists('\Baraja\Localization\Localization') === true) {
-			$httpRequest = $this->container->getByType(Request::class);
-			$localization = $this->container->getByType(Localization::class);
-			$localization->processHttpRequest($httpRequest);
-		}
-
-		$this->startupCheck = true;
-	}
-
-
-	/**
-	 * Get current endpoint name.
-	 * @deprecated since 2022-10-29, please use native class name or meta entity.
-	 */
-	final public function getName(): string
-	{
-		return (string) preg_replace('/^(?:.*\\\\)?([A-Z0-9][a-z0-9]+)Endpoint$/', '$1', static::class);
-	}
-
-
-	/**
-	 * Get raw data.
-	 * This method obtains an array of all user-passed values.
-	 * Individual values may not correspond to the input validation.
-	 * This method is suitable for processing large amounts of data that
-	 * do not have a predetermined structure that we are able to describe as an object.
-	 *
-	 * @return array<int|string, mixed>
-	 * @deprecated since 2022-10-29, please use native typed method arguments.
-	 */
-	public function getData(): array
-	{
-		return $this->data;
-	}
-
-
-	final public function setConvention(Convention $convention): void
-	{
-		$this->convention = $convention;
 	}
 
 
@@ -289,14 +226,6 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
-	final public function startupCheck(): void
-	{
-		if ($this->startupCheck === false) {
-			throw new \LogicException(sprintf('Method %s::startup() or its descendant doesn\'t call parent::startup()."', static::class));
-		}
-	}
-
-
 	final public function saveState(): void
 	{
 		foreach ($this->onSaveState as $saveState) {
@@ -307,15 +236,11 @@ abstract class BaseEndpoint implements Endpoint
 
 	final public function getUser(): User
 	{
-		static $user;
-		if ($user === null) {
-			if (class_exists('Baraja\CAS\User') === false) {
-				throw new \RuntimeException('Service "Baraja\CAS\User" is not available. Did you install baraja-core/cas?');
-			}
-			$user = $this->container->getByType('Baraja\CAS\User');
+		if ($this->user === null) {
+			throw new \RuntimeException('Service "Baraja\CAS\User" is not available. Did you install baraja-core/cas?');
 		}
 
-		return $user;
+		return $this->user;
 	}
 
 
@@ -335,31 +260,12 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
-	/** @deprecated since 2022-10-29, please use baraja-core/cas instead. */
-	final public function getAuthorizator(): void
-	{
-		throw new \LogicException('Method "getAuthorizator" has been removed, please use baraja-core/cas instead.');
-	}
-
-
 	/**
 	 * @param array<string, mixed> $params
 	 */
 	final public function link(string $dest, array $params = []): string
 	{
-		static $linkGenerator;
-		if ($linkGenerator === null) {
-			if (class_exists('Nette\Application\LinkGenerator') === false) {
-				throw new \RuntimeException('Service "Nette\Application\LinkGenerator" is not available. Did you install nette/application?');
-			}
-			$linkGenerator = $this->container->getByType('Nette\Application\LinkGenerator');
-		}
-
-		try {
-			return $linkGenerator->link(ltrim($dest, ':'), $params);
-		} catch (\Throwable $e) {
-			throw new \InvalidArgumentException($e->getMessage(), $e->getCode());
-		}
+		return $this->linkGenerator->link(ltrim($dest, ':'), $params);
 	}
 
 
@@ -375,108 +281,5 @@ abstract class BaseEndpoint implements Endpoint
 		} catch (\InvalidArgumentException) {
 			return null;
 		}
-	}
-
-
-	/**
-	 * @param array<string, mixed> $params
-	 * @param positive-int $httpCode
-	 * @phpstan-return never-return
-	 * @throws ThrowResponse
-	 * @deprecated since 2022-10-29, please remove this feature from your project. Redirect is anti-pattern for API.
-	 */
-	final public function redirect(string $dest, array $params = [], int $httpCode = 301): void
-	{
-		$this->redirectUrl((string) $this->linkSafe($dest, $params), $httpCode);
-	}
-
-
-	/**
-	 * @param positive-int $httpCode
-	 * @phpstan-return never-return
-	 * @throws ThrowResponse
-	 * @deprecated since 2022-10-29, please remove this feature from your project. Redirect is anti-pattern for API.
-	 */
-	final public function redirectUrl(string $url, int $httpCode = 301): void
-	{
-		if (Helpers::isUrl($url) === false) {
-			throw new \InvalidArgumentException(sprintf('Haystack "%s" is not valid URL for redirect.', $url));
-		}
-		throw new ThrowResponse(new RedirectResponse($this->convention, ['url' => $url], $httpCode));
-	}
-
-
-	/** @deprecated since 2022-10-29, please implement it in your project. */
-	final public function getCache(?string $namespace = null): Cache
-	{
-		static $storage;
-		static $cache = [];
-		$name = sprintf('api---%s', strtolower($namespace ?? $this->getName()));
-
-		if ($storage === null) {
-			$storage = $this->container->getByType(Storage::class);
-		}
-		if (isset($cache[$name]) === false) {
-			$cache[$name] = new Cache($storage, $name);
-		}
-
-		return $cache[$name];
-	}
-
-
-	/** @deprecated since 2022-10-29, please implement it in your project. */
-	final public function getTranslator(): Translator
-	{
-		static $translator;
-		if ($translator === null) {
-			$translator = $this->container->getByType(Translator::class);
-		}
-
-		return $translator;
-	}
-
-
-	/**
-	 * @param array<string, mixed>|mixed ...$parameters
-	 * @deprecated since 2022-10-29, please implement it in your project.
-	 */
-	final public function translate(mixed $message, ...$parameters): string
-	{
-		return $this->getTranslator()->translate($message, $parameters);
-	}
-
-
-	/**
-	 * @return array<string, mixed>
-	 * @deprecated since 2022-10-29, please inject scala parameters to individual DIC services.
-	 */
-	final public function getParameters(): array
-	{
-		return $this->container->getParameters();
-	}
-
-
-	/**
-	 * @deprecated since 2022-10-29, please inject scala parameters to individual DIC services.
-	 */
-	final public function getParameter(string $key, mixed $defaultValue = null): mixed
-	{
-		return $this->container->getParameters()[$key] ?? $defaultValue;
-	}
-
-
-	final public function injectContainer(Container $container): void
-	{
-		$this->container = $container;
-	}
-
-
-	/**
-	 * Is it an AJAX request?
-	 * @deprecated since 2022-10-29, please use static helper.
-	 */
-	final public function isAjax(): bool
-	{
-		return Helpers::isAjax();
 	}
 }

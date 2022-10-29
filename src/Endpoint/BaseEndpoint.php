@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
+use Baraja\CAS\User;
+use Baraja\CAS\UserIdentity;
 use Baraja\Localization\Localization;
 use Baraja\StructuredApi\Entity\Convention;
 use Baraja\StructuredApi\Middleware\Container;
@@ -16,9 +18,6 @@ use Nette\Caching\Cache;
 use Nette\Caching\Storage;
 use Nette\Http\Request;
 use Nette\Localization\Translator;
-use Nette\Security\Authorizator;
-use Nette\Security\IIdentity;
-use Nette\Security\User;
 
 abstract class BaseEndpoint implements Endpoint
 {
@@ -304,10 +303,10 @@ abstract class BaseEndpoint implements Endpoint
 	{
 		static $user;
 		if ($user === null) {
-			if (class_exists('Nette\Security\User') === false) {
-				throw new \RuntimeException('Service "Nette\Security\User" is not available. Did you install nette/security?');
+			if (class_exists('Baraja\CAS\User') === false) {
+				throw new \RuntimeException('Service "Baraja\CAS\User" is not available. Did you install baraja-core/cas?');
 			}
-			$user = $this->container->getByType('Nette\Security\User');
+			$user = $this->container->getByType('Baraja\CAS\User');
 		}
 
 		return $user;
@@ -324,20 +323,16 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
-	final public function getUserEntity(): ?IIdentity
+	final public function getUserEntity(): ?UserIdentity
 	{
 		return $this->getUser()->getIdentity();
 	}
 
 
-	final public function getAuthorizator(): Authorizator
+	/** @deprecated since 2022-10-29, please use baraja-core/cas instead. */
+	final public function getAuthorizator(): void
 	{
-		$authorizator = $this->getUser()->getAuthorizatorIfExists();
-		if ($authorizator === null) {
-			throw new \RuntimeException('Authorizator has not been set.');
-		}
-
-		return $authorizator;
+		throw new \LogicException('Method "getAuthorizator" has been removed, please use baraja-core/cas instead.');
 	}
 
 

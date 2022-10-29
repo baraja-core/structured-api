@@ -135,4 +135,14 @@ XX
 
 		return [];
 	}
+
+
+	/**
+	 * Is it an AJAX request?
+	 */
+	public static function isAjax(): bool
+	{
+		return strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest'
+			|| isset($_SERVER['HTTP_X_TRACY_AJAX']);
+	}
 }

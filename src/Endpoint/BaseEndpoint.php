@@ -45,11 +45,15 @@ abstract class BaseEndpoint implements Endpoint
 	/** @var callable[] */
 	public array $onSaveState = [];
 
+	/** @deprecated since 2022-10-29, please use static DIC constructor dependencies. */
 	protected Container $container;
 
 	protected Convention $convention;
 
-	/** @var mixed[] */
+	/**
+	 * @var mixed[]
+	 * @deprecated since 2022-10-29, please use native typed method arguments.
+	 */
 	protected array $data = [];
 
 	/** @var array<int, array{message: string, type: string}> */
@@ -78,6 +82,7 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * Get current endpoint name.
+	 * @deprecated since 2022-10-29, please use native class name or meta entity.
 	 */
 	final public function getName(): string
 	{
@@ -93,6 +98,7 @@ abstract class BaseEndpoint implements Endpoint
 	 * do not have a predetermined structure that we are able to describe as an object.
 	 *
 	 * @return array<int|string, mixed>
+	 * @deprecated since 2022-10-29, please use native typed method arguments.
 	 */
 	public function getData(): array
 	{
@@ -330,6 +336,7 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
+	/** @deprecated since 2022-10-29, please use baraja-core/cas instead. */
 	final public function getAuthorizator(): Authorizator
 	{
 		$authorizator = $this->getUser()->getAuthorizatorIfExists();
@@ -382,6 +389,7 @@ abstract class BaseEndpoint implements Endpoint
 	 * @param positive-int $httpCode
 	 * @phpstan-return never-return
 	 * @throws ThrowResponse
+	 * @deprecated since 2022-10-29, please remove this feature from your project. Redirect is anti-pattern for API.
 	 */
 	final public function redirect(string $dest, array $params = [], int $httpCode = 301): void
 	{
@@ -393,6 +401,7 @@ abstract class BaseEndpoint implements Endpoint
 	 * @param positive-int $httpCode
 	 * @phpstan-return never-return
 	 * @throws ThrowResponse
+	 * @deprecated since 2022-10-29, please remove this feature from your project. Redirect is anti-pattern for API.
 	 */
 	final public function redirectUrl(string $url, int $httpCode = 301): void
 	{
@@ -403,6 +412,7 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
+	/** @deprecated since 2022-10-29, please implement it in your project. */
 	final public function getCache(?string $namespace = null): Cache
 	{
 		static $storage;
@@ -420,6 +430,7 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
+	/** @deprecated since 2022-10-29, please implement it in your project. */
 	final public function getTranslator(): Translator
 	{
 		static $translator;
@@ -433,6 +444,7 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * @param array<string, mixed>|mixed ...$parameters
+	 * @deprecated since 2022-10-29, please implement it in your project.
 	 */
 	final public function translate(mixed $message, ...$parameters): string
 	{
@@ -442,6 +454,7 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * @return array<string, mixed>
+	 * @deprecated since 2022-10-29, please inject scala parameters to individual DIC services.
 	 */
 	final public function getParameters(): array
 	{
@@ -449,6 +462,9 @@ abstract class BaseEndpoint implements Endpoint
 	}
 
 
+	/**
+	 * @deprecated since 2022-10-29, please inject scala parameters to individual DIC services.
+	 */
 	final public function getParameter(string $key, mixed $defaultValue = null): mixed
 	{
 		return $this->container->getParameters()[$key] ?? $defaultValue;
@@ -463,10 +479,10 @@ abstract class BaseEndpoint implements Endpoint
 
 	/**
 	 * Is it an AJAX request?
+	 * @deprecated since 2022-10-29, please use static helper.
 	 */
 	final public function isAjax(): bool
 	{
-		return strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest'
-			|| isset($_SERVER['HTTP_X_TRACY_AJAX']);
+		return Helpers::isAjax();
 	}
 }

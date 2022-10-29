@@ -22,14 +22,14 @@ final class TestEndpoint extends BaseEndpoint
 		return new TestResponse(
 			name: 'Test API endpoint',
 			hello: $hello,
-			endpoint: $this->getName(),
+			endpoint: 'Test',
 		);
 	}
 
 
 	public function postCreateUser(string $username, string $password): CreateUserResponse
 	{
-		if (strlen($password) < 8) {
+		if (mb_strlen($password) < 8) {
 			$this->sendError('Password must be at least 8 characters long.');
 		}
 

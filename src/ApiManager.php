@@ -65,7 +65,10 @@ final class ApiManager
 		$method = $method === null || $method === '' ? Helpers::httpMethod() : $method;
 		$params = array_merge($this->safeGetParams($path), $this->getBodyParams($method), $params ?? []);
 		$panel = new Panel($path, $params, $method);
-		Debugger::getBar()->addPanel($panel);
+		$isDebugger = class_exists(Debugger::class);
+		if ($isDebugger) {
+			Debugger::getBar()->addPanel($panel);
+		}
 
 		if (preg_match('/^api\/v(?<v>\d{1,3}(?:\.\d{1,3})?)\/(?<path>.*?)$/', $path, $pathParser) === 1) {
 			try {
@@ -78,8 +81,7 @@ final class ApiManager
 				} catch (StructuredApiException $e) {
 					throw $e;
 				} catch (\Throwable $e) {
-					$isDebugger = class_exists(Debugger::class);
-					if ($isDebugger === true) {
+					if ($isDebugger) {
 						Debugger::log($e, ILogger::EXCEPTION);
 					}
 

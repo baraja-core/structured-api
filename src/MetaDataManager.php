@@ -71,7 +71,9 @@ final class MetaDataManager
 	public static function endpointInjectDependencies(Endpoint $endpoint, Container $container): void
 	{
 		if ($endpoint instanceof BaseEndpoint) {
-			$endpoint->user = class_exists(User::class) ? $container->getByType(User::class) : null;
+			$endpoint->user = class_exists(User::class)
+				? $container->getByType(User::class)
+				: null;
 			$endpoint->linkGenerator = new LinkGeneratorBridge(
 				class_exists('Nette\Application\LinkGenerator')
 					? $container->getByType('Nette\Application\LinkGenerator')

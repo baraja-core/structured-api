@@ -312,8 +312,12 @@ final class ApiManager
 		Panel $panel,
 	): ?Response {
 		if (PHP_SAPI !== 'cli') {
-			$httpRequest = class_exists(Request::class) ? $this->container->getByType(Request::class) : null;
-			$localization = class_exists(Localization::class) ? $this->container->getByType(Localization::class) : null;
+			$httpRequest = class_exists(Request::class)
+				? $this->container->getByType(Request::class)
+				: null;
+			$localization = class_exists(Localization::class)
+				? $this->container->getByType(Localization::class)
+				: null;
 			if ($httpRequest !== null && $localization !== null) {
 				$localization->processHttpRequest($httpRequest);
 			}

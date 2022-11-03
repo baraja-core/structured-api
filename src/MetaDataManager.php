@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi;
 
 
+use Baraja\CAS\User;
+use Baraja\StructuredApi\Bridge\LinkGeneratorBridge;
 use Baraja\StructuredApi\Middleware\Container;
 use Nette\DI\Extensions\InjectExtension;
 use Nette\Loaders\RobotLoader;
@@ -69,7 +71,14 @@ final class MetaDataManager
 	public static function endpointInjectDependencies(Endpoint $endpoint, Container $container): void
 	{
 		if ($endpoint instanceof BaseEndpoint) {
-			$endpoint->injectContainer($container);
+			$endpoint->user = class_exists(User::class)
+				? $container->getByType(User::class)
+				: null;
+			$endpoint->linkGenerator = new LinkGeneratorBridge(
+				class_exists('Nette\Application\LinkGenerator')
+					? $container->getByType('Nette\Application\LinkGenerator')
+					: null,
+			);
 		}
 		$injectProperties = InjectExtension::getInjectProperties($endpoint::class);
 		if ($injectProperties === []) {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Baraja\StructuredApi\Middleware;
 
 
+use Baraja\CAS\User;
 use Baraja\StructuredApi\Attributes\PublicEndpoint;
 use Baraja\StructuredApi\Attributes\Role;
 use Baraja\StructuredApi\Endpoint;
@@ -12,13 +13,12 @@ use Baraja\StructuredApi\Entity\Convention;
 use Baraja\StructuredApi\Helpers;
 use Baraja\StructuredApi\JsonResponse;
 use Baraja\StructuredApi\Response;
-use Nette\Security\User;
 
 final class PermissionExtension implements MatchExtension
 {
 	public function __construct(
-		private User $user,
 		private Convention $convention,
+		private ?User $user = null,
 	) {
 	}
 
@@ -64,7 +64,7 @@ final class PermissionExtension implements MatchExtension
 			$refClass = new \ReflectionClass($endpoint);
 			$docComment = trim((string) $refClass->getDocComment());
 			$public = $refClass->getAttributes(PublicEndpoint::class) !== [] || str_contains($docComment, '@public');
-			if ($public === false && $this->user->isLoggedIn() === false) {
+			if ($public === false && ($this->user?->isLoggedIn() ?? false) === false) {
 				throw new \InvalidArgumentException('This API endpoint is private. You must be logged in to use.');
 			}
 			if ($this->checkRoles($refClass)) {
@@ -87,7 +87,7 @@ final class PermissionExtension implements MatchExtension
 		}
 		if (
 			$public === false
-			&& $this->user->isLoggedIn() === true
+			&& ($this->user?->isLoggedIn() ?? false) === true
 		) { // private endpoint, but user is logged in
 			return true;
 		}
@@ -114,6 +114,9 @@ final class PermissionExtension implements MatchExtension
 
 	private function checkRoles(\ReflectionClass|\ReflectionMethod $ref): bool
 	{
+		if ($this->user === null) {
+			return false;
+		}
 		foreach ($this->getRoleList($ref) as $role) {
 			if ($this->user->isInRole($role) === true) {
 				return true;

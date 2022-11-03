@@ -57,16 +57,6 @@ abstract class BaseResponse implements Response
 	}
 
 
-	/**
-	 * @return mixed[]
-	 * @deprecated since 2022-07-25, use toArray().
-	 */
-	final public function getArray(): array
-	{
-		return $this->toArray();
-	}
-
-
 	final public function getHttpCode(): int
 	{
 		return $this->httpCode;

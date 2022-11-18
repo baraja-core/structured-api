@@ -63,6 +63,7 @@ final class ApiManager
 	{
 		$path ??= Url::get()->getRelativeUrl();
 		$method = $method === null || $method === '' ? Helpers::httpMethod() : $method;
+		$this->handleCorsRequest($method);
 		$params = array_merge($this->safeGetParams($path), $this->getBodyParams($method), $params ?? []);
 		$panel = new Panel($path, $params, $method);
 		$isDebugger = class_exists(Debugger::class);
@@ -468,5 +469,24 @@ final class ApiManager
 		}
 
 		return $return;
+	}
+
+
+	private function handleCorsRequest(string $httpMethod): void
+	{
+		if (isset($_SERVER['HTTP_ORIGIN'])) {
+			header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
+			header('Access-Control-Allow-Credentials: true');
+			header('Access-Control-Max-Age: 86400'); // cache for 1 day
+		}
+		if ($httpMethod === 'OPTIONS') {
+			if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])) {
+				header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+			}
+			if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
+				header('Access-Control-Allow-Headers: ' . $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']);
+			}
+			die;
+		}
 	}
 }

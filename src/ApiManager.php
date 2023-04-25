@@ -87,7 +87,7 @@ final class ApiManager
 					}
 
 					$code = $e->getCode();
-					$code = is_int($code) && $code > 0 ? $code : 500;
+					$code = is_int($code) && $code >= 100 && $code < 600 ? $code : 500;
 					$response = new JsonResponse($this->convention, [
 						'state' => 'error',
 						'message' => $isDebugger && Debugger::isEnabled() === true ? $e->getMessage() : null,
@@ -101,7 +101,7 @@ final class ApiManager
 				$response = new JsonResponse($this->convention, [
 					'state' => 'error',
 					'message' => $e->getMessage(),
-					'code' => $e->getHttpCode(),
+					'code' => $e->getHttpCode() >= 200 ? $e->getHttpCode() : 500,
 				], $e->getHttpCode());
 			}
 			$this->processResponse($response, $throw);
@@ -178,7 +178,7 @@ final class ApiManager
 		if ($this->response->isSent() === false) {
 			$httpCode = $response->getHttpCode();
 			if ($httpCode < 100) {
-				$httpCode = 100;
+				$httpCode = 500;
 			} elseif ($httpCode > 599) {
 				if (class_exists('\Tracy\Debugger') === true) {
 					Debugger::log(new \LogicException(sprintf('Bad HTTP response "%d".', $httpCode)), ILogger::CRITICAL);

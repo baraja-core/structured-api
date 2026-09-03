@@ -19,7 +19,7 @@
 		"nette/di": "^3.0",
 		"nette/http": "^3.1",
 		"nette/application": "^3.1",
-		"nette/robot-loader": "^3.3",
+		"nette/robot-loader": "^3.3 | ^4.0",
 		"nette/caching": "^3.1"
 	},
 	"require-dev": {
